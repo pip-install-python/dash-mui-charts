@@ -1,0 +1,56 @@
+{
+  "name": "dash_mui_charts",
+  "version": "0.0.1",
+  "description": "Dash components wrapping MUI X Charts for creating interactive data visualizations",
+  "main": "build/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/pip-install-python/dash-mui-charts.git"
+  },
+  "bugs": {
+    "url": "https://github.com/pip-install-python/dash-mui-charts/issues"
+  },
+  "homepage": "https://github.com/pip-install-python/dash-mui-charts",
+  "scripts": {
+    "start": "webpack serve --config webpack.serve.config.js --open",
+    "build:js": "webpack --mode production",
+    "build:backends": "dash-generate-components ./src/lib/components dash_mui_charts -p dash_mui_charts --ignore \\.test\\.",
+    "build": "npm run build:js && npm run build:backends",
+    "validate-init": "python _validate_init.py"
+  },
+  "author": "Pip Install Python",
+  "license": "MIT",
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/material": "^6.5.0",
+    "@mui/x-charts": "^8.24.0",
+    "@mui/x-charts-pro": "^8.24.0",
+    "@mui/x-license": "^7.24.0",
+    "ramda": "^0.26.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.22.10",
+    "@babel/plugin-transform-object-rest-spread": "^7.22.5",
+    "@babel/preset-env": "^7.22.10",
+    "@babel/preset-react": "^7.22.5",
+    "@plotly/webpack-dash-dynamic-import": "^1.2.0",
+    "babel-loader": "^9.1.3",
+    "css-loader": "^6.8.1",
+    "prop-types": "^15.8.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "style-loader": "^3.3.3",
+    "webpack": "^5.88.2",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^4.15.1"
+  },
+  "peerDependencies": {
+    "react": ">=17.0.0",
+    "react-dom": ">=17.0.0"
+  },
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.1.0"
+  }
+}

@@ -1,0 +1,8 @@
+include dash_mui_charts/*.js
+include dash_mui_charts/*.js.map
+include dash_mui_charts/package-info.json
+include dash_mui_charts/metadata.json
+include package.json
+include README.md
+include LICENSE
+include CHANGELOG.md

@@ -1,0 +1,34 @@
+{
+  "project": {
+    "name": "dash-mui-charts",
+    "description": "Dash components wrapping MUI X Charts Pro library",
+    "type": "dash-component-library"
+  },
+  "allowed_urls": [
+    "https://dash.plotly.com",
+    "https://dash.plotly.com/advanced-callbacks",
+    "https://dash.plotly.com/dash-core-components",
+    "https://dash.plotly.com/dash-html-components",
+    "https://dash.plotly.com/react-for-python-developers",
+    "https://mui.com/x",
+    "https://mui.com/x/react-charts",
+    "https://mui.com/x/api",
+    "https://react.dev",
+    "https://github.com/plotly/dash",
+    "https://github.com/plotly/dash-component-boilerplate",
+    "https://community.plotly.com"
+  ],
+  "development": {
+    "build_command": "npm run build",
+    "dev_server": "python app.py",
+    "dev_port": 7666,
+    "test_command": "pytest tests/",
+    "lint_command": "npm run lint"
+  },
+  "component_structure": {
+    "react_sources": "src/lib/components/",
+    "python_outputs": "dash_mui_charts/",
+    "pages": "pages/",
+    "assets": "assets/"
+  }
+}

@@ -1,0 +1,409 @@
+/* ============================================================================
+   LIQUID GLASS SPARKLINE STYLES
+   Apple-inspired glassmorphism effect for advanced sparkline example
+   ============================================================================ */
+
+/* Gradient Background with Floating Orbs */
+.liquid-glass-background {
+    background: linear-gradient(
+        135deg,
+        #667eea 0%,
+        #764ba2 50%,
+        #6B8DD6 100%
+    );
+    min-height: 100vh;
+    padding: 60px 20px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Animated floating orbs for depth */
+.liquid-glass-background::before {
+    content: '';
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    top: -100px;
+    right: -100px;
+    background: radial-gradient(circle, rgba(79, 195, 247, 0.4) 0%, transparent 70%);
+    border-radius: 50%;
+    filter: blur(60px);
+    animation: floatOrb1 8s ease-in-out infinite;
+}
+
+.liquid-glass-background::after {
+    content: '';
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    bottom: -50px;
+    left: -50px;
+    background: radial-gradient(circle, rgba(156, 39, 176, 0.4) 0%, transparent 70%);
+    border-radius: 50%;
+    filter: blur(60px);
+    animation: floatOrb2 10s ease-in-out infinite;
+}
+
+@keyframes floatOrb1 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-30px, 30px) scale(1.1); }
+}
+
+@keyframes floatOrb2 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(30px, -30px) scale(1.05); }
+}
+
+/* Glass Card Container */
+.liquid-glass-card {
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.25) 0%,
+        rgba(255, 255, 255, 0.10) 100%
+    );
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 24px;
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.15),
+        0 2px 8px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.4),
+        inset 0 -1px 0 0 rgba(255, 255, 255, 0.1);
+    padding: 40px;
+    max-width: 600px;
+    width: 100%;
+    position: relative;
+    z-index: 1;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.liquid-glass-card:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 12px 40px rgba(0, 0, 0, 0.2),
+        0 4px 12px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.5),
+        inset 0 -1px 0 0 rgba(255, 255, 255, 0.15);
+}
+
+/* Card Title */
+.glass-title {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+    font-size: 24px;
+    font-weight: 600;
+    color: white;
+    margin: 0 0 8px 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    letter-spacing: -0.5px;
+}
+
+.glass-subtitle {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0 0 30px 0;
+}
+
+/* Sparkline Container with Reveal Animation */
+.sparkline-container {
+    animation: revealLeftToRight 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    position: relative;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 20px;
+    transition: all 0.2s ease-out;
+}
+
+/* Hover state with opacity mask - applied to SVG only (not tooltip) */
+.sparkline-container.hovering svg {
+    -webkit-mask-image: linear-gradient(
+        to right,
+        rgba(0, 0, 0, 1) 0%,
+        rgba(0, 0, 0, 1) var(--hover-percent, 50%),
+        rgba(0, 0, 0, 0.4) var(--hover-percent, 50%),
+        rgba(0, 0, 0, 0.4) 100%
+    );
+    mask-image: linear-gradient(
+        to right,
+        rgba(0, 0, 0, 1) 0%,
+        rgba(0, 0, 0, 1) var(--hover-percent, 50%),
+        rgba(0, 0, 0, 0.4) var(--hover-percent, 50%),
+        rgba(0, 0, 0, 0.4) 100%
+    );
+}
+
+/* Left-to-right reveal animation */
+@keyframes revealLeftToRight {
+    from {
+        clip-path: inset(0 100% 0 0);
+        opacity: 0;
+    }
+    to {
+        clip-path: inset(0 0 0 0);
+        opacity: 1;
+    }
+}
+
+/* Value Display Panel */
+.value-display-panel {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.value-display {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 15px 20px;
+    flex: 1;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.value-display:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.value-label {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.value-number {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+    font-size: 24px;
+    font-weight: 600;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.value-number.positive {
+    color: #4ade80;
+}
+
+.value-number.negative {
+    color: #f87171;
+}
+
+/* Hover instruction text */
+.hover-instruction {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+    text-align: center;
+    margin-top: 15px;
+    transition: opacity 0.3s ease;
+}
+
+.hover-instruction.hidden {
+    opacity: 0;
+}
+
+/* Status indicator dot */
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #4ade80;
+    box-shadow: 0 0 8px rgba(74, 222, 128, 0.5);
+    animation: pulse 2s ease-in-out infinite;
+    display: inline-block;
+    margin-right: 8px;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.1); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .liquid-glass-background {
+        padding: 30px 15px;
+    }
+
+    .liquid-glass-card {
+        padding: 25px;
+        border-radius: 20px;
+    }
+
+    .glass-title {
+        font-size: 20px;
+    }
+
+    .value-display-panel {
+        flex-direction: column;
+    }
+
+    .value-display {
+        width: 100%;
+    }
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+    .sparkline-container,
+    .liquid-glass-background::before,
+    .liquid-glass-background::after {
+        animation: none !important;
+    }
+
+    .sparkline-container {
+        clip-path: none;
+        opacity: 1;
+    }
+}
+
+/* Performance optimizations */
+.liquid-glass-card,
+.sparkline-container,
+.value-display {
+    will-change: transform;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+/* ============================================================================
+   TOOLTIP - Liquid Glass Style
+   Requires slotProps.tooltip.disablePortal: True to render inside container
+   ============================================================================ */
+
+/* Target MUI Charts Tooltip - multiple selectors for compatibility */
+.sparkline-container .MuiChartsTooltip-root,
+.sparkline-container .MuiPopper-root,
+.sparkline-container [class*="MuiChartsTooltip"] {
+    z-index: 10 !important;
+}
+
+/* Glass container with improved opacity for readability */
+.sparkline-container .MuiChartsTooltip-paper,
+.sparkline-container .MuiChartsTooltip-root .MuiPaper-root,
+.sparkline-container .MuiPaper-root,
+.sparkline-container [class*="MuiChartsTooltip"] > div {
+    backdrop-filter: blur(24px) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
+    background: linear-gradient(
+        135deg,
+        rgba(15, 25, 45, 0.95) 0%,
+        rgba(10, 20, 40, 0.92) 100%
+    ) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    border-radius: 14px !important;
+    box-shadow:
+        0 12px 40px rgba(0, 0, 0, 0.5),
+        0 4px 12px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.25),
+        inset 0 -1px 0 0 rgba(255, 255, 255, 0.1) !important;
+    overflow: hidden !important;
+}
+
+/* Table base styling */
+.sparkline-container .MuiChartsTooltip-table,
+.sparkline-container table {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif !important;
+    border-collapse: collapse !important;
+}
+
+/* ALL tooltip text - force white color for readability */
+.sparkline-container .MuiChartsTooltip-cell,
+.sparkline-container .MuiChartsTooltip-labelCell,
+.sparkline-container .MuiChartsTooltip-valueCell,
+.sparkline-container .MuiChartsTooltip-axisValueCell,
+.sparkline-container .MuiChartsTooltip-markCell,
+.sparkline-container [class*="MuiChartsTooltip"] td,
+.sparkline-container [class*="MuiChartsTooltip"] th,
+.sparkline-container [class*="MuiChartsTooltip"] caption,
+.sparkline-container .MuiChartsTooltip-root td,
+.sparkline-container .MuiChartsTooltip-root th,
+.sparkline-container .MuiChartsTooltip-root caption {
+    color: #ffffff !important;
+    border: none !important;
+    padding: 12px 16px !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    background: transparent !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+    letter-spacing: 0.2px !important;
+}
+
+/* Value display - prominent cyan color */
+.sparkline-container .MuiChartsTooltip-valueCell,
+.sparkline-container [class*="valueCell"] {
+    font-weight: 700 !important;
+    font-size: 16px !important;
+    color: #4FC3F7 !important;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 0 12px rgba(79, 195, 247, 0.3) !important;
+}
+
+/* Axis value (hover index) - pure white */
+.sparkline-container .MuiChartsTooltip-axisValueCell {
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Mark cell container - controls spacing around the color indicator */
+.sparkline-container .MuiChartsTooltip-markCell,
+.sparkline-container [class*="markCell"] {
+    padding: 12px 8px 12px 16px !important;
+    vertical-align: middle !important;
+}
+
+/* Mark/indicator - the colored square/circle showing series color */
+.sparkline-container .MuiChartsTooltip-mark,
+.sparkline-container [class*="MuiChartsTooltip"] [class*="mark"]:not([class*="markCell"]) {
+    width: 28px !important;
+    height: 14px !important;
+    border-radius: 4px !important;
+    border: 2px solid rgba(255, 255, 255, 0.3) !important;
+    box-shadow:
+        0 0 8px rgba(79, 195, 247, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+    flex-shrink: 0 !important;
+    display: inline-block !important;
+}
+
+/* ============================================================================
+   X-AXIS HIGHLIGHT LINE - Show Only on Hover
+   ============================================================================ */
+
+/* Hide axis highlight by default */
+.sparkline-container .MuiChartsAxisHighlight-root,
+.sparkline-container svg line[class*="AxisHighlight"] {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+/* Show axis highlight when hovering */
+.sparkline-container.hovering .MuiChartsAxisHighlight-root,
+.sparkline-container.hovering svg line[class*="AxisHighlight"] {
+    opacity: 1;
+}
+
+/* Style the highlight line itself */
+.sparkline-container.hovering .MuiChartsAxisHighlight-root line,
+.sparkline-container.hovering svg line[class*="AxisHighlight"] {
+    stroke: rgba(255, 255, 255, 0.6) !important;
+    stroke-width: 1px !important;
+    stroke-dasharray: 4 2 !important;
+}
