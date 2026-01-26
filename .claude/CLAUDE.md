@@ -10,10 +10,15 @@
 
 | Component | Purpose | License |
 |-----------|---------|---------|
-| **LineChart** | Line/area charts, biaxial, zoom/pan | Community / Pro |
+| **LineChart** | Line/area charts, biaxial, zoom/pan, brush, reference lines | Community / Pro |
 | **PieChart** | Pie, donut, nested pies | Community |
 | **Heatmap** | Matrix/grid visualization | Pro |
 | **SparklineChart** | Compact inline charts | Community |
+
+### LineChart Features (v0.0.5)
+- **Reference Lines**: Horizontal (`y`) and vertical (`x`) markers for targets, thresholds, dates
+- **Brush Selection** (Pro): Range selection with `'default'` or `'values'` overlay
+- **Axis Highlight**: Configurable hover highlighting (`'none'`, `'line'`, `'band'`)
 
 ---
 

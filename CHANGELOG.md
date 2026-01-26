@@ -7,8 +7,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Planned
+- BarChart component
+- ScatterChart component
+
+---
+
+## [0.0.5] - 2025-01-26
+
 ### Added
-- PyPI package preparation and documentation
+
+#### LineChart - Reference Lines
+- Full support for `ChartsReferenceLine` API
+- Horizontal reference lines via `y` prop (targets, thresholds, averages)
+- Vertical reference lines via `x` prop (dates, events, milestones)
+- Props: `x`, `y`, `axisId`, `label`, `labelAlign`, `lineStyle`, `labelStyle`, `spacing`
+- Support for string/number/Date values on both axes
+- Multi-axis support with `axisId` for biaxial charts
+- New demo page: `/linechart-referencelines`
+
+#### LineChart - Brush Selection (Pro)
+- New brush interaction for range selection on charts
+- `brushConfig` prop: `{enabled, preventTooltip, preventHighlight}`
+- `brushOverlay` prop: `'none'` | `'default'` | `'values'`
+  - `'default'`: Standard MUI selection rectangle
+  - `'values'`: Custom overlay showing start/end values with difference and percentage change
+- `brushSeriesId` prop: Specify which series to use for value calculations
+- `brushData` output prop: Selection coordinates for callbacks
+- New demo page: `/linechart-brush`
+
+#### LineChart - Axis Highlight Configuration
+- New `axisHighlight` prop to configure hover highlighting
+- Options: `{x: 'none'|'line'|'band', y: 'none'|'line'}`
+- Default: `{x: 'line', y: 'none'}`
+
+### Changed
+- `referenceLines.y` now accepts `string | number` (previously only `number`)
+- Enables Date string values for time-based reference lines
+
+### Documentation
+- New demo page: `pages/linechart_brush.py`
+- New demo page: `pages/linechart_referencelines.py`
+- Updated SKILLS.md with brush and reference line documentation
+- Updated CLAUDE.md with new LineChart features
 
 ---
 
@@ -85,5 +126,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/pip-install-python/dash-mui-charts/compare/v0.0.1...HEAD
+[Unreleased]: https://github.com/pip-install-python/dash-mui-charts/compare/v0.0.5...HEAD
+[0.0.5]: https://github.com/pip-install-python/dash-mui-charts/compare/v0.0.1...v0.0.5
 [0.0.1]: https://github.com/pip-install-python/dash-mui-charts/releases/tag/v0.0.1

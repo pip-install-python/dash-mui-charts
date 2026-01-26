@@ -12,9 +12,112 @@ import { ChartsAxisHighlight } from '@mui/x-charts-pro/ChartsAxisHighlight';
 import { ChartsLegend } from '@mui/x-charts-pro/ChartsLegend';
 import { ChartsClipPath } from '@mui/x-charts-pro/ChartsClipPath';
 import { ChartZoomSlider } from '@mui/x-charts-pro/ChartZoomSlider';
+import { ChartsReferenceLine } from '@mui/x-charts-pro/ChartsReferenceLine';
+import { ChartsBrushOverlay } from '@mui/x-charts-pro/ChartsBrushOverlay';
+import {
+    useBrush,
+    useDrawingArea,
+    useLineSeries,
+    useXScale,
+} from '@mui/x-charts/hooks';
 
 // Track if license key has been set globally
 let licenseKeySet = false;
+
+/**
+ * Custom brush overlay showing values at start/end positions with difference and percentage.
+ * Used internally when brushOverlay='values' is specified.
+ */
+function CustomBrushOverlay({ seriesId, primaryColor = '#1976d2', positiveColor = '#4caf50', negativeColor = '#f44336' }) {
+    const drawingArea = useDrawingArea();
+    const brush = useBrush();
+    const xScale = useXScale();
+    const series = useLineSeries(seriesId);
+
+    if (!brush || !series || !drawingArea) {
+        return null;
+    }
+
+    const { left, top, width, height } = drawingArea;
+
+    // Clamp coordinates to drawing area
+    const clampX = (x) => Math.max(left, Math.min(left + width, x));
+    const clampedStartX = clampX(brush.start.x || 0);
+    const clampedCurrentX = clampX(brush.current.x || 0);
+
+    const minX = Math.min(clampedStartX, clampedCurrentX);
+    const maxX = Math.max(clampedStartX, clampedCurrentX);
+    const rectWidth = maxX - minX;
+
+    if (rectWidth < 1) {
+        return null;
+    }
+
+    // Calculate data indices (for point/band scale)
+    const getIndex = (x) => {
+        if (xScale.step) {
+            return Math.floor((x - Math.min(...xScale.range()) + xScale.step() / 2) / xScale.step());
+        }
+        // For linear scale, find closest point
+        return Math.round((x - left) / width * (series.data.length - 1));
+    };
+
+    const startIndex = Math.max(0, Math.min(series.data.length - 1, getIndex(clampedStartX)));
+    const currentIndex = Math.max(0, Math.min(series.data.length - 1, getIndex(clampedCurrentX)));
+
+    const startValue = series.data[startIndex] || 0;
+    const currentValue = series.data[currentIndex] || 0;
+    const difference = currentValue - startValue;
+    const percentChange = startValue !== 0 ? ((difference / startValue) * 100).toFixed(2) : '0.00';
+
+    // Get labels from x-axis domain if available
+    const startLabel = xScale.domain ? (xScale.domain()[startIndex] || startIndex) : startIndex;
+    const currentLabel = xScale.domain ? (xScale.domain()[currentIndex] || currentIndex) : currentIndex;
+
+    const diffColor = difference >= 0 ? positiveColor : negativeColor;
+
+    return (
+        <g>
+            {/* Start line */}
+            <line x1={clampedStartX} y1={top} x2={clampedStartX} y2={top + height}
+                stroke={primaryColor} strokeWidth={2} strokeDasharray="5,5" pointerEvents="none" />
+
+            {/* Current line */}
+            <line x1={clampedCurrentX} y1={top} x2={clampedCurrentX} y2={top + height}
+                stroke={primaryColor} strokeWidth={2} strokeDasharray="5,5" pointerEvents="none" />
+
+            {/* Selection rectangle */}
+            <rect x={minX} y={top} width={rectWidth} height={height}
+                fill={primaryColor} fillOpacity={0.1} pointerEvents="none" />
+
+            {/* Start label */}
+            <g transform={`translate(${clampedStartX}, ${top + 15})`}>
+                <rect x={-30} y={0} width={60} height={40} fill={primaryColor} rx={4} />
+                <text x={0} y={16} textAnchor="middle" fill="white" fontSize={10}>{String(startLabel)}</text>
+                <text x={0} y={32} textAnchor="middle" fill="white" fontSize={11} fontWeight="bold">
+                    {typeof startValue === 'number' ? startValue.toFixed(2) : startValue}
+                </text>
+            </g>
+
+            {/* End label */}
+            <g transform={`translate(${clampedCurrentX}, ${top + 15})`}>
+                <rect x={-30} y={0} width={60} height={40} fill={primaryColor} rx={4} />
+                <text x={0} y={16} textAnchor="middle" fill="white" fontSize={10}>{String(currentLabel)}</text>
+                <text x={0} y={32} textAnchor="middle" fill="white" fontSize={11} fontWeight="bold">
+                    {typeof currentValue === 'number' ? currentValue.toFixed(2) : currentValue}
+                </text>
+            </g>
+
+            {/* Difference label in middle */}
+            <g transform={`translate(${(minX + maxX) / 2}, ${top + height - 30})`}>
+                <rect x={-50} y={0} width={100} height={26} fill={diffColor} rx={4} />
+                <text x={0} y={17} textAnchor="middle" fill="white" fontSize={12} fontWeight="bold">
+                    {difference >= 0 ? '+' : ''}{difference.toFixed(2)} ({percentChange}%)
+                </text>
+            </g>
+        </g>
+    );
+}
 
 /**
  * LineChart component wrapping MUI X Charts Pro with composition API.
@@ -42,7 +145,16 @@ export default function LineChart(props) {
         zoom,
         initialZoom,
         showSlider = false,
+        // Reference lines
+        referenceLines = [],
+        // Brush config (Pro feature)
+        brushConfig,
+        brushOverlay = 'none',  // 'none' | 'default' | 'values'
+        brushSeriesId,  // Series ID for custom brush overlay calculations
+        // Axis highlight configuration
+        axisHighlight = { x: 'line', y: 'none' },
         // Dash-specific output props (not passed to MUI)
+        brushData,
         zoomData,
         clickData,
         n_clicks = 0,
@@ -224,6 +336,7 @@ export default function LineChart(props) {
     if (margin) providerProps.margin = margin;
     if (colors) providerProps.colors = colors;
     if (skipAnimation) providerProps.skipAnimation = skipAnimation;
+    if (brushConfig) providerProps.brushConfig = brushConfig;
 
     // Zoom props - use initialZoom for mounting since we force remount on external changes
     // This ensures MUI properly initializes with the desired zoom state
@@ -293,8 +406,32 @@ export default function LineChart(props) {
                         <ChartsYAxis />
                     )}
 
+                    {/* Reference lines */}
+                    {referenceLines && referenceLines.map((refLine, idx) => (
+                        <ChartsReferenceLine
+                            key={`ref-line-${idx}`}
+                            x={refLine.x}
+                            y={refLine.y}
+                            axisId={refLine.axisId}
+                            label={refLine.label || undefined}
+                            labelAlign={refLine.labelAlign || 'middle'}
+                            lineStyle={refLine.lineStyle || undefined}
+                            labelStyle={refLine.labelStyle || undefined}
+                            spacing={refLine.spacing || undefined}
+                        />
+                    ))}
+
                     {/* Axis highlight for tooltips */}
-                    <ChartsAxisHighlight x="line" />
+                    <ChartsAxisHighlight
+                        x={axisHighlight?.x || 'none'}
+                        y={axisHighlight?.y || 'none'}
+                    />
+
+                    {/* Brush overlays */}
+                    {brushOverlay === 'default' && <ChartsBrushOverlay />}
+                    {brushOverlay === 'values' && (
+                        <CustomBrushOverlay seriesId={brushSeriesId || (series[0]?.id || 'auto-generated-id-0')} />
+                    )}
 
                     {/* Zoom slider */}
                     {showSlider && <ChartZoomSlider />}
@@ -512,6 +649,80 @@ LineChart.propTypes = {
      * The slider allows users to select a range and pan through the data.
      */
     showSlider: PropTypes.bool,
+
+    /**
+     * Array of reference line configurations. Each reference line can be vertical (x) or horizontal (y).
+     * - x (string|number): X-axis value for a vertical reference line
+     * - y (number): Y-axis value for a horizontal reference line
+     * - axisId (string): The axis ID to use for the reference value
+     * - label (string): Label text displayed along the reference line
+     * - labelAlign (string): 'start', 'middle', or 'end' alignment
+     * - lineStyle (object): CSS style object for the line (e.g. {stroke: 'red', strokeDasharray: '4 4'})
+     * - labelStyle (object): CSS style object for the label
+     * - spacing (number|object): Space around label in px, or {x, y} object
+     */
+    referenceLines: PropTypes.arrayOf(PropTypes.shape({
+        x: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+        y: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+        axisId: PropTypes.string,
+        label: PropTypes.string,
+        labelAlign: PropTypes.oneOf(['start', 'middle', 'end']),
+        lineStyle: PropTypes.object,
+        labelStyle: PropTypes.object,
+        spacing: PropTypes.oneOfType([PropTypes.number, PropTypes.object]),
+    })),
+
+    /**
+     * Brush configuration for range selection. Object with:
+     * - enabled (boolean): Whether brush interaction is enabled (default: false)
+     * - preventTooltip (boolean): Prevent tooltip during brush (default: true)
+     * - preventHighlight (boolean): Prevent highlight during brush (default: true)
+     */
+    brushConfig: PropTypes.shape({
+        enabled: PropTypes.bool,
+        preventTooltip: PropTypes.bool,
+        preventHighlight: PropTypes.bool,
+    }),
+
+    /**
+     * Type of brush overlay to display:
+     * - 'none': No overlay (default)
+     * - 'default': Standard MUI selection rectangle
+     * - 'values': Custom overlay showing start/end values with difference and percentage
+     */
+    brushOverlay: PropTypes.oneOf(['none', 'default', 'values']),
+
+    /**
+     * Series ID for the custom 'values' brush overlay to read data from.
+     * If not specified, uses the first series.
+     */
+    brushSeriesId: PropTypes.string,
+
+    /**
+     * Current brush selection data. Read-only output property.
+     * Contains pixel coordinates of the brush selection.
+     */
+    brushData: PropTypes.shape({
+        start: PropTypes.shape({
+            x: PropTypes.number,
+            y: PropTypes.number,
+        }),
+        current: PropTypes.shape({
+            x: PropTypes.number,
+            y: PropTypes.number,
+        }),
+        timestamp: PropTypes.string,
+    }),
+
+    /**
+     * Axis highlight configuration. Controls how axes are highlighted on hover.
+     * - x (string): 'none', 'line', or 'band'
+     * - y (string): 'none' or 'line'
+     */
+    axisHighlight: PropTypes.shape({
+        x: PropTypes.oneOf(['none', 'line', 'band']),
+        y: PropTypes.oneOf(['none', 'line']),
+    }),
 
     /**
      * Current zoom state. Read-only output property updated when zoom changes.

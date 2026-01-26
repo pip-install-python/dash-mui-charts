@@ -8,7 +8,7 @@ This document outlines the steps to build and publish `dash-mui-charts` to PyPI 
 
 ### 1. Version Verification
 
-Current version in `package.json`: **0.0.1**
+Current version in `package.json`: **0.0.5**
 
 Before publishing, ensure version is updated appropriately:
 - Patch (0.0.x): Bug fixes
@@ -19,6 +19,15 @@ Before publishing, ensure version is updated appropriately:
 # Check current version
 grep '"version"' package.json
 ```
+
+### v0.0.5 Release Notes
+
+New features in this release:
+- **LineChart Reference Lines**: Full `ChartsReferenceLine` API support
+- **LineChart Brush Selection** (Pro): Range selection with `'default'` or `'values'` overlay
+- **LineChart Axis Highlight**: Configurable hover highlighting
+- **Type Enhancement**: `referenceLines.y` now accepts `string | number`
+- **New Demo Pages**: `/linechart-brush`, `/linechart-referencelines`
 
 ### 2. Required Files Check
 
@@ -163,17 +172,17 @@ python -m build
 ```
 
 This creates:
-- `dist/dash_mui_charts-0.0.1.tar.gz` (source distribution)
-- `dist/dash_mui_charts-0.0.1-py3-none-any.whl` (wheel)
+- `dist/dash_mui_charts-0.0.5.tar.gz` (source distribution)
+- `dist/dash_mui_charts-0.0.5-py3-none-any.whl` (wheel)
 
 ### Step 3: Verify Package Contents
 
 ```bash
 # Check tarball contents
-tar tzf dist/dash_mui_charts-0.0.1.tar.gz | head -30
+tar tzf dist/dash_mui_charts-0.0.5.tar.gz | head -30
 
 # Check wheel contents
-unzip -l dist/dash_mui_charts-0.0.1-py3-none-any.whl | head -30
+unzip -l dist/dash_mui_charts-0.0.5-py3-none-any.whl | head -30
 ```
 
 ### Step 4: Run Twine Check
@@ -184,8 +193,8 @@ twine check dist/*
 
 Expected output:
 ```
-Checking dist/dash_mui_charts-0.0.1.tar.gz: PASSED
-Checking dist/dash_mui_charts-0.0.1-py3-none-any.whl: PASSED
+Checking dist/dash_mui_charts-0.0.5.tar.gz: PASSED
+Checking dist/dash_mui_charts-0.0.5-py3-none-any.whl: PASSED
 ```
 
 ---
@@ -245,7 +254,7 @@ For subsequent releases:
 Edit `package.json`:
 ```json
 {
-  "version": "0.0.2"
+  "version": "0.0.6"
 }
 ```
 
@@ -267,8 +276,8 @@ twine upload dist/*
 
 ```bash
 git add -A
-git commit -m "Release v0.0.2"
-git tag -a v0.0.2 -m "Version 0.0.2"
+git commit -m "Release v0.0.6"
+git tag -a v0.0.6 -m "Version 0.0.6"
 git push origin main --tags
 ```
 

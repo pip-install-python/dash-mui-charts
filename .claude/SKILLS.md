@@ -43,6 +43,8 @@ dash-mui-charts/
 │   ├── home.py                     # Landing page
 │   ├── linechart_basic.py          # Basic line chart examples
 │   ├── linechart_pro.py            # Pro features (zoom, pan)
+│   ├── linechart_brush.py          # Brush selection (Pro)
+│   ├── linechart_referencelines.py # Reference lines
 │   ├── pie.py                      # Pie chart examples
 │   ├── pie_props.py                # Nested pie property explorer
 │   ├── heatmap.py                  # Heatmap examples
@@ -104,6 +106,55 @@ xAxis: [
 - `zoom` / `initialZoom` - Controlled/uncontrolled zoom state
 - `showSlider` - Zoom range slider
 - Zoom callbacks via `zoomData` output prop
+- `brushConfig` - Range selection with brush interaction
+
+**Reference Lines:**
+```python
+LineChart(
+    referenceLines=[
+        # Horizontal line (target/threshold)
+        {
+            'y': 100,
+            'label': 'Target',
+            'labelAlign': 'end',  # 'start' | 'middle' | 'end'
+            'lineStyle': {'stroke': '#4caf50', 'strokeWidth': 2},
+            'labelStyle': {'fill': '#4caf50', 'fontWeight': 'bold'},
+        },
+        # Vertical line (date/event marker)
+        {
+            'x': 'Q2',
+            'label': 'Launch',
+            'lineStyle': {'stroke': '#f44336', 'strokeDasharray': '5 5'},
+        },
+        # With multi-axis support
+        {
+            'y': 50,
+            'axisId': 'right-axis',  # Reference specific axis
+            'label': 'Threshold',
+        },
+    ],
+)
+```
+
+**Brush Selection (Pro):**
+```python
+LineChart(
+    series=[{'id': 'my-series', 'data': [1, 2, 3, 4, 5]}],
+    brushConfig={'enabled': True},
+    brushOverlay='values',  # 'none' | 'default' | 'values'
+    brushSeriesId='my-series',  # For 'values' overlay calculations
+)
+```
+
+**Axis Highlight:**
+```python
+LineChart(
+    axisHighlight={
+        'x': 'band',  # 'none' | 'line' | 'band'
+        'y': 'line',  # 'none' | 'line'
+    },
+)
+```
 
 **Click Event Data:**
 ```python
@@ -272,6 +323,8 @@ python app.py
 | `/` | Home page with overview |
 | `/linechart-basic` | Basic LineChart features |
 | `/linechart-pro` | Pro features (zoom, pan, slider) |
+| `/linechart-brush` | Brush selection with value overlays (Pro) |
+| `/linechart-referencelines` | Reference lines (horizontal/vertical) |
 | `/pie` | Pie chart examples |
 | `/pie-props` | Nested pie property explorer |
 | `/heatmap` | Heatmap examples |
@@ -457,7 +510,7 @@ After `npm run build`:
 
 | Component | Community (Free) | Pro Required |
 |-----------|------------------|--------------|
-| LineChart | Basic features | Zoom & Pan |
+| LineChart | Basic features, Reference Lines | Zoom, Pan, Brush |
 | PieChart | All features | - |
 | Heatmap | - | All features |
 | SparklineChart | All features | - |

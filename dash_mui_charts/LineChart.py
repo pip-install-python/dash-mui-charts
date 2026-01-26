@@ -30,6 +30,65 @@ Keyword arguments:
 - id (string; optional):
     The ID used to identify this component in Dash callbacks.
 
+- axisHighlight (dict; optional):
+    Axis highlight configuration. Controls how axes are highlighted on
+    hover. - x (string): 'none', 'line', or 'band' - y (string):
+    'none' or 'line'.
+
+    `axisHighlight` is a dict with keys:
+
+    - x (a value equal to: 'none', 'line', 'band'; optional)
+
+    - y (a value equal to: 'none', 'line'; optional)
+
+- brushConfig (dict; optional):
+    Brush configuration for range selection. Object with: - enabled
+    (boolean): Whether brush interaction is enabled (default: False) -
+    preventTooltip (boolean): Prevent tooltip during brush (default:
+    True) - preventHighlight (boolean): Prevent highlight during brush
+    (default: True).
+
+    `brushConfig` is a dict with keys:
+
+    - enabled (boolean; optional)
+
+    - preventTooltip (boolean; optional)
+
+    - preventHighlight (boolean; optional)
+
+- brushData (dict; optional):
+    Current brush selection data. Read-only output property. Contains
+    pixel coordinates of the brush selection.
+
+    `brushData` is a dict with keys:
+
+    - start (dict; optional)
+
+        `start` is a dict with keys:
+
+        - x (number; optional)
+
+        - y (number; optional)
+
+    - current (dict; optional)
+
+        `current` is a dict with keys:
+
+        - x (number; optional)
+
+        - y (number; optional)
+
+    - timestamp (string; optional)
+
+- brushOverlay (a value equal to: 'none', 'default', 'values'; optional):
+    Type of brush overlay to display: - 'none': No overlay (default) -
+    'default': Standard MUI selection rectangle - 'values': Custom
+    overlay showing start/end values with difference and percentage.
+
+- brushSeriesId (string; optional):
+    Series ID for the custom 'values' brush overlay to read data from.
+    If not specified, uses the first series.
+
 - clickData (dict; optional):
     Data from the most recent click event. Read-only output property.
     Contains type ('axis', 'mark', 'line', 'area'), relevant
@@ -92,6 +151,36 @@ Keyword arguments:
 - n_clicks (number; optional):
     Number of times the chart has been clicked. Increments on each
     click event.
+
+- referenceLines (list of dicts; optional):
+    Array of reference line configurations. Each reference line can be
+    vertical (x) or horizontal (y). - x (string|number): X-axis value
+    for a vertical reference line - y (number): Y-axis value for a
+    horizontal reference line - axisId (string): The axis ID to use
+    for the reference value - label (string): Label text displayed
+    along the reference line - labelAlign (string): 'start', 'middle',
+    or 'end' alignment - lineStyle (object): CSS style object for the
+    line (e.g. {stroke: 'red', strokeDasharray: '4 4'}) - labelStyle
+    (object): CSS style object for the label - spacing
+    (number|object): Space around label in px, or {x, y} object.
+
+    `referenceLines` is a list of dicts with keys:
+
+    - x (string | number; optional)
+
+    - y (string | number; optional)
+
+    - axisId (string; optional)
+
+    - label (string; optional)
+
+    - labelAlign (a value equal to: 'start', 'middle', 'end'; optional)
+
+    - lineStyle (dict; optional)
+
+    - labelStyle (dict; optional)
+
+    - spacing (number | dict; optional)
 
 - series (list of dicts; optional):
     Array of series configurations. Each series represents a line in
@@ -319,6 +408,62 @@ Keyword arguments:
         }
     )
 
+    ReferenceLines = TypedDict(
+        "ReferenceLines",
+            {
+            "x": NotRequired[typing.Union[str, NumberType]],
+            "y": NotRequired[typing.Union[str, NumberType]],
+            "axisId": NotRequired[str],
+            "label": NotRequired[str],
+            "labelAlign": NotRequired[Literal["start", "middle", "end"]],
+            "lineStyle": NotRequired[dict],
+            "labelStyle": NotRequired[dict],
+            "spacing": NotRequired[typing.Union[NumberType, dict]]
+        }
+    )
+
+    BrushConfig = TypedDict(
+        "BrushConfig",
+            {
+            "enabled": NotRequired[bool],
+            "preventTooltip": NotRequired[bool],
+            "preventHighlight": NotRequired[bool]
+        }
+    )
+
+    BrushDataStart = TypedDict(
+        "BrushDataStart",
+            {
+            "x": NotRequired[NumberType],
+            "y": NotRequired[NumberType]
+        }
+    )
+
+    BrushDataCurrent = TypedDict(
+        "BrushDataCurrent",
+            {
+            "x": NotRequired[NumberType],
+            "y": NotRequired[NumberType]
+        }
+    )
+
+    BrushData = TypedDict(
+        "BrushData",
+            {
+            "start": NotRequired["BrushDataStart"],
+            "current": NotRequired["BrushDataCurrent"],
+            "timestamp": NotRequired[str]
+        }
+    )
+
+    AxisHighlight = TypedDict(
+        "AxisHighlight",
+            {
+            "x": NotRequired[Literal["none", "line", "band"]],
+            "y": NotRequired[Literal["none", "line"]]
+        }
+    )
+
     ZoomData = TypedDict(
         "ZoomData",
             {
@@ -348,14 +493,20 @@ Keyword arguments:
         zoom: typing.Optional[typing.Sequence["Zoom"]] = None,
         initialZoom: typing.Optional[typing.Sequence["InitialZoom"]] = None,
         showSlider: typing.Optional[bool] = None,
+        referenceLines: typing.Optional[typing.Sequence["ReferenceLines"]] = None,
+        brushConfig: typing.Optional["BrushConfig"] = None,
+        brushOverlay: typing.Optional[Literal["none", "default", "values"]] = None,
+        brushSeriesId: typing.Optional[str] = None,
+        brushData: typing.Optional["BrushData"] = None,
+        axisHighlight: typing.Optional["AxisHighlight"] = None,
         zoomData: typing.Optional[typing.Union[typing.Sequence["ZoomData"], typing.Any]] = None,
         clickData: typing.Optional[dict] = None,
         n_clicks: typing.Optional[NumberType] = None,
         **kwargs
     ):
-        self._prop_names = ['id', 'clickData', 'colors', 'grid', 'height', 'hideLegend', 'initialZoom', 'licenseKey', 'loading', 'margin', 'n_clicks', 'series', 'showSlider', 'skipAnimation', 'tooltip', 'width', 'xAxis', 'yAxis', 'zoom', 'zoomData']
+        self._prop_names = ['id', 'axisHighlight', 'brushConfig', 'brushData', 'brushOverlay', 'brushSeriesId', 'clickData', 'colors', 'grid', 'height', 'hideLegend', 'initialZoom', 'licenseKey', 'loading', 'margin', 'n_clicks', 'referenceLines', 'series', 'showSlider', 'skipAnimation', 'tooltip', 'width', 'xAxis', 'yAxis', 'zoom', 'zoomData']
         self._valid_wildcard_attributes =            []
-        self.available_properties = ['id', 'clickData', 'colors', 'grid', 'height', 'hideLegend', 'initialZoom', 'licenseKey', 'loading', 'margin', 'n_clicks', 'series', 'showSlider', 'skipAnimation', 'tooltip', 'width', 'xAxis', 'yAxis', 'zoom', 'zoomData']
+        self.available_properties = ['id', 'axisHighlight', 'brushConfig', 'brushData', 'brushOverlay', 'brushSeriesId', 'clickData', 'colors', 'grid', 'height', 'hideLegend', 'initialZoom', 'licenseKey', 'loading', 'margin', 'n_clicks', 'referenceLines', 'series', 'showSlider', 'skipAnimation', 'tooltip', 'width', 'xAxis', 'yAxis', 'zoom', 'zoomData']
         self.available_wildcard_properties =            []
         _explicit_args = kwargs.pop('_explicit_args')
         _locals = locals()

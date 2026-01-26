@@ -1,6 +1,6 @@
 {
   "name": "dash_mui_charts",
-  "version": "0.0.1",
+  "version": "0.0.5",
   "description": "Dash components wrapping MUI X Charts for creating interactive data visualizations",
   "main": "build/index.js",
   "repository": {
