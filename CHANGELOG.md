@@ -9,7 +9,160 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Planned
 - BarChart component
-- ScatterChart component
+
+---
+
+## [1.0.0] - 2026-03-19
+
+### Added
+- **Stable release** — 6 chart components ready for production use
+
+### Changed
+- Version bump to 1.0.0 to reflect API stability
+- Fixed `package-info.json` version tracking (was stuck at `0.0.1`, causing stale JS bundle caching)
+
+---
+
+## [0.0.8] - 2026-03-12
+
+### Added
+
+#### ScatterChart (New Component)
+- **Multi-Series**: Multiple scatter series with individual colors and marker sizes
+- **Z-Axis Color Mapping**: Color points by a third variable (continuous, piecewise, ordinal)
+- **Voronoi Interaction**: `voronoiMaxRadius` for proximity-based hover/click
+- **Dataset-Driven**: `dataset` + `datasetKeys` pattern for table-format data
+- **Batch Renderer**: `renderer='svg-batch'` for large datasets
+- **Click Events**: `clickData` with seriesId, dataIndex, x, y coordinates
+- **Log/Sqrt Scales**: Full axis scaleType support
+
+#### CompositeChart (New Component)
+- **Chart Layering**: Mix `type: 'scatter'` and `type: 'line'` series on a single surface
+- **Custom Composite Tooltip**: Axis tooltip shows both line and scatter data via proximity search
+  - Handles MUI's poor scatter tooltip formatting in composite charts
+  - Auto-computes proximity threshold from x-axis data spacing
+- **Reference Lines**: Horizontal and vertical markers
+- **Multi-Axis**: Scatter on left axis, line on right axis
+- **Zoom/Pan** (Pro): `initialZoom`, `showSlider`, `zoomInteractionConfig`
+- **Toolbar** (Pro): `showToolbar=True` for zoom/export controls
+- **Zoom Slider Preview**: `preview: {markerSize}` on scatter series for slider preview markers
+- **Time Scale Support**: Automatic epoch ms to Date object conversion for `scaleType: 'time'`
+- **Controlled Highlighting**: `highlightedItem` prop for programmatic control
+- **Click Events**: Separate click handlers for scatter and line series
+
+#### Demo Pages
+- New `/scatter` page with multi-series, z-axis color mapping, voronoi, and dataset-driven examples
+- New `/composite` page with scatter+trend, reference lines, multi-axis, and zoom-enabled examples
+  - DMC sliders for interactive marker size control (chart and preview)
+  - Multi-color anomaly scatter (red critical / yellow warning)
+
+### Changed
+- Updated component count from 4 to 6
+- `src/lib/index.js` exports ScatterChart and CompositeChart
+
+### Documentation
+- Updated CLAUDE.md with ScatterChart and CompositeChart features
+- Updated SKILLS.md with new component documentation and patterns
+- Updated README.md with new component listings
+
+---
+
+## [0.0.7] - 2025-01-30
+
+### Added
+
+#### Synchronized Tooltips with Custom Overlays
+- **Custom tooltip overlay system** for true synchronized tooltips across multiple charts
+  - MUI X Charts limitation: native tooltips only appear on the hovered chart
+  - Solution: Custom Dash HTML divs positioned absolutely over each chart
+  - Both charts show tooltips simultaneously when hovering on either one
+- New demo implementation in `/highlighting-sync` page showing:
+  - Revenue + Expenses dual LineChart with synchronized custom tooltips
+  - Tooltips positioned using CSS `calc()` for responsive layouts
+  - Visual highlighting (marks, axis bands) continues to sync via `highlightedItem`
+
+#### LineChart Highlighting Improvements
+- Improved callback patterns for highlight synchronization
+- Better handling of highlight state when mouse leaves chart area
+- Custom tooltip content generation for each chart in sync scenarios
+
+### Changed
+- **Highlighting Sync Demo**: Updated to use custom tooltip overlays instead of `tooltipItem`
+  - Disabled MUI's built-in tooltips: `tooltip={'trigger': 'none'}`
+  - Added absolutely-positioned custom tooltip divs
+  - Tooltip x-position calculated from data index and chart margins
+- Callback now listens to `highlightedItem` (more reliable than `tooltipItem` for sync)
+
+### Documentation
+- Updated SKILLS.md with custom synchronized tooltip pattern
+- Documented MUI X Charts tooltip limitation (GitHub issues #14455, #17555)
+- Added code examples for custom tooltip positioning
+
+---
+
+## [0.0.6] - 2025-01-29
+
+### Added
+
+#### LineChart - Controlled Highlighting
+- New `highlightedItem` prop for controlled item highlight state
+  - Programmatically highlight specific data points
+  - Bidirectional: updates on hover and accepts external values
+  - Object format: `{'seriesId': 'series-id', 'dataIndex': 0}`
+- New `highlightedAxis` prop for controlled axis highlight state
+  - Programmatically highlight specific axis positions
+  - Array format: `[{'axisId': 'x-axis', 'dataIndex': 2}]`
+- New `onHighlightChange` and `onHighlightedAxisChange` callbacks (internal)
+
+#### LineChart - Per-Series Highlight Scope
+- Series-level `highlightScope` configuration
+  - `highlight`: `'none'` | `'item'` | `'series'`
+  - `fade`: `'none'` | `'series'` | `'global'`
+- Different highlight/fade behaviors per series
+
+#### LineChart - Toolbar (Pro)
+- New `showToolbar` prop to display chart toolbar
+- Provides zoom/export controls
+- Requires MUI X Pro license
+
+#### LineChart - Synchronized Tooltips
+- New `tooltipItem` prop for controlled tooltip state
+  - Enables synchronized tooltips across multiple charts
+  - Object format: `{'type': 'line', 'seriesId': 'series-id', 'dataIndex': 0}`
+  - Bidirectional: updates on hover and accepts external values
+- Combined with `highlightedItem` for full visual synchronization
+
+#### PieChart - Controlled Highlighting
+- `highlightedItem` prop now works as both input and output
+- Enables synchronized highlighting across multiple charts
+- Object format: `{'seriesId': 'auto-generated-id-0', 'dataIndex': 0}`
+
+#### Demo Pages
+- New `/linechart-highlighting` page demonstrating:
+  - Controlled item highlights with buttons
+  - Controlled axis highlights
+  - Per-series highlightScope configuration
+- New `/highlighting-sync` page demonstrating:
+  - LineChart + PieChart synchronization
+  - Dual LineChart axis synchronization
+  - Cross-chart highlight coordination
+
+### Changed
+- LineChart now uses controlled mode for highlighting by default
+  - Always passes `highlightedItem` (as `null` when not set)
+  - Ensures proper MUI controlled mode initialization
+- Callback patterns improved to avoid echo issues
+  - Separated button-triggered and display callbacks
+  - Use `dash.no_update` to prevent callback loops in sync scenarios
+
+### Fixed
+- Item highlighting not triggering callbacks in composition API
+- Controlled highlight state not syncing with MUI internal state
+- Echo issues in highlight synchronization callbacks
+
+### Documentation
+- Updated CLAUDE.md with v0.0.6 features
+- Updated SKILLS.md with highlighting patterns and examples
 
 ---
 
@@ -121,11 +274,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 |-----------|-----------------|
 | LineChart (zoom/pan) | MUI X Pro |
 | PieChart | Community (Free) |
+| ScatterChart | Community (Free) |
+| CompositeChart (zoom/pan) | MUI X Pro |
 | Heatmap | MUI X Pro |
 | SparklineChart | Community (Free) |
 
 ---
 
-[Unreleased]: https://github.com/pip-install-python/dash-mui-charts/compare/v0.0.5...HEAD
+[Unreleased]: https://github.com/pip-install-python/dash-mui-charts/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/pip-install-python/dash-mui-charts/compare/v0.0.8...v1.0.0
+[0.0.8]: https://github.com/pip-install-python/dash-mui-charts/compare/v0.0.7...v0.0.8
+[0.0.7]: https://github.com/pip-install-python/dash-mui-charts/compare/v0.0.6...v0.0.7
+[0.0.6]: https://github.com/pip-install-python/dash-mui-charts/compare/v0.0.5...v0.0.6
 [0.0.5]: https://github.com/pip-install-python/dash-mui-charts/compare/v0.0.1...v0.0.5
 [0.0.1]: https://github.com/pip-install-python/dash-mui-charts/releases/tag/v0.0.1

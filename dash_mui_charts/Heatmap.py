@@ -145,7 +145,14 @@ Keyword arguments:
 - xAxis (dict; optional):
     X-axis configuration object. - data (array): Category labels for
     x-axis - label (string): Axis label - scaleType (string): Scale
-    type, defaults to 'band' for heatmaps.
+    type, defaults to 'band' for heatmaps - zoom (boolean or object):
+    Enable zoom on this axis. Can be True or object with:   - minStart
+    (number): Minimum start position (0-100)   - maxEnd (number):
+    Maximum end position (0-100)   - minSpan (number): Minimum zoom
+    span   - maxSpan (number): Maximum zoom span   - step (number):
+    Zoom step size   - panning (boolean): Enable panning   -
+    filterMode (string): 'keep' or 'discard'   - slider (object):
+    Slider config with { enabled, preview, size, showTooltip }.
 
     `xAxis` is a dict with keys:
 
@@ -155,10 +162,13 @@ Keyword arguments:
 
     - scaleType (a value equal to: 'band', 'point'; optional)
 
+    - zoom (boolean | dict; optional)
+
 - yAxis (dict; optional):
     Y-axis configuration object. - data (array): Category labels for
     y-axis - label (string): Axis label - scaleType (string): Scale
-    type, defaults to 'band' for heatmaps.
+    type, defaults to 'band' for heatmaps - zoom (boolean or object):
+    Enable zoom on this axis (same options as xAxis).
 
     `yAxis` is a dict with keys:
 
@@ -166,7 +176,9 @@ Keyword arguments:
 
     - label (string; optional)
 
-    - scaleType (a value equal to: 'band', 'point'; optional)"""
+    - scaleType (a value equal to: 'band', 'point'; optional)
+
+    - zoom (boolean | dict; optional)"""
     _children_props: typing.List[str] = []
     _base_nodes = ['children']
     _namespace = 'dash_mui_charts'
@@ -176,7 +188,8 @@ Keyword arguments:
             {
             "data": NotRequired[typing.Sequence],
             "label": NotRequired[str],
-            "scaleType": NotRequired[Literal["band", "point"]]
+            "scaleType": NotRequired[Literal["band", "point"]],
+            "zoom": NotRequired[typing.Union[bool, dict]]
         }
     )
 
@@ -185,7 +198,8 @@ Keyword arguments:
             {
             "data": NotRequired[typing.Sequence],
             "label": NotRequired[str],
-            "scaleType": NotRequired[Literal["band", "point"]]
+            "scaleType": NotRequired[Literal["band", "point"]],
+            "zoom": NotRequired[typing.Union[bool, dict]]
         }
     )
 

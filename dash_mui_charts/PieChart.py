@@ -102,8 +102,17 @@ Keyword arguments:
     - fade (a value equal to: 'global', 'none'; optional)
 
 - highlightedItem (dict; optional):
-    Currently highlighted item. Read-only output property updated when
-    the user hovers over a slice.
+    Currently highlighted item. Can be used as both input (controlled
+    mode) and output (updated when user hovers over a slice). Object
+    with: - seriesId (string): The series identifier - dataIndex
+    (number): The data index within the series Set to None to clear
+    highlight.
+
+    `highlightedItem` is a dict with keys:
+
+    - seriesId (string; optional)
+
+    - dataIndex (number; optional)
 
 - innerRadius (number | string; optional):
     Inner radius of the pie in pixels or percentage string. Set to a
@@ -282,6 +291,14 @@ Keyword arguments:
         }
     )
 
+    HighlightedItem = TypedDict(
+        "HighlightedItem",
+            {
+            "seriesId": NotRequired[str],
+            "dataIndex": NotRequired[NumberType]
+        }
+    )
+
 
     def __init__(
         self,
@@ -308,7 +325,7 @@ Keyword arguments:
         skipAnimation: typing.Optional[bool] = None,
         clickData: typing.Optional[dict] = None,
         n_clicks: typing.Optional[NumberType] = None,
-        highlightedItem: typing.Optional[dict] = None,
+        highlightedItem: typing.Optional["HighlightedItem"] = None,
         **kwargs
     ):
         self._prop_names = ['id', 'arcLabel', 'arcLabelMinAngle', 'clickData', 'colors', 'cornerRadius', 'cx', 'cy', 'data', 'endAngle', 'height', 'hideLegend', 'highlightScope', 'highlightedItem', 'innerRadius', 'margin', 'n_clicks', 'outerRadius', 'paddingAngle', 'series', 'skipAnimation', 'startAngle', 'tooltip', 'width']

@@ -14,6 +14,7 @@ import { ChartsClipPath } from '@mui/x-charts-pro/ChartsClipPath';
 import { ChartZoomSlider } from '@mui/x-charts-pro/ChartZoomSlider';
 import { ChartsReferenceLine } from '@mui/x-charts-pro/ChartsReferenceLine';
 import { ChartsBrushOverlay } from '@mui/x-charts-pro/ChartsBrushOverlay';
+import { ChartsToolbarPro } from '@mui/x-charts-pro/ChartsToolbarPro';
 import {
     useBrush,
     useDrawingArea,
@@ -145,6 +146,7 @@ export default function LineChart(props) {
         zoom,
         initialZoom,
         showSlider = false,
+        zoomInteractionConfig,
         // Reference lines
         referenceLines = [],
         // Brush config (Pro feature)
@@ -153,6 +155,13 @@ export default function LineChart(props) {
         brushSeriesId,  // Series ID for custom brush overlay calculations
         // Axis highlight configuration
         axisHighlight = { x: 'line', y: 'none' },
+        // Controlled highlight props
+        highlightedAxis,
+        highlightedItem,
+        // Controlled tooltip props
+        tooltipItem,
+        // Toolbar (Pro feature)
+        showToolbar = false,
         // Dash-specific output props (not passed to MUI)
         brushData,
         zoomData,
@@ -202,6 +211,83 @@ export default function LineChart(props) {
             setChartKey(k => k + 1);
         }
     }, [zoom]);
+
+    // --- Controlled Axis Highlight State ---
+    const lastKnownHighlightedAxisRef = useRef(JSON.stringify(highlightedAxis ?? []));
+    const [controlledHighlightedAxis, setControlledHighlightedAxis] = useState(() =>
+        highlightedAxis && Array.isArray(highlightedAxis) ? highlightedAxis : []
+    );
+
+    // Sync external highlightedAxis prop changes to internal state
+    useEffect(() => {
+        const currentStr = JSON.stringify(highlightedAxis ?? []);
+        if (currentStr !== lastKnownHighlightedAxisRef.current) {
+            lastKnownHighlightedAxisRef.current = currentStr;
+            setControlledHighlightedAxis(highlightedAxis ?? []);
+        }
+    }, [highlightedAxis]);
+
+    // Handle highlighted axis changes from chart interaction
+    const handleHighlightedAxisChange = (newValue) => {
+        const value = newValue ?? [];
+        setControlledHighlightedAxis(value);
+        lastKnownHighlightedAxisRef.current = JSON.stringify(value);
+        if (setProps) {
+            setProps({ highlightedAxis: value });
+        }
+    };
+
+    // --- Controlled Item Highlight State ---
+    // Initialize to null (not undefined) to ensure MUI uses controlled mode
+    const lastKnownHighlightedItemRef = useRef(JSON.stringify(highlightedItem ?? null));
+    const [controlledHighlightedItem, setControlledHighlightedItem] = useState(() =>
+        highlightedItem ?? null
+    );
+
+    // Sync external highlightedItem prop changes to internal state
+    useEffect(() => {
+        const currentStr = JSON.stringify(highlightedItem ?? null);
+        if (currentStr !== lastKnownHighlightedItemRef.current) {
+            lastKnownHighlightedItemRef.current = currentStr;
+            setControlledHighlightedItem(highlightedItem ?? null);
+        }
+    }, [highlightedItem]);
+
+    // Handle highlight changes from chart interaction
+    const handleHighlightChange = (newValue) => {
+        // MUI passes null when clearing highlight
+        const value = newValue ?? null;
+        setControlledHighlightedItem(value);
+        lastKnownHighlightedItemRef.current = JSON.stringify(value);
+        if (setProps) {
+            setProps({ highlightedItem: value });
+        }
+    };
+
+    // --- Controlled Tooltip Item State ---
+    const lastKnownTooltipItemRef = useRef(JSON.stringify(tooltipItem ?? null));
+    const [controlledTooltipItem, setControlledTooltipItem] = useState(() =>
+        tooltipItem ?? null
+    );
+
+    // Sync external tooltipItem prop changes to internal state
+    useEffect(() => {
+        const currentStr = JSON.stringify(tooltipItem ?? null);
+        if (currentStr !== lastKnownTooltipItemRef.current) {
+            lastKnownTooltipItemRef.current = currentStr;
+            setControlledTooltipItem(tooltipItem ?? null);
+        }
+    }, [tooltipItem]);
+
+    // Handle tooltip item changes from chart interaction
+    const handleTooltipItemChange = (newValue) => {
+        const value = newValue ?? null;
+        setControlledTooltipItem(value);
+        lastKnownTooltipItemRef.current = JSON.stringify(value);
+        if (setProps) {
+            setProps({ tooltipItem: value });
+        }
+    };
 
     // Handle zoom changes from chart interaction (Pro feature)
     // MUI can pass either an array or a functional update
@@ -302,12 +388,24 @@ export default function LineChart(props) {
         }));
     }, [series]);
 
+    // Detect if any axis config has zoom.slider.enabled set directly
+    const hasSliderInAxisConfig = useMemo(() => {
+        const checkAxes = (axes) => {
+            if (!axes) return false;
+            return axes.some(axis => {
+                const zoom = axis.zoom;
+                return zoom && typeof zoom === 'object' && zoom.slider && zoom.slider.enabled;
+            });
+        };
+        return checkAxes(xAxis) || checkAxes(yAxis);
+    }, [xAxis, yAxis]);
+
     // Process xAxis to inject slider config when showSlider is true
     const processedXAxis = useMemo(() => {
         if (!xAxis) return undefined;
         if (!showSlider) return xAxis;
 
-        // Inject slider: { enabled: true } into zoom config for each axis
+        // Inject slider: { enabled: true } into zoom config for each axis, merging with existing slider config
         return xAxis.map(axis => {
             const existingZoom = axis.zoom || {};
             // If zoom is just a boolean true, convert to object
@@ -316,7 +414,7 @@ export default function LineChart(props) {
                 ...axis,
                 zoom: {
                     ...zoomConfig,
-                    slider: { enabled: true },
+                    slider: { ...zoomConfig.slider, enabled: true },
                 },
             };
         });
@@ -337,6 +435,7 @@ export default function LineChart(props) {
     if (colors) providerProps.colors = colors;
     if (skipAnimation) providerProps.skipAnimation = skipAnimation;
     if (brushConfig) providerProps.brushConfig = brushConfig;
+    if (zoomInteractionConfig) providerProps.zoomInteractionConfig = zoomInteractionConfig;
 
     // Zoom props - use initialZoom for mounting since we force remount on external changes
     // This ensures MUI properly initializes with the desired zoom state
@@ -344,15 +443,64 @@ export default function LineChart(props) {
         providerProps.initialZoom = controlledZoom;
     }
 
-    // Extract Y-axis IDs for rendering multiple axes
-    const yAxisIds = useMemo(() => {
-        if (!yAxis) return [undefined];
-        return yAxis.map(axis => axis.id).filter(Boolean);
+    // Controlled axis highlight - always pass to ensure controlled mode
+    providerProps.highlightedAxis = controlledHighlightedAxis;
+    providerProps.onHighlightedAxisChange = handleHighlightedAxisChange;
+
+    // Controlled item highlight - always pass to ensure controlled mode
+    // MUI uses undefined vs null to determine controlled vs uncontrolled
+    providerProps.highlightedItem = controlledHighlightedItem;
+    providerProps.onHighlightChange = handleHighlightChange;
+
+    // Controlled tooltip item - for synchronized tooltips across charts
+    providerProps.tooltipItem = controlledTooltipItem;
+    providerProps.onTooltipItemChange = handleTooltipItemChange;
+
+    // Rendering props that must be forwarded from axis config to ChartsXAxis/ChartsYAxis components.
+    // In MUI's composition API, these are component props, not axis definition properties.
+    const AXIS_RENDER_PROPS = [
+        'tickSize', 'disableLine', 'disableTicks', 'tickLabelStyle', 'labelStyle',
+        'tickLabelPlacement', 'tickPlacement', 'tickLabelMinGap', 'tickSpacing',
+        'tickInterval', 'tickLabelInterval',
+    ];
+
+    // Extract rendering props from an axis config object
+    const extractRenderProps = (axisConfig) => {
+        if (!axisConfig) return {};
+        const renderProps = {};
+        for (const prop of AXIS_RENDER_PROPS) {
+            if (axisConfig[prop] !== undefined) {
+                renderProps[prop] = axisConfig[prop];
+            }
+        }
+        return renderProps;
+    };
+
+    // Build x-axis rendering configs (array of {axisId, renderProps})
+    const xAxisConfigs = useMemo(() => {
+        const resolvedXAxis = processedXAxis || xAxis;
+        if (!resolvedXAxis || resolvedXAxis.length === 0) return [{ renderProps: {} }];
+        return resolvedXAxis.map(axis => ({
+            axisId: axis.id,
+            renderProps: extractRenderProps(axis),
+        }));
+    }, [processedXAxis, xAxis]);
+
+    // Extract Y-axis IDs and rendering configs
+    const yAxisConfigs = useMemo(() => {
+        if (!yAxis) return [{ renderProps: {} }];
+        return yAxis.map(axis => ({
+            axisId: axis.id,
+            renderProps: extractRenderProps(axis),
+        }));
     }, [yAxis]);
 
     return (
         <div id={id}>
             <ChartDataProviderPro key={chartKey} {...providerProps}>
+                {/* Toolbar (Pro feature) */}
+                {showToolbar && <ChartsToolbarPro />}
+
                 {/* Legend - positioned above chart */}
                 {!hideLegend && (
                     <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}>
@@ -396,15 +544,21 @@ export default function LineChart(props) {
                         )}
                     </g>
 
-                    {/* Axes */}
-                    <ChartsXAxis />
-                    {yAxisIds.length > 0 ? (
-                        yAxisIds.map(axisId => (
-                            <ChartsYAxis key={axisId || 'default'} axisId={axisId} />
-                        ))
-                    ) : (
-                        <ChartsYAxis />
-                    )}
+                    {/* Axes - forward rendering props from axis config */}
+                    {xAxisConfigs.map((config, idx) => (
+                        <ChartsXAxis
+                            key={config.axisId || `x-${idx}`}
+                            axisId={config.axisId}
+                            {...config.renderProps}
+                        />
+                    ))}
+                    {yAxisConfigs.map((config, idx) => (
+                        <ChartsYAxis
+                            key={config.axisId || `y-${idx}`}
+                            axisId={config.axisId}
+                            {...config.renderProps}
+                        />
+                    ))}
 
                     {/* Reference lines */}
                     {referenceLines && referenceLines.map((refLine, idx) => (
@@ -433,8 +587,8 @@ export default function LineChart(props) {
                         <CustomBrushOverlay seriesId={brushSeriesId || (series[0]?.id || 'auto-generated-id-0')} />
                     )}
 
-                    {/* Zoom slider */}
-                    {showSlider && <ChartZoomSlider />}
+                    {/* Zoom slider - render when showSlider is true OR any axis has zoom.slider.enabled */}
+                    {(showSlider || hasSliderInAxisConfig) && <ChartZoomSlider />}
                 </ChartsSurface>
 
                 {/* Tooltip */}
@@ -490,6 +644,9 @@ LineChart.propTypes = {
      * - connectNulls (boolean): Whether to bridge gaps across null values
      * - yAxisId (string): ID of the y-axis to use for this series (for biaxial charts)
      * - xAxisId (string): ID of the x-axis to use for this series
+     * - highlightScope (object): Per-series highlight behavior with:
+     *   - highlight: 'none', 'item', or 'series'
+     *   - fade: 'none', 'series', or 'global'
      */
     series: PropTypes.arrayOf(PropTypes.shape({
         id: PropTypes.string,
@@ -507,16 +664,42 @@ LineChart.propTypes = {
         connectNulls: PropTypes.bool,
         yAxisId: PropTypes.string,
         xAxisId: PropTypes.string,
+        highlightScope: PropTypes.shape({
+            highlight: PropTypes.oneOf(['none', 'item', 'series']),
+            fade: PropTypes.oneOf(['none', 'series', 'global']),
+        }),
     })),
 
     /**
      * X-axis configuration. Array of axis config objects.
      * Each axis object can have:
-     * - data (array): X-axis values
+     * - data (array): X-axis values (timestamps in ms for 'time' scaleType)
+     * - dataKey (string): Key to use from dataset for axis values
      * - label (string): Axis label
-     * - scaleType (string): 'band', 'point', 'linear', 'log', 'time'
-     * - position (string): 'top' or 'bottom'
+     * - scaleType (string): 'band', 'point', 'linear', 'log', 'time', 'utc', 'symlog', 'sqrt'
+     * - position (string): 'top', 'bottom', or 'none' (hidden but still computed)
      * - id (string): Axis identifier for referencing in series and zoom
+     * - min (number): Minimum domain value
+     * - max (number): Maximum domain value
+     * - reverse (boolean): Reverse axis direction
+     * - tickNumber (number): Approximate number of ticks
+     * - tickMinStep (number): Minimum step between ticks (ms for time axes)
+     * - tickMaxStep (number): Maximum step between ticks
+     * - tickSize (number): Tick mark length in pixels (default: 6)
+     * - tickSpacing (number): Minimum spacing in px between ticks (ordinal axes only)
+     * - tickInterval (array): Fixed tick positions as array of values
+     * - tickLabelStyle (object): CSS style for tick labels (e.g. {angle: 45, fontSize: 12})
+     * - tickLabelPlacement (string): 'middle' or 'tick' (band scale only)
+     * - tickPlacement (string): 'end', 'extremities', 'middle', 'start' (band scale only)
+     * - tickLabelMinGap (number): Minimum gap in px between tick labels (default: 4)
+     * - labelStyle (object): CSS style for the axis label
+     * - height (number): Space reserved for this x-axis in pixels
+     * - disableLine (boolean): Hide the axis line
+     * - disableTicks (boolean): Hide tick marks
+     * - domainLimit (string): 'nice' (default, rounds to friendly values) or 'strict'
+     * - categoryGapRatio (number): Gap ratio between bands (0-1, band scale only)
+     * - barGapRatio (number): Gap ratio between bars within a band (band scale only)
+     * - colorMap (object): Axis color mapping configuration
      * - zoom (boolean or object): Enable zoom on this axis. Can be true or object with:
      *   - minStart (number): Minimum start position (0-100)
      *   - maxEnd (number): Maximum end position (0-100)
@@ -525,14 +708,36 @@ LineChart.propTypes = {
      *   - step (number): Zoom step size
      *   - panning (boolean): Enable panning
      *   - filterMode (string): 'keep' or 'discard'
-     *   - slider (object): Slider config with { enabled: true }
+     *   - slider (object): Slider config with { enabled, preview, size, showTooltip }
      */
     xAxis: PropTypes.arrayOf(PropTypes.shape({
         data: PropTypes.array,
+        dataKey: PropTypes.string,
         label: PropTypes.string,
-        scaleType: PropTypes.oneOf(['band', 'point', 'linear', 'log', 'time']),
-        position: PropTypes.oneOf(['top', 'bottom']),
+        scaleType: PropTypes.oneOf(['band', 'point', 'linear', 'log', 'time', 'utc', 'symlog', 'sqrt']),
+        position: PropTypes.oneOf(['top', 'bottom', 'none']),
         id: PropTypes.string,
+        min: PropTypes.number,
+        max: PropTypes.number,
+        reverse: PropTypes.bool,
+        tickNumber: PropTypes.number,
+        tickMinStep: PropTypes.number,
+        tickMaxStep: PropTypes.number,
+        tickSize: PropTypes.number,
+        tickSpacing: PropTypes.number,
+        tickInterval: PropTypes.array,
+        tickLabelStyle: PropTypes.object,
+        tickLabelPlacement: PropTypes.oneOf(['middle', 'tick']),
+        tickPlacement: PropTypes.oneOf(['end', 'extremities', 'middle', 'start']),
+        tickLabelMinGap: PropTypes.number,
+        labelStyle: PropTypes.object,
+        height: PropTypes.number,
+        disableLine: PropTypes.bool,
+        disableTicks: PropTypes.bool,
+        domainLimit: PropTypes.oneOf(['nice', 'strict']),
+        categoryGapRatio: PropTypes.number,
+        barGapRatio: PropTypes.number,
+        colorMap: PropTypes.object,
         zoom: PropTypes.oneOfType([
             PropTypes.bool,
             PropTypes.object,
@@ -542,21 +747,65 @@ LineChart.propTypes = {
     /**
      * Y-axis configuration. Array of axis config objects.
      * Each axis object can have:
+     * - data (array): Y-axis values (for horizontal bar charts)
+     * - dataKey (string): Key to use from dataset for axis values
      * - label (string): Axis label
+     * - scaleType (string): 'band', 'point', 'linear', 'log', 'time', 'utc', 'symlog', 'sqrt'
+     * - position (string): 'left', 'right', or 'none' (hidden but still computed)
+     * - id (string): Axis identifier for referencing in series
      * - min (number): Minimum domain value
      * - max (number): Maximum domain value
-     * - width (number): Width allocated for axis
-     * - position (string): 'left' or 'right'
-     * - id (string): Axis identifier for referencing in series
+     * - width (number): Width allocated for axis in pixels
+     * - reverse (boolean): Reverse axis direction
+     * - tickNumber (number): Approximate number of ticks
+     * - tickMinStep (number): Minimum step between ticks
+     * - tickMaxStep (number): Maximum step between ticks
+     * - tickSize (number): Tick mark length in pixels (default: 6)
+     * - tickSpacing (number): Minimum spacing in px between ticks (ordinal axes only)
+     * - tickInterval (array): Fixed tick positions as array of values
+     * - tickLabelStyle (object): CSS style for tick labels (e.g. {angle: 45, fontSize: 12})
+     * - tickLabelPlacement (string): 'middle' or 'tick' (band scale only)
+     * - tickPlacement (string): 'end', 'extremities', 'middle', 'start' (band scale only)
+     * - tickLabelMinGap (number): Minimum gap in px between tick labels (default: 4)
+     * - labelStyle (object): CSS style for the axis label
+     * - height (number): Space reserved for this y-axis in pixels
+     * - disableLine (boolean): Hide the axis line
+     * - disableTicks (boolean): Hide tick marks
+     * - domainLimit (string): 'nice' (default, rounds to friendly values) or 'strict'
+     * - categoryGapRatio (number): Gap ratio between bands (0-1, band scale only)
+     * - barGapRatio (number): Gap ratio between bars within a band (band scale only)
+     * - colorMap (object): Axis color mapping configuration
      * - zoom (boolean or object): Enable zoom on this axis (same options as xAxis)
      */
     yAxis: PropTypes.arrayOf(PropTypes.shape({
+        data: PropTypes.array,
+        dataKey: PropTypes.string,
         label: PropTypes.string,
+        scaleType: PropTypes.oneOf(['band', 'point', 'linear', 'log', 'time', 'utc', 'symlog', 'sqrt']),
+        position: PropTypes.oneOf(['left', 'right', 'none']),
+        id: PropTypes.string,
         min: PropTypes.number,
         max: PropTypes.number,
         width: PropTypes.number,
-        position: PropTypes.oneOf(['left', 'right']),
-        id: PropTypes.string,
+        reverse: PropTypes.bool,
+        tickNumber: PropTypes.number,
+        tickMinStep: PropTypes.number,
+        tickMaxStep: PropTypes.number,
+        tickSize: PropTypes.number,
+        tickSpacing: PropTypes.number,
+        tickInterval: PropTypes.array,
+        tickLabelStyle: PropTypes.object,
+        tickLabelPlacement: PropTypes.oneOf(['middle', 'tick']),
+        tickPlacement: PropTypes.oneOf(['end', 'extremities', 'middle', 'start']),
+        tickLabelMinGap: PropTypes.number,
+        labelStyle: PropTypes.object,
+        height: PropTypes.number,
+        disableLine: PropTypes.bool,
+        disableTicks: PropTypes.bool,
+        domainLimit: PropTypes.oneOf(['nice', 'strict']),
+        categoryGapRatio: PropTypes.number,
+        barGapRatio: PropTypes.number,
+        colorMap: PropTypes.object,
         zoom: PropTypes.oneOfType([
             PropTypes.bool,
             PropTypes.object,
@@ -651,6 +900,33 @@ LineChart.propTypes = {
     showSlider: PropTypes.bool,
 
     /**
+     * Zoom interaction configuration. Controls which interactions are enabled for
+     * zooming and panning. Object with:
+     * - zoom (array): Zoom interactions - 'wheel', 'pinch', 'tapAndDrag', 'brush', 'doubleTapReset',
+     *   or objects with { type, requiredKeys, pointerMode }
+     * - pan (array): Pan interactions - 'drag', 'pressAndDrag', 'wheel',
+     *   or objects with { type, requiredKeys, pointerMode }
+     */
+    zoomInteractionConfig: PropTypes.shape({
+        zoom: PropTypes.arrayOf(PropTypes.oneOfType([
+            PropTypes.string,
+            PropTypes.shape({
+                type: PropTypes.string,
+                requiredKeys: PropTypes.arrayOf(PropTypes.string),
+                pointerMode: PropTypes.oneOf(['mouse', 'touch']),
+            }),
+        ])),
+        pan: PropTypes.arrayOf(PropTypes.oneOfType([
+            PropTypes.string,
+            PropTypes.shape({
+                type: PropTypes.string,
+                requiredKeys: PropTypes.arrayOf(PropTypes.string),
+                pointerMode: PropTypes.oneOf(['mouse', 'touch']),
+            }),
+        ])),
+    }),
+
+    /**
      * Array of reference line configurations. Each reference line can be vertical (x) or horizontal (y).
      * - x (string|number): X-axis value for a vertical reference line
      * - y (number): Y-axis value for a horizontal reference line
@@ -722,6 +998,50 @@ LineChart.propTypes = {
     axisHighlight: PropTypes.shape({
         x: PropTypes.oneOf(['none', 'line', 'band']),
         y: PropTypes.oneOf(['none', 'line']),
+    }),
+
+    /**
+     * Controlled axis highlight state. Array of objects specifying which axis values
+     * are highlighted. Each object has:
+     * - axisId (string|number): The axis identifier
+     * - dataIndex (number): The data index to highlight
+     * Set to empty array [] to clear highlights.
+     */
+    highlightedAxis: PropTypes.arrayOf(PropTypes.shape({
+        axisId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+        dataIndex: PropTypes.number.isRequired,
+    })),
+
+    /**
+     * Controlled item highlight state. Specifies which data point is highlighted.
+     * Object with:
+     * - seriesId (string): The series identifier
+     * - dataIndex (number): The data index within the series (optional)
+     * Set to null to clear highlight.
+     */
+    highlightedItem: PropTypes.shape({
+        seriesId: PropTypes.string.isRequired,
+        dataIndex: PropTypes.number,
+    }),
+
+    /**
+     * Show chart toolbar with zoom/export controls. This is a Pro feature
+     * that requires a valid licenseKey.
+     */
+    showToolbar: PropTypes.bool,
+
+    /**
+     * Controlled tooltip item state. Used to synchronize tooltips across multiple charts.
+     * Object with:
+     * - type (string): Chart type ('line', 'bar', 'pie', etc.)
+     * - seriesId (string): The series identifier
+     * - dataIndex (number): The data index within the series
+     * Set to null to hide tooltip.
+     */
+    tooltipItem: PropTypes.shape({
+        type: PropTypes.string,
+        seriesId: PropTypes.string,
+        dataIndex: PropTypes.number,
     }),
 
     /**

@@ -27,7 +27,7 @@ setup(
     },
     install_requires=['dash>=3.0.0'],
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 5 - Production/Stable',
         'Framework :: Dash',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',

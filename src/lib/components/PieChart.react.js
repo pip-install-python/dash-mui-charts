@@ -131,6 +131,11 @@ export default function PieChart(props) {
         };
     }
 
+    // Controlled highlight input - allows external control of highlighted item
+    if (highlightedItem !== undefined) {
+        chartProps.highlightedItem = highlightedItem;
+    }
+
     return (
         <div id={id}>
             <MuiPieChart {...chartProps} />
@@ -349,10 +354,17 @@ PieChart.propTypes = {
     n_clicks: PropTypes.number,
 
     /**
-     * Currently highlighted item. Read-only output property updated when
-     * the user hovers over a slice.
+     * Currently highlighted item. Can be used as both input (controlled mode) and
+     * output (updated when user hovers over a slice).
+     * Object with:
+     * - seriesId (string): The series identifier
+     * - dataIndex (number): The data index within the series
+     * Set to null to clear highlight.
      */
-    highlightedItem: PropTypes.object,
+    highlightedItem: PropTypes.shape({
+        seriesId: PropTypes.string,
+        dataIndex: PropTypes.number,
+    }),
 
     /**
      * Dash-assigned callback that should be called to report property changes

@@ -313,11 +313,24 @@ Heatmap.propTypes = {
      * - data (array): Category labels for x-axis
      * - label (string): Axis label
      * - scaleType (string): Scale type, defaults to 'band' for heatmaps
+     * - zoom (boolean or object): Enable zoom on this axis. Can be true or object with:
+     *   - minStart (number): Minimum start position (0-100)
+     *   - maxEnd (number): Maximum end position (0-100)
+     *   - minSpan (number): Minimum zoom span
+     *   - maxSpan (number): Maximum zoom span
+     *   - step (number): Zoom step size
+     *   - panning (boolean): Enable panning
+     *   - filterMode (string): 'keep' or 'discard'
+     *   - slider (object): Slider config with { enabled, preview, size, showTooltip }
      */
     xAxis: PropTypes.shape({
         data: PropTypes.array,
         label: PropTypes.string,
         scaleType: PropTypes.oneOf(['band', 'point']),
+        zoom: PropTypes.oneOfType([
+            PropTypes.bool,
+            PropTypes.object,
+        ]),
     }),
 
     /**
@@ -325,11 +338,16 @@ Heatmap.propTypes = {
      * - data (array): Category labels for y-axis
      * - label (string): Axis label
      * - scaleType (string): Scale type, defaults to 'band' for heatmaps
+     * - zoom (boolean or object): Enable zoom on this axis (same options as xAxis)
      */
     yAxis: PropTypes.shape({
         data: PropTypes.array,
         label: PropTypes.string,
         scaleType: PropTypes.oneOf(['band', 'point']),
+        zoom: PropTypes.oneOfType([
+            PropTypes.bool,
+            PropTypes.object,
+        ]),
     }),
 
     /**

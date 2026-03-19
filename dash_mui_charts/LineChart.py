@@ -113,6 +113,30 @@ Keyword arguments:
 - hideLegend (boolean; optional):
     If True, the legend is hidden.
 
+- highlightedAxis (list of dicts; optional):
+    Controlled axis highlight state. Array of objects specifying which
+    axis values are highlighted. Each object has: - axisId
+    (string|number): The axis identifier - dataIndex (number): The
+    data index to highlight Set to empty array [] to clear highlights.
+
+    `highlightedAxis` is a list of dicts with keys:
+
+    - axisId (string | number; required)
+
+    - dataIndex (number; required)
+
+- highlightedItem (dict; optional):
+    Controlled item highlight state. Specifies which data point is
+    highlighted. Object with: - seriesId (string): The series
+    identifier - dataIndex (number): The data index within the series
+    (optional) Set to None to clear highlight.
+
+    `highlightedItem` is a dict with keys:
+
+    - seriesId (string; required)
+
+    - dataIndex (number; optional)
+
 - initialZoom (list of dicts; optional):
     Initial zoom state for uncontrolled mode. Array of objects with: -
     axisId (string): The axis identifier - start (number): Start
@@ -196,7 +220,9 @@ Keyword arguments:
     connectNulls (boolean): Whether to bridge gaps across None values
     - yAxisId (string): ID of the y-axis to use for this series (for
     biaxial charts) - xAxisId (string): ID of the x-axis to use for
-    this series.
+    this series - highlightScope (object): Per-series highlight
+    behavior with:   - highlight: 'none', 'item', or 'series'   -
+    fade: 'none', 'series', or 'global'.
 
     `series` is a list of dicts with keys:
 
@@ -222,10 +248,22 @@ Keyword arguments:
 
     - xAxisId (string; optional)
 
+    - highlightScope (dict; optional)
+
+        `highlightScope` is a dict with keys:
+
+        - highlight (a value equal to: 'none', 'item', 'series'; optional)
+
+        - fade (a value equal to: 'none', 'series', 'global'; optional)
+
 - showSlider (boolean; optional):
     If True, shows a zoom slider below the chart for easy zoom
     control. The slider allows users to select a range and pan through
     the data.
+
+- showToolbar (boolean; optional):
+    Show chart toolbar with zoom/export controls. This is a Pro
+    feature that requires a valid licenseKey.
 
 - skipAnimation (boolean; optional):
     If True, animations are skipped.
@@ -238,50 +276,166 @@ Keyword arguments:
 
     - trigger (a value equal to: 'item', 'axis', 'none'; optional)
 
+- tooltipItem (dict; optional):
+    Controlled tooltip item state. Used to synchronize tooltips across
+    multiple charts. Object with: - type (string): Chart type ('line',
+    'bar', 'pie', etc.) - seriesId (string): The series identifier -
+    dataIndex (number): The data index within the series Set to None
+    to hide tooltip.
+
+    `tooltipItem` is a dict with keys:
+
+    - type (string; optional)
+
+    - seriesId (string; optional)
+
+    - dataIndex (number; optional)
+
 - width (number; optional):
     Chart width in pixels. If not specified, the chart expands to fill
     the available space.
 
 - xAxis (list of dicts; optional):
     X-axis configuration. Array of axis config objects. Each axis
-    object can have: - data (array): X-axis values - label (string):
-    Axis label - scaleType (string): 'band', 'point', 'linear', 'log',
-    'time' - position (string): 'top' or 'bottom' - id (string): Axis
-    identifier for referencing in series and zoom - zoom (boolean or
-    object): Enable zoom on this axis. Can be True or object with:   -
-    minStart (number): Minimum start position (0-100)   - maxEnd
-    (number): Maximum end position (0-100)   - minSpan (number):
-    Minimum zoom span   - maxSpan (number): Maximum zoom span   - step
-    (number): Zoom step size   - panning (boolean): Enable panning   -
-    filterMode (string): 'keep' or 'discard'   - slider (object):
-    Slider config with { enabled: True }.
+    object can have: - data (array): X-axis values (timestamps in ms
+    for 'time' scaleType) - dataKey (string): Key to use from dataset
+    for axis values - label (string): Axis label - scaleType (string):
+    'band', 'point', 'linear', 'log', 'time', 'utc', 'symlog', 'sqrt'
+    - position (string): 'top', 'bottom', or 'none' (hidden but still
+    computed) - id (string): Axis identifier for referencing in series
+    and zoom - min (number): Minimum domain value - max (number):
+    Maximum domain value - reverse (boolean): Reverse axis direction -
+    tickNumber (number): Approximate number of ticks - tickMinStep
+    (number): Minimum step between ticks (ms for time axes) -
+    tickMaxStep (number): Maximum step between ticks - tickSize
+    (number): Tick mark length in pixels (default: 6) - tickSpacing
+    (number): Minimum spacing in px between ticks (ordinal axes only)
+    - tickInterval (array): Fixed tick positions as array of values -
+    tickLabelStyle (object): CSS style for tick labels (e.g. {angle:
+    45, fontSize: 12}) - tickLabelPlacement (string): 'middle' or
+    'tick' (band scale only) - tickPlacement (string): 'end',
+    'extremities', 'middle', 'start' (band scale only) -
+    tickLabelMinGap (number): Minimum gap in px between tick labels
+    (default: 4) - labelStyle (object): CSS style for the axis label -
+    height (number): Space reserved for this x-axis in pixels -
+    disableLine (boolean): Hide the axis line - disableTicks
+    (boolean): Hide tick marks - domainLimit (string): 'nice'
+    (default, rounds to friendly values) or 'strict' -
+    categoryGapRatio (number): Gap ratio between bands (0-1, band
+    scale only) - barGapRatio (number): Gap ratio between bars within
+    a band (band scale only) - colorMap (object): Axis color mapping
+    configuration - zoom (boolean or object): Enable zoom on this
+    axis. Can be True or object with:   - minStart (number): Minimum
+    start position (0-100)   - maxEnd (number): Maximum end position
+    (0-100)   - minSpan (number): Minimum zoom span   - maxSpan
+    (number): Maximum zoom span   - step (number): Zoom step size   -
+    panning (boolean): Enable panning   - filterMode (string): 'keep'
+    or 'discard'   - slider (object): Slider config with { enabled,
+    preview, size, showTooltip }.
 
     `xAxis` is a list of dicts with keys:
 
     - data (list; optional)
 
+    - dataKey (string; optional)
+
     - label (string; optional)
 
-    - scaleType (a value equal to: 'band', 'point', 'linear', 'log', 'time'; optional)
+    - scaleType (a value equal to: 'band', 'point', 'linear', 'log', 'time', 'utc', 'symlog', 'sqrt'; optional)
 
-    - position (a value equal to: 'top', 'bottom'; optional)
+    - position (a value equal to: 'top', 'bottom', 'none'; optional)
 
     - id (string; optional)
+
+    - min (number; optional)
+
+    - max (number; optional)
+
+    - reverse (boolean; optional)
+
+    - tickNumber (number; optional)
+
+    - tickMinStep (number; optional)
+
+    - tickMaxStep (number; optional)
+
+    - tickSize (number; optional)
+
+    - tickSpacing (number; optional)
+
+    - tickInterval (list; optional)
+
+    - tickLabelStyle (dict; optional)
+
+    - tickLabelPlacement (a value equal to: 'middle', 'tick'; optional)
+
+    - tickPlacement (a value equal to: 'end', 'extremities', 'middle', 'start'; optional)
+
+    - tickLabelMinGap (number; optional)
+
+    - labelStyle (dict; optional)
+
+    - height (number; optional)
+
+    - disableLine (boolean; optional)
+
+    - disableTicks (boolean; optional)
+
+    - domainLimit (a value equal to: 'nice', 'strict'; optional)
+
+    - categoryGapRatio (number; optional)
+
+    - barGapRatio (number; optional)
+
+    - colorMap (dict; optional)
 
     - zoom (boolean | dict; optional)
 
 - yAxis (list of dicts; optional):
     Y-axis configuration. Array of axis config objects. Each axis
-    object can have: - label (string): Axis label - min (number):
-    Minimum domain value - max (number): Maximum domain value - width
-    (number): Width allocated for axis - position (string): 'left' or
-    'right' - id (string): Axis identifier for referencing in series -
-    zoom (boolean or object): Enable zoom on this axis (same options
-    as xAxis).
+    object can have: - data (array): Y-axis values (for horizontal bar
+    charts) - dataKey (string): Key to use from dataset for axis
+    values - label (string): Axis label - scaleType (string): 'band',
+    'point', 'linear', 'log', 'time', 'utc', 'symlog', 'sqrt' -
+    position (string): 'left', 'right', or 'none' (hidden but still
+    computed) - id (string): Axis identifier for referencing in series
+    - min (number): Minimum domain value - max (number): Maximum
+    domain value - width (number): Width allocated for axis in pixels
+    - reverse (boolean): Reverse axis direction - tickNumber (number):
+    Approximate number of ticks - tickMinStep (number): Minimum step
+    between ticks - tickMaxStep (number): Maximum step between ticks -
+    tickSize (number): Tick mark length in pixels (default: 6) -
+    tickSpacing (number): Minimum spacing in px between ticks (ordinal
+    axes only) - tickInterval (array): Fixed tick positions as array
+    of values - tickLabelStyle (object): CSS style for tick labels
+    (e.g. {angle: 45, fontSize: 12}) - tickLabelPlacement (string):
+    'middle' or 'tick' (band scale only) - tickPlacement (string):
+    'end', 'extremities', 'middle', 'start' (band scale only) -
+    tickLabelMinGap (number): Minimum gap in px between tick labels
+    (default: 4) - labelStyle (object): CSS style for the axis label -
+    height (number): Space reserved for this y-axis in pixels -
+    disableLine (boolean): Hide the axis line - disableTicks
+    (boolean): Hide tick marks - domainLimit (string): 'nice'
+    (default, rounds to friendly values) or 'strict' -
+    categoryGapRatio (number): Gap ratio between bands (0-1, band
+    scale only) - barGapRatio (number): Gap ratio between bars within
+    a band (band scale only) - colorMap (object): Axis color mapping
+    configuration - zoom (boolean or object): Enable zoom on this axis
+    (same options as xAxis).
 
     `yAxis` is a list of dicts with keys:
 
+    - data (list; optional)
+
+    - dataKey (string; optional)
+
     - label (string; optional)
+
+    - scaleType (a value equal to: 'band', 'point', 'linear', 'log', 'time', 'utc', 'symlog', 'sqrt'; optional)
+
+    - position (a value equal to: 'left', 'right', 'none'; optional)
+
+    - id (string; optional)
 
     - min (number; optional)
 
@@ -289,9 +443,43 @@ Keyword arguments:
 
     - width (number; optional)
 
-    - position (a value equal to: 'left', 'right'; optional)
+    - reverse (boolean; optional)
 
-    - id (string; optional)
+    - tickNumber (number; optional)
+
+    - tickMinStep (number; optional)
+
+    - tickMaxStep (number; optional)
+
+    - tickSize (number; optional)
+
+    - tickSpacing (number; optional)
+
+    - tickInterval (list; optional)
+
+    - tickLabelStyle (dict; optional)
+
+    - tickLabelPlacement (a value equal to: 'middle', 'tick'; optional)
+
+    - tickPlacement (a value equal to: 'end', 'extremities', 'middle', 'start'; optional)
+
+    - tickLabelMinGap (number; optional)
+
+    - labelStyle (dict; optional)
+
+    - height (number; optional)
+
+    - disableLine (boolean; optional)
+
+    - disableTicks (boolean; optional)
+
+    - domainLimit (a value equal to: 'nice', 'strict'; optional)
+
+    - categoryGapRatio (number; optional)
+
+    - barGapRatio (number; optional)
+
+    - colorMap (dict; optional)
 
     - zoom (boolean | dict; optional)
 
@@ -318,11 +506,52 @@ Keyword arguments:
 
     - start (number; optional)
 
-    - end (number; optional) | boolean | number | string | dict | list"""
+    - end (number; optional) | boolean | number | string | dict | list
+
+- zoomInteractionConfig (dict; optional):
+    Zoom interaction configuration. Controls which interactions are
+    enabled for zooming and panning. Object with: - zoom (array): Zoom
+    interactions - 'wheel', 'pinch', 'tapAndDrag', 'brush',
+    'doubleTapReset',   or objects with { type, requiredKeys,
+    pointerMode } - pan (array): Pan interactions - 'drag',
+    'pressAndDrag', 'wheel',   or objects with { type, requiredKeys,
+    pointerMode }.
+
+    `zoomInteractionConfig` is a dict with keys:
+
+    - zoom (list of dicts; optional)
+
+        `zoom` is a list of string
+
+      Or dict with keys:
+
+        - type (string; optional)
+
+        - requiredKeys (list of strings; optional)
+
+        - pointerMode (a value equal to: 'mouse', 'touch'; optional)s
+
+    - pan (list of dicts; optional)
+
+        `pan` is a list of string | dict with keys:
+
+        - type (string; optional)
+
+        - requiredKeys (list of strings; optional)
+
+        - pointerMode (a value equal to: 'mouse', 'touch'; optional)s"""
     _children_props: typing.List[str] = []
     _base_nodes = ['children']
     _namespace = 'dash_mui_charts'
     _type = 'LineChart'
+    SeriesHighlightScope = TypedDict(
+        "SeriesHighlightScope",
+            {
+            "highlight": NotRequired[Literal["none", "item", "series"]],
+            "fade": NotRequired[Literal["none", "series", "global"]]
+        }
+    )
+
     Series = TypedDict(
         "Series",
             {
@@ -336,7 +565,8 @@ Keyword arguments:
             "showMark": NotRequired[bool],
             "connectNulls": NotRequired[bool],
             "yAxisId": NotRequired[str],
-            "xAxisId": NotRequired[str]
+            "xAxisId": NotRequired[str],
+            "highlightScope": NotRequired["SeriesHighlightScope"]
         }
     )
 
@@ -344,10 +574,32 @@ Keyword arguments:
         "XAxis",
             {
             "data": NotRequired[typing.Sequence],
+            "dataKey": NotRequired[str],
             "label": NotRequired[str],
-            "scaleType": NotRequired[Literal["band", "point", "linear", "log", "time"]],
-            "position": NotRequired[Literal["top", "bottom"]],
+            "scaleType": NotRequired[Literal["band", "point", "linear", "log", "time", "utc", "symlog", "sqrt"]],
+            "position": NotRequired[Literal["top", "bottom", "none"]],
             "id": NotRequired[str],
+            "min": NotRequired[NumberType],
+            "max": NotRequired[NumberType],
+            "reverse": NotRequired[bool],
+            "tickNumber": NotRequired[NumberType],
+            "tickMinStep": NotRequired[NumberType],
+            "tickMaxStep": NotRequired[NumberType],
+            "tickSize": NotRequired[NumberType],
+            "tickSpacing": NotRequired[NumberType],
+            "tickInterval": NotRequired[typing.Sequence],
+            "tickLabelStyle": NotRequired[dict],
+            "tickLabelPlacement": NotRequired[Literal["middle", "tick"]],
+            "tickPlacement": NotRequired[Literal["end", "extremities", "middle", "start"]],
+            "tickLabelMinGap": NotRequired[NumberType],
+            "labelStyle": NotRequired[dict],
+            "height": NotRequired[NumberType],
+            "disableLine": NotRequired[bool],
+            "disableTicks": NotRequired[bool],
+            "domainLimit": NotRequired[Literal["nice", "strict"]],
+            "categoryGapRatio": NotRequired[NumberType],
+            "barGapRatio": NotRequired[NumberType],
+            "colorMap": NotRequired[dict],
             "zoom": NotRequired[typing.Union[bool, dict]]
         }
     )
@@ -355,12 +607,34 @@ Keyword arguments:
     YAxis = TypedDict(
         "YAxis",
             {
+            "data": NotRequired[typing.Sequence],
+            "dataKey": NotRequired[str],
             "label": NotRequired[str],
+            "scaleType": NotRequired[Literal["band", "point", "linear", "log", "time", "utc", "symlog", "sqrt"]],
+            "position": NotRequired[Literal["left", "right", "none"]],
+            "id": NotRequired[str],
             "min": NotRequired[NumberType],
             "max": NotRequired[NumberType],
             "width": NotRequired[NumberType],
-            "position": NotRequired[Literal["left", "right"]],
-            "id": NotRequired[str],
+            "reverse": NotRequired[bool],
+            "tickNumber": NotRequired[NumberType],
+            "tickMinStep": NotRequired[NumberType],
+            "tickMaxStep": NotRequired[NumberType],
+            "tickSize": NotRequired[NumberType],
+            "tickSpacing": NotRequired[NumberType],
+            "tickInterval": NotRequired[typing.Sequence],
+            "tickLabelStyle": NotRequired[dict],
+            "tickLabelPlacement": NotRequired[Literal["middle", "tick"]],
+            "tickPlacement": NotRequired[Literal["end", "extremities", "middle", "start"]],
+            "tickLabelMinGap": NotRequired[NumberType],
+            "labelStyle": NotRequired[dict],
+            "height": NotRequired[NumberType],
+            "disableLine": NotRequired[bool],
+            "disableTicks": NotRequired[bool],
+            "domainLimit": NotRequired[Literal["nice", "strict"]],
+            "categoryGapRatio": NotRequired[NumberType],
+            "barGapRatio": NotRequired[NumberType],
+            "colorMap": NotRequired[dict],
             "zoom": NotRequired[typing.Union[bool, dict]]
         }
     )
@@ -405,6 +679,32 @@ Keyword arguments:
             "axisId": NotRequired[str],
             "start": NotRequired[NumberType],
             "end": NotRequired[NumberType]
+        }
+    )
+
+    ZoomInteractionConfigZoom = TypedDict(
+        "ZoomInteractionConfigZoom",
+            {
+            "type": NotRequired[str],
+            "requiredKeys": NotRequired[typing.Sequence[str]],
+            "pointerMode": NotRequired[Literal["mouse", "touch"]]
+        }
+    )
+
+    ZoomInteractionConfigPan = TypedDict(
+        "ZoomInteractionConfigPan",
+            {
+            "type": NotRequired[str],
+            "requiredKeys": NotRequired[typing.Sequence[str]],
+            "pointerMode": NotRequired[Literal["mouse", "touch"]]
+        }
+    )
+
+    ZoomInteractionConfig = TypedDict(
+        "ZoomInteractionConfig",
+            {
+            "zoom": NotRequired[typing.Sequence[typing.Union[str, "ZoomInteractionConfigZoom"]]],
+            "pan": NotRequired[typing.Sequence[typing.Union[str, "ZoomInteractionConfigPan"]]]
         }
     )
 
@@ -464,6 +764,31 @@ Keyword arguments:
         }
     )
 
+    HighlightedAxis = TypedDict(
+        "HighlightedAxis",
+            {
+            "axisId": typing.Union[str, NumberType],
+            "dataIndex": NumberType
+        }
+    )
+
+    HighlightedItem = TypedDict(
+        "HighlightedItem",
+            {
+            "seriesId": str,
+            "dataIndex": NotRequired[NumberType]
+        }
+    )
+
+    TooltipItem = TypedDict(
+        "TooltipItem",
+            {
+            "type": NotRequired[str],
+            "seriesId": NotRequired[str],
+            "dataIndex": NotRequired[NumberType]
+        }
+    )
+
     ZoomData = TypedDict(
         "ZoomData",
             {
@@ -493,20 +818,25 @@ Keyword arguments:
         zoom: typing.Optional[typing.Sequence["Zoom"]] = None,
         initialZoom: typing.Optional[typing.Sequence["InitialZoom"]] = None,
         showSlider: typing.Optional[bool] = None,
+        zoomInteractionConfig: typing.Optional["ZoomInteractionConfig"] = None,
         referenceLines: typing.Optional[typing.Sequence["ReferenceLines"]] = None,
         brushConfig: typing.Optional["BrushConfig"] = None,
         brushOverlay: typing.Optional[Literal["none", "default", "values"]] = None,
         brushSeriesId: typing.Optional[str] = None,
         brushData: typing.Optional["BrushData"] = None,
         axisHighlight: typing.Optional["AxisHighlight"] = None,
+        highlightedAxis: typing.Optional[typing.Sequence["HighlightedAxis"]] = None,
+        highlightedItem: typing.Optional["HighlightedItem"] = None,
+        showToolbar: typing.Optional[bool] = None,
+        tooltipItem: typing.Optional["TooltipItem"] = None,
         zoomData: typing.Optional[typing.Union[typing.Sequence["ZoomData"], typing.Any]] = None,
         clickData: typing.Optional[dict] = None,
         n_clicks: typing.Optional[NumberType] = None,
         **kwargs
     ):
-        self._prop_names = ['id', 'axisHighlight', 'brushConfig', 'brushData', 'brushOverlay', 'brushSeriesId', 'clickData', 'colors', 'grid', 'height', 'hideLegend', 'initialZoom', 'licenseKey', 'loading', 'margin', 'n_clicks', 'referenceLines', 'series', 'showSlider', 'skipAnimation', 'tooltip', 'width', 'xAxis', 'yAxis', 'zoom', 'zoomData']
+        self._prop_names = ['id', 'axisHighlight', 'brushConfig', 'brushData', 'brushOverlay', 'brushSeriesId', 'clickData', 'colors', 'grid', 'height', 'hideLegend', 'highlightedAxis', 'highlightedItem', 'initialZoom', 'licenseKey', 'loading', 'margin', 'n_clicks', 'referenceLines', 'series', 'showSlider', 'showToolbar', 'skipAnimation', 'tooltip', 'tooltipItem', 'width', 'xAxis', 'yAxis', 'zoom', 'zoomData', 'zoomInteractionConfig']
         self._valid_wildcard_attributes =            []
-        self.available_properties = ['id', 'axisHighlight', 'brushConfig', 'brushData', 'brushOverlay', 'brushSeriesId', 'clickData', 'colors', 'grid', 'height', 'hideLegend', 'initialZoom', 'licenseKey', 'loading', 'margin', 'n_clicks', 'referenceLines', 'series', 'showSlider', 'skipAnimation', 'tooltip', 'width', 'xAxis', 'yAxis', 'zoom', 'zoomData']
+        self.available_properties = ['id', 'axisHighlight', 'brushConfig', 'brushData', 'brushOverlay', 'brushSeriesId', 'clickData', 'colors', 'grid', 'height', 'hideLegend', 'highlightedAxis', 'highlightedItem', 'initialZoom', 'licenseKey', 'loading', 'margin', 'n_clicks', 'referenceLines', 'series', 'showSlider', 'showToolbar', 'skipAnimation', 'tooltip', 'tooltipItem', 'width', 'xAxis', 'yAxis', 'zoom', 'zoomData', 'zoomInteractionConfig']
         self.available_wildcard_properties =            []
         _explicit_args = kwargs.pop('_explicit_args')
         _locals = locals()

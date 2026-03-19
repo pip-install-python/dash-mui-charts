@@ -9,6 +9,8 @@ A Dash component library wrapping [MUI X Charts](https://mui.com/x/react-charts/
 
 - **LineChart** - Line and area charts with zoom/pan, multiple axes, and stacking
 - **PieChart** - Pie, donut, and nested/concentric pie charts
+- **ScatterChart** - Scatter/point charts with z-axis color mapping and voronoi interaction
+- **CompositeChart** - Layer scatter + line plots on a single surface with zoom/pan
 - **Heatmap** - Matrix visualizations with customizable color scales
 - **SparklineChart** - Compact inline charts for dashboards and tables
 
@@ -159,6 +161,102 @@ PieChart(
 
 ---
 
+### ScatterChart
+
+Create scatter/point charts with multi-series support and z-axis color mapping.
+
+```python
+from dash_mui_charts import ScatterChart
+
+ScatterChart(
+    id='my-scatter',
+    series=[
+        {
+            'id': 'group-a',
+            'label': 'Group A',
+            'data': [
+                {'x': 1, 'y': 5, 'id': 0},
+                {'x': 2, 'y': 8, 'id': 1},
+                {'x': 3, 'y': 6, 'id': 2},
+            ],
+            'color': '#1976d2',
+            'markerSize': 6,
+        },
+    ],
+    voronoiMaxRadius=30,
+    height=400,
+)
+```
+
+**Key Props:**
+| Prop | Type | Description |
+|------|------|-------------|
+| `series` | list | Scatter series with data [{x, y, id}], color, markerSize |
+| `zAxis` | list | Z-axis config for color mapping |
+| `voronoiMaxRadius` | int | Proximity radius for hover interaction |
+| `dataset` | list | Table-format data for datasetKeys pattern |
+| `renderer` | str | 'svg' (default) or 'svg-batch' for large datasets |
+
+**Output Props:**
+- `clickData` - Click event with seriesId, dataIndex, x, y
+- `highlightedItem` - Currently hovered item
+- `n_clicks` - Click counter
+
+---
+
+### CompositeChart
+
+Layer scatter and line plots on a single chart surface.
+
+> **Note:** Zoom/pan features require MUI X Pro license.
+
+```python
+from dash_mui_charts import CompositeChart
+
+CompositeChart(
+    id='my-composite',
+    series=[
+        {
+            'type': 'line',
+            'id': 'baseline',
+            'label': 'Baseline',
+            'data': [50, 55, 48, 62, 58],
+            'color': '#66bb6a',
+            'area': True,
+        },
+        {
+            'type': 'scatter',
+            'id': 'anomalies',
+            'label': 'Anomalies',
+            'data': [{'x': 1, 'y': 80, 'id': 0}, {'x': 3, 'y': 25, 'id': 1}],
+            'color': '#e53935',
+            'markerSize': 6,
+        },
+    ],
+    xAxis=[{'data': [0, 1, 2, 3, 4], 'scaleType': 'linear'}],
+    height=400,
+)
+```
+
+**Key Props:**
+| Prop | Type | Description |
+|------|------|-------------|
+| `series` | list | Array of series with `type` ('scatter' or 'line') |
+| `xAxis` | list | X-axis config (supports `scaleType: 'time'` with epoch ms) |
+| `yAxis` | list | Y-axis config (supports multi-axis with `id` and `position`) |
+| `referenceLines` | list | Horizontal/vertical reference markers |
+| `initialZoom` | list | Initial zoom state (Pro) |
+| `showSlider` | bool | Show zoom slider (Pro) |
+| `showToolbar` | bool | Show toolbar (Pro) |
+
+**Output Props:**
+- `clickData` - Click event with type, seriesId, dataIndex
+- `highlightedItem` - Currently hovered item
+- `zoomData` - Current zoom state
+- `n_clicks` - Click counter
+
+---
+
 ### Heatmap
 
 Create matrix visualizations with color-coded cells.
@@ -244,6 +342,8 @@ SparklineChart(
 |-----------|------------------|---------------------|
 | LineChart | Basic features | Zoom & Pan |
 | PieChart | All features | - |
+| ScatterChart | All features | - |
+| CompositeChart | Basic layering | Zoom & Pan |
 | Heatmap | - | All features |
 | SparklineChart | All features | - |
 
@@ -270,6 +370,8 @@ python app.py
 Visit `http://127.0.0.1:8050` to see:
 - Basic and advanced line chart examples
 - Pie chart property explorer with nested pies
+- Scatter chart with z-axis color mapping and voronoi interaction
+- Composite charts layering scatter + line with zoom/pan
 - Heatmap configuration playground
 - Sparkline styling options
 
@@ -323,7 +425,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) for details.
+Pip Install Python LLC MIT License - see [LICENSE](LICENSE) for details.
 
 ## Author
 
