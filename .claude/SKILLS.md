@@ -31,6 +31,7 @@ dash-mui-charts/
 │   ├── PieChart.react.js           # Pie/Donut/Nested pie charts
 │   ├── ScatterChart.react.js       # Scatter/point charts
 │   ├── CompositeChart.react.js     # Layered scatter + line charts
+│   ├── LiveTradingChart.react.js   # Real-time streaming charts
 │   ├── Heatmap.react.js            # Heatmap with Pro features
 │   └── SparklineChart.react.js     # Compact inline sparklines
 ├── dash_mui_charts/                 # Python package (auto-generated)
@@ -39,16 +40,21 @@ dash-mui-charts/
 │   ├── PieChart.py                 # Python wrapper for PieChart
 │   ├── ScatterChart.py             # Python wrapper for ScatterChart
 │   ├── CompositeChart.py           # Python wrapper for CompositeChart
+│   ├── LiveTradingChart.py         # Python wrapper for LiveTradingChart
 │   ├── Heatmap.py                  # Python wrapper for Heatmap
 │   ├── SparklineChart.py           # Python wrapper for SparklineChart
 │   ├── _imports_.py                # Auto-generated imports
 │   └── dash_mui_charts.min.js      # Bundled JavaScript
+├── assets/                          # Dash assets (auto-loaded)
+│   └── muiChartsFunctions.js       # Functions-as-props registry
 ├── pages/                           # Demo pages
 │   ├── home.py                     # Landing page
 │   ├── linechart_basic.py          # Basic line chart examples
 │   ├── linechart_pro.py            # Pro features (zoom, pan)
 │   ├── linechart_brush.py          # Brush selection (Pro)
 │   ├── linechart_referencelines.py # Reference lines
+│   ├── linechart_tick_hover.py      # Tick config, axis formatting, zoom best practices
+│   ├── live_trading.py             # LiveTradingChart demo
 │   ├── pie.py                      # Pie chart examples
 │   ├── pie_props.py                # Nested pie property explorer
 │   ├── scatter.py                  # Scatter chart examples
@@ -73,7 +79,7 @@ dash-mui-charts/
 
 ---
 
-## Components (6 Total)
+## Components (7 Total)
 
 ### 1. LineChart
 
@@ -339,6 +345,67 @@ clickData = {
     'timestamp': '2025-01-10T...'
 }
 ```
+
+**Built-in Date Formatting (v1.1.0):**
+
+For time-scale axes, use `dateFormat` / `dateTickFormat` to control label format without writing JavaScript:
+
+```python
+LineChart(
+    xAxis=[{
+        'data': epoch_ms_timestamps,
+        'scaleType': 'time',
+        'dateFormat': 'M/d HH:mm',     # Full format (tooltips)
+        'dateTickFormat': 'M/d',        # Short format (tick labels)
+        'height': 80,                   # Extra space for angled labels
+        'tickMinStep': 86400 * 1000 * 14,  # Min 2 weeks between ticks
+        'tickLabelStyle': {'angle': 35, 'fontSize': 12, 'textAnchor': 'start'},
+    }],
+    margin={'left': 65, 'right': 20, 'top': 20, 'bottom': 100},
+)
+```
+
+Supported format tokens: `YYYY` (year), `MMM` (Jan), `MM` (01), `M` (1), `dd` (01), `d` (1), `HH` (00-23), `mm` (00-59).
+
+The component internally creates a `valueFormatter` function using `context.location === 'tick'` to choose between the tick and tooltip format. The `dateFormat`/`dateTickFormat` props are stripped before passing the axis config to MUI.
+
+**Functions-as-Props Pattern (v1.1.0):**
+
+For advanced formatting beyond dates, use the DMC-style functions-as-props pattern:
+
+```python
+# Python: pass a function reference
+LineChart(
+    xAxis=[{
+        'scaleType': 'time',
+        'valueFormatter': {
+            'function': 'formatDate',          # Function name in registry
+            'options': {'format': 'M/d HH:mm'},  # Passed as last arg
+        },
+    }],
+)
+```
+
+```javascript
+// assets/muiChartsFunctions.js: define the function
+var dmcf = window.dashMuiChartsFunctions = window.dashMuiChartsFunctions || {};
+
+dmcf.formatDate = function(value, context, options) {
+    var d = value instanceof Date ? value : new Date(value);
+    var fmt = (options && options.format) || 'M/d';
+    // ... format date using tokens
+};
+```
+
+The `resolveFunctionProp` utility in LineChart/CompositeChart resolves `{function, options}` objects from `window.dashMuiChartsFunctions` at render time. The wrapper passes `options` as the last argument to the resolved function.
+
+**Axis Formatting Best Practices:**
+- Use `scaleType: 'time'` (not `'point'`) for date axes when you need angled labels or zoom
+- `'point'` scale with `tickLabelStyle.angle` hides labels due to MUI collision detection
+- Increase `tickMinStep` to reduce tick count — more space per label prevents truncation
+- Set `height: 80` on x-axis + `margin.bottom: 100` for rotated labels
+- Use `tickNumber: 6` to cap total ticks for predictable spacing
+- `axisHighlight: 'band'` does NOT work on `'time'` scale — use `'line'` instead
 
 ---
 
@@ -647,6 +714,15 @@ SparklineChart(
 
 ---
 
+### 7. LiveTradingChart
+
+**File:** `src/lib/components/LiveTradingChart.react.js`
+**License:** Community (basic) / Pro (zoom/slider)
+
+**Purpose:** Real-time streaming chart for live data visualization (trading, sensor feeds, etc.).
+
+---
+
 ## Development Workflow
 
 ### Building Components
@@ -685,8 +761,10 @@ python app.py
 | `/linechart-brush` | Brush selection with value overlays (Pro) |
 | `/linechart-referencelines` | Reference lines (horizontal/vertical) |
 | `/linechart-highlighting` | Controlled item/axis highlights, per-series highlightScope |
+| `/linechart-tick-hover` | Tick config, date formatting, zoom best practices |
 | `/linechart-zoom-preview` | Biaxial chart with zoom slider preview |
 | `/highlighting-sync` | Synchronized highlights across charts |
+| `/live-trading` | LiveTradingChart streaming demo |
 | `/pie` | Pie chart examples |
 | `/pie-props` | Nested pie property explorer |
 | `/scatter` | ScatterChart examples (multi-series, z-axis, voronoi, dataset) |
@@ -736,6 +814,40 @@ def handle_click(click_data):
         return f"Clicked: {click_data['value']}"
     return "Click on chart"
 ```
+
+### Functions-as-Props (Bridging Python ↔ JavaScript Functions)
+
+Dash serializes props as JSON, so JavaScript functions can't be passed from Python. Two approaches are supported:
+
+**Approach 1: Built-in `dateFormat` (recommended for dates)**
+```python
+# No JavaScript needed — the React component creates the formatter internally
+xAxis=[{
+    'scaleType': 'time',
+    'dateFormat': 'MMM d, YYYY',     # Tooltip format
+    'dateTickFormat': 'M/d',          # Tick label format
+}]
+```
+
+**Approach 2: DMC-style function reference (advanced)**
+```python
+# Python: reference a function by name
+xAxis=[{
+    'valueFormatter': {'function': 'myFormatter', 'options': {'unit': 'F'}},
+}]
+```
+```javascript
+// assets/myFunctions.js: define the function
+var dmcf = window.dashMuiChartsFunctions = window.dashMuiChartsFunctions || {};
+dmcf.myFormatter = function(value, context, options) {
+    return value + ' °' + options.unit;
+};
+```
+
+**Architecture:** In `processedXAxis` (useMemo), the component:
+1. Checks for `dateFormat` → creates a `valueFormatter` via `createDateFormatter()`
+2. Else checks for `valueFormatter` object → resolves via `resolveFunctionProp()`
+3. Strips non-MUI props (`dateFormat`, `dateTickFormat`) before passing to `ChartDataProviderPro`
 
 ### Controlled vs Uncontrolled Props
 
@@ -839,6 +951,15 @@ def sync_highlights(line_item, pie_item):
 3. Check console for MUI license warnings
 4. Heatmap requires Pro license for all features
 
+### X-Axis Labels Not Showing or Truncated
+
+1. **Labels completely invisible on time scale with angle**: `tickLabelStyle.angle` on `scaleType: 'point'` triggers MUI collision detection — use `scaleType: 'time'` instead
+2. **Labels truncated (shows "J..." or "1...")**: Too many ticks — increase `tickMinStep` and add `tickNumber: 6`
+3. **MUI clips labels by available horizontal space per tick**: ~100px+ per tick needed for "1/15" at 12px font
+4. **`axisHighlight: 'band'` breaks time scale**: Use `'line'` instead — band is for categorical axes only
+5. **`dateFormat` not applied**: Verify `processedXAxis` runs (check that the early `if (!showSlider) return xAxis` shortcut was removed in v1.1.0)
+6. **Angled labels need extra space**: Set `height: 80` on xAxis + `margin.bottom: 100`
+
 ### Python Import Errors
 
 1. Run `npm run build` to regenerate Python wrappers
@@ -906,10 +1027,11 @@ After `npm run build`:
 
 | Component | Community (Free) | Pro Required |
 |-----------|------------------|--------------|
-| LineChart | Basic features, Reference Lines | Zoom, Pan, Brush |
+| LineChart | Basic features, Reference Lines, dateFormat | Zoom, Pan, Brush |
 | PieChart | All features | - |
 | ScatterChart | All features | - |
-| CompositeChart | Basic layering, Reference Lines | Zoom, Pan, Toolbar |
+| CompositeChart | Basic layering, Reference Lines, dateFormat | Zoom, Pan, Toolbar |
+| LiveTradingChart | Basic streaming | Zoom, Slider |
 | Heatmap | - | All features |
 | SparklineChart | All features | - |
 
@@ -937,5 +1059,10 @@ Potential components from MUI X Charts:
 - GaugeChart (Pro)
 - TreemapChart (Pro)
 - RadarChart
+
+Potential features:
+- Extend `resolveFunctionProp` to support more axis props (e.g. `tickInterval`, `tickLabelInterval` as function references)
+- Support `valueFormatter` on series (not just axes) for custom tooltip value formatting
+- Support `valueFormatter` on yAxis (currently `processedXAxis` handles it, need matching `processedYAxis`)
 
 Follow existing component patterns for implementation.

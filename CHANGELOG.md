@@ -12,6 +12,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.0] - 2026-04-08
+
+### Added
+
+#### Functions-as-Props Pattern (LineChart, CompositeChart)
+- **`resolveFunctionProp` utility** — Mirrors Dash Mantine Components' `dashMantineFunctions` pattern
+  - Python passes `{'function': 'name', 'options': {...}}` as a prop value
+  - React component resolves from `window.dashMuiChartsFunctions` registry
+  - Users define custom JS functions in `assets/*.js` files
+- **`valueFormatter` support on xAxis/yAxis** — Control how axis values are displayed
+  - Accepts DMC-style function reference objects or native JS functions
+  - Enables custom date formatting, number formatting, and label rendering
+  - Works with all scale types (time, linear, point, band, etc.)
+
+#### Built-in Date Formatting (LineChart, CompositeChart)
+- **`dateFormat` prop on xAxis/yAxis** — Format string for tooltip date labels (e.g. `'M/d HH:mm'`)
+- **`dateTickFormat` prop on xAxis/yAxis** — Separate shorter format for tick labels (e.g. `'M/d'`)
+  - Prevents label truncation by using compact tick labels while keeping full format in tooltips
+  - Supported tokens: `YYYY`, `MMM`, `MM`, `M`, `dd`, `d`, `HH`, `mm`
+  - Automatically creates a `valueFormatter` internally — no external JS file required
+
+#### LiveTradingChart Component (New)
+- Real-time streaming chart component for live data visualization
+
+#### Demo Pages
+- New `/linechart-tick-hover` page — Comprehensive tick, hover, and axis configuration guide
+  - Section 1-4: Date range best practices (week, quarter, year) with point and linear scales
+  - Section 5a: Angled labels with `dateFormat`/`dateTickFormat` on time scale
+  - Section 5b: Zoom with slider — tick behavior during zoom/pan interactions (Pro)
+  - Section 5c: Pro zoom with slider preview, brush select, toolbar, and `zoomInteractionConfig`
+  - Section 6: Interactive hover events with click data callbacks
+  - Section 7: Best practices summary reference table
+- New `/live-trading` page — LiveTradingChart demo
+
+#### Assets
+- New `assets/muiChartsFunctions.js` — Ships a reusable `formatDate` function for the functions-as-props pattern
+  - Supports format tokens: `YYYY`, `MMM`, `MM`, `M`, `dd`, `d`, `HH`, `mm`
+  - Context-aware: uses `tickFormat` option for tick labels, `format` for tooltips
+
+### Changed
+- **LineChart** — `processedXAxis` no longer short-circuits when `showSlider` is false
+  - Previously skipped all axis processing (including valueFormatter resolution) when slider was disabled
+  - Now always processes axes for dateFormat and valueFormatter resolution
+- **CompositeChart** — Same `processedXAxis` improvement as LineChart
+
+### Documentation
+- Updated CLAUDE.md with new component features and axis formatting documentation
+- Key Tick & Zoom Props reference table in the tick-hover demo page
+
+---
+
 ## [1.0.0] - 2026-03-19
 
 ### Added
@@ -281,7 +332,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/pip-install-python/dash-mui-charts/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/pip-install-python/dash-mui-charts/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/pip-install-python/dash-mui-charts/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/pip-install-python/dash-mui-charts/compare/v0.0.8...v1.0.0
 [0.0.8]: https://github.com/pip-install-python/dash-mui-charts/compare/v0.0.7...v0.0.8
 [0.0.7]: https://github.com/pip-install-python/dash-mui-charts/compare/v0.0.6...v0.0.7

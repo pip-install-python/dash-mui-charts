@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-**dash_mui_charts** is a Dash component library that wraps [MUI X Charts](https://mui.com/x/react-charts/) for use in Plotly Dash applications. It provides 6 chart components with full Python type hints and interactive callbacks.
+**dash_mui_charts** is a Dash component library that wraps [MUI X Charts](https://mui.com/x/react-charts/) for use in Plotly Dash applications. It provides 7 chart components with full Python type hints and interactive callbacks.
 
 ---
 
@@ -16,6 +16,16 @@
 | **CompositeChart** | Layer scatter + line plots on a single surface | Community / Pro |
 | **Heatmap** | Matrix/grid visualization | Pro |
 | **SparklineChart** | Compact inline charts | Community |
+| **LiveTradingChart** | Real-time streaming charts | Community / Pro |
+
+### LineChart & CompositeChart Features (v1.1.0)
+- **Built-in Date Formatting**: `dateFormat` / `dateTickFormat` props on xAxis/yAxis for time-scale axes
+  - `dateFormat='M/d HH:mm'` for tooltip labels, `dateTickFormat='M/d'` for compact tick labels
+  - Tokens: `YYYY`, `MMM`, `MM`, `M`, `dd`, `d`, `HH`, `mm`
+- **Functions-as-Props**: `valueFormatter` on xAxis/yAxis accepts DMC-style `{'function': 'name', 'options': {...}}`
+  - Resolves from `window.dashMuiChartsFunctions` registry (users define in `assets/*.js`)
+  - Mirrors Dash Mantine Components pattern for JS function serialization
+- **Axis Processing**: `processedXAxis` always runs (no longer skips when `showSlider=false`)
 
 ### LineChart Features (v0.0.7)
 - **Reference Lines**: Horizontal (`y`) and vertical (`x`) markers for targets, thresholds, dates
@@ -94,6 +104,7 @@ python usage.py
 |------|---------|
 | `src/lib/components/*.react.js` | React component source |
 | `dash_mui_charts/*.py` | Auto-generated Python wrappers |
+| `assets/muiChartsFunctions.js` | Functions-as-props registry (formatDate, etc.) |
 | `pages/*.py` | Demo page examples |
 | `app.py` | Main Dash application |
 | `setup.py` | Python package configuration |

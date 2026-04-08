@@ -274,6 +274,18 @@ Keyword arguments:
 
     - zoom (boolean | dict; optional)
 
+    - dateFormat (string; optional)
+
+    - dateTickFormat (string; optional)
+
+    - valueFormatter (dict; optional)
+
+        `valueFormatter` is a dict with keys:
+
+        - function (string; required)
+
+        - options (dict; optional)
+
 - yAxis (list of dicts; optional):
     Y-axis configuration. Array of axis config objects.
 
@@ -328,6 +340,14 @@ Keyword arguments:
     - domainLimit (a value equal to: 'nice', 'strict'; optional)
 
     - zoom (boolean | dict; optional)
+
+    - valueFormatter (dict; optional)
+
+        `valueFormatter` is a dict with keys:
+
+        - function (string; required)
+
+        - options (dict; optional)
 
 - zAxis (list of dicts; optional):
     Z-axis configuration for color mapping scatter points.
@@ -427,6 +447,14 @@ Keyword arguments:
         }
     )
 
+    XAxisValueFormatter = TypedDict(
+        "XAxisValueFormatter",
+            {
+            "function": str,
+            "options": NotRequired[dict]
+        }
+    )
+
     XAxis = TypedDict(
         "XAxis",
             {
@@ -454,7 +482,18 @@ Keyword arguments:
             "disableLine": NotRequired[bool],
             "disableTicks": NotRequired[bool],
             "domainLimit": NotRequired[Literal["nice", "strict"]],
-            "zoom": NotRequired[typing.Union[bool, dict]]
+            "zoom": NotRequired[typing.Union[bool, dict]],
+            "dateFormat": NotRequired[str],
+            "dateTickFormat": NotRequired[str],
+            "valueFormatter": NotRequired[typing.Union[typing.Any, "XAxisValueFormatter"]]
+        }
+    )
+
+    YAxisValueFormatter = TypedDict(
+        "YAxisValueFormatter",
+            {
+            "function": str,
+            "options": NotRequired[dict]
         }
     )
 
@@ -485,7 +524,8 @@ Keyword arguments:
             "disableLine": NotRequired[bool],
             "disableTicks": NotRequired[bool],
             "domainLimit": NotRequired[Literal["nice", "strict"]],
-            "zoom": NotRequired[typing.Union[bool, dict]]
+            "zoom": NotRequired[typing.Union[bool, dict]],
+            "valueFormatter": NotRequired[typing.Union[typing.Any, "YAxisValueFormatter"]]
         }
     )
 

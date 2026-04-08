@@ -21,6 +21,56 @@ import { ChartsToolbarPro } from '@mui/x-charts-pro/ChartsToolbarPro';
 let licenseKeySet = false;
 
 /**
+ * Resolve a function-as-prop value from a {function, options} descriptor.
+ * Mirrors Dash Mantine Components' dashMantineFunctions pattern.
+ */
+function resolveFunctionProp(value) {
+    if (typeof value === 'function') return value;
+    if (value && typeof value === 'object' && typeof value.function === 'string') {
+        const registry = window.dashMuiChartsFunctions;
+        if (registry && typeof registry[value.function] === 'function') {
+            const fn = registry[value.function];
+            const options = value.options || {};
+            return (...args) => fn(...args, options);
+        }
+        console.warn(`dashMuiChartsFunctions.${value.function} not found. Define it in assets/*.js`);
+    }
+    return undefined;
+}
+
+/**
+ * Built-in date formatter for time-scale axes.
+ * Tokens: YYYY, MMM, MM, M, dd, d, HH, mm
+ */
+const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const pad2 = (n) => n < 10 ? '0' + n : '' + n;
+
+function formatDateStr(date, pattern) {
+    const d = date instanceof Date ? date : new Date(date);
+    return pattern.replace(/YYYY|MMM|MM|dd|HH|mm|M|d/g, (token) => {
+        switch (token) {
+            case 'YYYY': return d.getFullYear();
+            case 'MMM':  return MONTHS_SHORT[d.getMonth()];
+            case 'MM':   return pad2(d.getMonth() + 1);
+            case 'M':    return d.getMonth() + 1;
+            case 'dd':   return pad2(d.getDate());
+            case 'd':    return d.getDate();
+            case 'HH':   return pad2(d.getHours());
+            case 'mm':   return pad2(d.getMinutes());
+            default:     return token;
+        }
+    });
+}
+
+function createDateFormatter(format, tickFormat) {
+    const tf = tickFormat || format;
+    return (value, context) => {
+        const pattern = (context && context.location === 'tick') ? tf : format;
+        return formatDateStr(value, pattern);
+    };
+}
+
+/**
  * Custom axis tooltip content that also shows nearby scatter data points.
  * Rendered inside ChartsTooltipContainer for proper positioning.
  */
@@ -279,33 +329,45 @@ export default function CompositeChart(props) {
         return checkAxes(xAxis) || checkAxes(yAxis);
     }, [xAxis, yAxis]);
 
-    // Process xAxis: convert epoch ms to Date objects for time scales, add slider if needed
+    // Process xAxis: resolve valueFormatter/dateFormat, convert epoch ms to Date objects, add slider
     const processedXAxis = useMemo(() => {
         if (!xAxis) return undefined;
 
-        let axes = xAxis.map(axis => {
-            // Convert numeric timestamps to Date objects for time scale axes
-            if (axis.scaleType === 'time' && axis.data) {
-                return {
-                    ...axis,
-                    data: axis.data.map(v => typeof v === 'number' ? new Date(v) : v),
-                };
+        return xAxis.map(axis => {
+            let result = { ...axis };
+
+            // Built-in dateFormat: creates a valueFormatter from format strings
+            if (axis.dateFormat) {
+                result.valueFormatter = createDateFormatter(axis.dateFormat, axis.dateTickFormat);
+                delete result.dateFormat;
+                delete result.dateTickFormat;
             }
-            return axis;
-        });
+            // DMC-style function-as-prop valueFormatter (for advanced use cases)
+            else if (axis.valueFormatter && typeof axis.valueFormatter !== 'function') {
+                const resolved = resolveFunctionProp(axis.valueFormatter);
+                if (resolved) {
+                    result.valueFormatter = resolved;
+                } else {
+                    delete result.valueFormatter;
+                }
+            }
 
-        if (!showSlider) return axes;
+            // Convert numeric timestamps to Date objects for time scale axes
+            if (result.scaleType === 'time' && result.data) {
+                result.data = result.data.map(v => typeof v === 'number' ? new Date(v) : v);
+            }
 
-        return axes.map(axis => {
-            const existingZoom = axis.zoom || {};
-            const zoomConfig = existingZoom === true ? {} : (typeof existingZoom === 'object' ? existingZoom : {});
-            return {
-                ...axis,
-                zoom: {
+            // Inject slider config when showSlider is true
+            if (showSlider) {
+                const existingZoom = result.zoom || {};
+                const zoomConfig = existingZoom === true ? {} : (typeof existingZoom === 'object' ? existingZoom : {});
+                result.zoom = {
                     ...zoomConfig,
                     slider: { ...zoomConfig.slider, enabled: true },
-                },
-            };
+                };
+            }
+
+            return result;
         });
     }, [xAxis, showSlider]);
 
@@ -562,6 +624,15 @@ CompositeChart.propTypes = {
         disableTicks: PropTypes.bool,
         domainLimit: PropTypes.oneOf(['nice', 'strict']),
         zoom: PropTypes.oneOfType([PropTypes.bool, PropTypes.object]),
+        dateFormat: PropTypes.string,
+        dateTickFormat: PropTypes.string,
+        valueFormatter: PropTypes.oneOfType([
+            PropTypes.func,
+            PropTypes.shape({
+                function: PropTypes.string.isRequired,
+                options: PropTypes.object,
+            }),
+        ]),
     })),
 
     /**
@@ -593,6 +664,13 @@ CompositeChart.propTypes = {
         disableTicks: PropTypes.bool,
         domainLimit: PropTypes.oneOf(['nice', 'strict']),
         zoom: PropTypes.oneOfType([PropTypes.bool, PropTypes.object]),
+        valueFormatter: PropTypes.oneOfType([
+            PropTypes.func,
+            PropTypes.shape({
+                function: PropTypes.string.isRequired,
+                options: PropTypes.object,
+            }),
+        ]),
     })),
 
     /**

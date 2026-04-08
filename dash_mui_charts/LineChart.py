@@ -377,6 +377,10 @@ Keyword arguments:
 
     - height (number; optional)
 
+    - dateFormat (string; optional)
+
+    - dateTickFormat (string; optional)
+
     - disableLine (boolean; optional)
 
     - disableTicks (boolean; optional)
@@ -390,6 +394,14 @@ Keyword arguments:
     - colorMap (dict; optional)
 
     - zoom (boolean | dict; optional)
+
+    - valueFormatter (dict; optional)
+
+        `valueFormatter` is a dict with keys:
+
+        - function (string; required)
+
+        - options (dict; optional)
 
 - yAxis (list of dicts; optional):
     Y-axis configuration. Array of axis config objects. Each axis
@@ -445,6 +457,10 @@ Keyword arguments:
 
     - reverse (boolean; optional)
 
+    - dateFormat (string; optional)
+
+    - dateTickFormat (string; optional)
+
     - tickNumber (number; optional)
 
     - tickMinStep (number; optional)
@@ -482,6 +498,14 @@ Keyword arguments:
     - colorMap (dict; optional)
 
     - zoom (boolean | dict; optional)
+
+    - valueFormatter (dict; optional)
+
+        `valueFormatter` is a dict with keys:
+
+        - function (string; required)
+
+        - options (dict; optional)
 
 - zoom (list of dicts; optional):
     Controlled zoom state for the chart. Array of objects with: -
@@ -570,6 +594,14 @@ Keyword arguments:
         }
     )
 
+    XAxisValueFormatter = TypedDict(
+        "XAxisValueFormatter",
+            {
+            "function": str,
+            "options": NotRequired[dict]
+        }
+    )
+
     XAxis = TypedDict(
         "XAxis",
             {
@@ -594,13 +626,24 @@ Keyword arguments:
             "tickLabelMinGap": NotRequired[NumberType],
             "labelStyle": NotRequired[dict],
             "height": NotRequired[NumberType],
+            "dateFormat": NotRequired[str],
+            "dateTickFormat": NotRequired[str],
             "disableLine": NotRequired[bool],
             "disableTicks": NotRequired[bool],
             "domainLimit": NotRequired[Literal["nice", "strict"]],
             "categoryGapRatio": NotRequired[NumberType],
             "barGapRatio": NotRequired[NumberType],
             "colorMap": NotRequired[dict],
-            "zoom": NotRequired[typing.Union[bool, dict]]
+            "zoom": NotRequired[typing.Union[bool, dict]],
+            "valueFormatter": NotRequired[typing.Union[typing.Any, "XAxisValueFormatter"]]
+        }
+    )
+
+    YAxisValueFormatter = TypedDict(
+        "YAxisValueFormatter",
+            {
+            "function": str,
+            "options": NotRequired[dict]
         }
     )
 
@@ -617,6 +660,8 @@ Keyword arguments:
             "max": NotRequired[NumberType],
             "width": NotRequired[NumberType],
             "reverse": NotRequired[bool],
+            "dateFormat": NotRequired[str],
+            "dateTickFormat": NotRequired[str],
             "tickNumber": NotRequired[NumberType],
             "tickMinStep": NotRequired[NumberType],
             "tickMaxStep": NotRequired[NumberType],
@@ -635,7 +680,8 @@ Keyword arguments:
             "categoryGapRatio": NotRequired[NumberType],
             "barGapRatio": NotRequired[NumberType],
             "colorMap": NotRequired[dict],
-            "zoom": NotRequired[typing.Union[bool, dict]]
+            "zoom": NotRequired[typing.Union[bool, dict]],
+            "valueFormatter": NotRequired[typing.Union[typing.Any, "YAxisValueFormatter"]]
         }
     )
 

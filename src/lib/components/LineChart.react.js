@@ -26,6 +26,58 @@ import {
 let licenseKeySet = false;
 
 /**
+ * Resolve a function-as-prop value from a {function, options} descriptor.
+ * Mirrors Dash Mantine Components' dashMantineFunctions pattern.
+ * Users define functions in assets/*.js on window.dashMuiChartsFunctions.
+ */
+function resolveFunctionProp(value) {
+    if (typeof value === 'function') return value;
+    if (value && typeof value === 'object' && typeof value.function === 'string') {
+        const registry = window.dashMuiChartsFunctions;
+        if (registry && typeof registry[value.function] === 'function') {
+            const fn = registry[value.function];
+            const options = value.options || {};
+            return (...args) => fn(...args, options);
+        }
+        console.warn(`dashMuiChartsFunctions.${value.function} not found. Define it in assets/*.js`);
+    }
+    return undefined;
+}
+
+/**
+ * Built-in date formatter for time-scale axes.
+ * Supports format tokens: YYYY, MMM, MM, M, dd, d, HH, mm
+ * Optionally uses a shorter tickFormat for axis tick labels vs tooltips.
+ */
+const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const pad2 = (n) => n < 10 ? '0' + n : '' + n;
+
+function formatDateStr(date, pattern) {
+    const d = date instanceof Date ? date : new Date(date);
+    return pattern.replace(/YYYY|MMM|MM|dd|HH|mm|M|d/g, (token) => {
+        switch (token) {
+            case 'YYYY': return d.getFullYear();
+            case 'MMM':  return MONTHS_SHORT[d.getMonth()];
+            case 'MM':   return pad2(d.getMonth() + 1);
+            case 'M':    return d.getMonth() + 1;
+            case 'dd':   return pad2(d.getDate());
+            case 'd':    return d.getDate();
+            case 'HH':   return pad2(d.getHours());
+            case 'mm':   return pad2(d.getMinutes());
+            default:     return token;
+        }
+    });
+}
+
+function createDateFormatter(format, tickFormat) {
+    const tf = tickFormat || format;
+    return (value, context) => {
+        const pattern = (context && context.location === 'tick') ? tf : format;
+        return formatDateStr(value, pattern);
+    };
+}
+
+/**
  * Custom brush overlay showing values at start/end positions with difference and percentage.
  * Used internally when brushOverlay='values' is specified.
  */
@@ -400,23 +452,41 @@ export default function LineChart(props) {
         return checkAxes(xAxis) || checkAxes(yAxis);
     }, [xAxis, yAxis]);
 
-    // Process xAxis to inject slider config when showSlider is true
+    // Process xAxis: resolve valueFormatter, apply dateFormat, inject slider config
     const processedXAxis = useMemo(() => {
         if (!xAxis) return undefined;
-        if (!showSlider) return xAxis;
 
-        // Inject slider: { enabled: true } into zoom config for each axis, merging with existing slider config
         return xAxis.map(axis => {
-            const existingZoom = axis.zoom || {};
-            // If zoom is just a boolean true, convert to object
-            const zoomConfig = existingZoom === true ? {} : (typeof existingZoom === 'object' ? existingZoom : {});
-            return {
-                ...axis,
-                zoom: {
+            let result = { ...axis };
+
+            // Built-in dateFormat: creates a valueFormatter from format strings
+            // Usage: dateFormat='M/d HH:mm', dateTickFormat='M/d'
+            if (axis.dateFormat) {
+                result.valueFormatter = createDateFormatter(axis.dateFormat, axis.dateTickFormat);
+                delete result.dateFormat;
+                delete result.dateTickFormat;
+            }
+            // DMC-style function-as-prop valueFormatter (for advanced use cases)
+            else if (axis.valueFormatter && typeof axis.valueFormatter !== 'function') {
+                const resolved = resolveFunctionProp(axis.valueFormatter);
+                if (resolved) {
+                    result.valueFormatter = resolved;
+                } else {
+                    delete result.valueFormatter;
+                }
+            }
+
+            // Inject slider: { enabled: true } into zoom config when showSlider is true
+            if (showSlider) {
+                const existingZoom = result.zoom || {};
+                const zoomConfig = existingZoom === true ? {} : (typeof existingZoom === 'object' ? existingZoom : {});
+                result.zoom = {
                     ...zoomConfig,
                     slider: { ...zoomConfig.slider, enabled: true },
-                },
-            };
+                };
+            }
+
+            return result;
         });
     }, [xAxis, showSlider]);
 
@@ -732,6 +802,8 @@ LineChart.propTypes = {
         tickLabelMinGap: PropTypes.number,
         labelStyle: PropTypes.object,
         height: PropTypes.number,
+        dateFormat: PropTypes.string,
+        dateTickFormat: PropTypes.string,
         disableLine: PropTypes.bool,
         disableTicks: PropTypes.bool,
         domainLimit: PropTypes.oneOf(['nice', 'strict']),
@@ -741,6 +813,13 @@ LineChart.propTypes = {
         zoom: PropTypes.oneOfType([
             PropTypes.bool,
             PropTypes.object,
+        ]),
+        valueFormatter: PropTypes.oneOfType([
+            PropTypes.func,
+            PropTypes.shape({
+                function: PropTypes.string.isRequired,
+                options: PropTypes.object,
+            }),
         ]),
     })),
 
@@ -788,6 +867,8 @@ LineChart.propTypes = {
         max: PropTypes.number,
         width: PropTypes.number,
         reverse: PropTypes.bool,
+        dateFormat: PropTypes.string,
+        dateTickFormat: PropTypes.string,
         tickNumber: PropTypes.number,
         tickMinStep: PropTypes.number,
         tickMaxStep: PropTypes.number,
@@ -809,6 +890,13 @@ LineChart.propTypes = {
         zoom: PropTypes.oneOfType([
             PropTypes.bool,
             PropTypes.object,
+        ]),
+        valueFormatter: PropTypes.oneOfType([
+            PropTypes.func,
+            PropTypes.shape({
+                function: PropTypes.string.isRequired,
+                options: PropTypes.object,
+            }),
         ]),
     })),
 

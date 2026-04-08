@@ -5,6 +5,7 @@ import Heatmap from './components/Heatmap.react';
 import PieChart from './components/PieChart.react';
 import ScatterChart from './components/ScatterChart.react';
 import CompositeChart from './components/CompositeChart.react';
+import LiveTradingChart from './components/LiveTradingChart.react';
 
 export {
     LineChart,
@@ -13,4 +14,5 @@ export {
     PieChart,
     ScatterChart,
     CompositeChart,
+    LiveTradingChart,
 };
