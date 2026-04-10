@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: dash-mui-charts
+    runtime: docker
+    repo: https://github.com/pip-install-python/dash-mui-charts
+    branch: main
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: MUI_PRO_API_KEY
+        sync: false
+    healthCheckPath: /
+    autoDeploy: true
