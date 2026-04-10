@@ -16,9 +16,107 @@ import { ChartsClipPath } from '@mui/x-charts-pro/ChartsClipPath';
 import { ChartsReferenceLine } from '@mui/x-charts-pro/ChartsReferenceLine';
 import { ChartZoomSlider } from '@mui/x-charts-pro/ChartZoomSlider';
 import { ChartsToolbarPro } from '@mui/x-charts-pro/ChartsToolbarPro';
-
+import { useXScale, useYScale, useDrawingArea, useSeries } from '@mui/x-charts/hooks';
+import { useXAxis } from '@mui/x-charts/hooks';
 // Track if license key has been set globally
 let licenseKeySet = false;
+
+/**
+ * CrosshairTracker — renders an invisible overlay rect inside ChartsSurface
+ * that captures mousemove events and uses scale.invert() to convert pixel
+ * coordinates to data-space values, reporting them via setProps.
+ * Must be rendered inside ChartDataProviderPro / ChartsSurface.
+ */
+function CrosshairTracker({ setProps }) {
+    const xScale = useXScale();
+    const yScale = useYScale();
+    const { left, top, width, height } = useDrawingArea();
+    const lastReportedRef = useRef(null);
+
+    const handleMouseMove = (event) => {
+        if (!setProps || !xScale?.invert || !yScale?.invert) return;
+
+        const svg = event.currentTarget.ownerSVGElement || event.currentTarget.closest('svg');
+        if (!svg) return;
+
+        const pt = svg.createSVGPoint();
+        pt.x = event.clientX;
+        pt.y = event.clientY;
+        const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
+
+        // Check if pointer is inside drawing area
+        if (svgPt.x < left || svgPt.x > left + width || svgPt.y < top || svgPt.y > top + height) {
+            return;
+        }
+
+        let xVal, yVal;
+        try {
+            const rawX = xScale.invert(svgPt.x);
+            xVal = rawX instanceof Date ? rawX.getTime() : rawX;
+            yVal = yScale.invert(svgPt.y);
+        } catch { return; }
+
+        if (xVal == null || yVal == null) return;
+
+        const rounded = {
+            x: typeof xVal === 'number' ? Math.round(xVal * 100) / 100 : xVal,
+            y: typeof yVal === 'number' ? Math.round(yVal * 100) / 100 : yVal,
+        };
+        const key = `${rounded.x}|${rounded.y}`;
+        if (key !== lastReportedRef.current) {
+            lastReportedRef.current = key;
+            setProps({ crosshairPosition: rounded });
+        }
+    };
+
+    const handleMouseLeave = () => {
+        if (lastReportedRef.current !== null) {
+            lastReportedRef.current = null;
+            setProps?.({ crosshairPosition: null });
+        }
+    };
+
+    const handleContextMenu = (event) => {
+        if (!setProps || !xScale?.invert || !yScale?.invert) return;
+
+        const svg = event.currentTarget.ownerSVGElement || event.currentTarget.closest('svg');
+        if (!svg) return;
+
+        const pt = svg.createSVGPoint();
+        pt.x = event.clientX;
+        pt.y = event.clientY;
+        const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
+
+        if (svgPt.x < left || svgPt.x > left + width || svgPt.y < top || svgPt.y > top + height) return;
+
+        let xVal, yVal;
+        try {
+            const rawX = xScale.invert(svgPt.x);
+            xVal = rawX instanceof Date ? rawX.getTime() : rawX;
+            yVal = yScale.invert(svgPt.y);
+        } catch { return; }
+
+        event.preventDefault();
+        setProps({
+            crosshairClick: {
+                x: typeof xVal === 'number' ? Math.round(xVal * 100) / 100 : xVal,
+                y: typeof yVal === 'number' ? Math.round(yVal * 100) / 100 : yVal,
+                button: 'right',
+                timestamp: new Date().toISOString(),
+            }
+        });
+    };
+
+    return (
+        <rect
+            x={left} y={top} width={width} height={height}
+            fill="transparent" style={{ pointerEvents: 'all', cursor: 'crosshair' }}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+            onContextMenu={handleContextMenu}
+        />
+    );
+}
 
 /**
  * Resolve a function-as-prop value from a {function, options} descriptor.
@@ -47,9 +145,10 @@ const pad2 = (n) => n < 10 ? '0' + n : '' + n;
 
 function formatDateStr(date, pattern) {
     const d = date instanceof Date ? date : new Date(date);
-    return pattern.replace(/YYYY|MMM|MM|dd|HH|mm|M|d/g, (token) => {
+    return pattern.replace(/YYYY|YY|MMM|MM|dd|HH|mm|M|d/g, (token) => {
         switch (token) {
             case 'YYYY': return d.getFullYear();
+            case 'YY':   return String(d.getFullYear()).slice(-2);
             case 'MMM':  return MONTHS_SHORT[d.getMonth()];
             case 'MM':   return pad2(d.getMonth() + 1);
             case 'M':    return d.getMonth() + 1;
@@ -150,12 +249,13 @@ function CompositeAxisTooltipContent({ scatterSeries, proximity }) {
 
     return (
         <div style={{
-            backgroundColor: 'white',
-            border: '1px solid #e0e0e0',
+            backgroundColor: 'var(--mantine-color-body, white)',
+            border: '1px solid var(--mantine-color-default-border, #e0e0e0)',
             borderRadius: 4,
             padding: '8px 12px',
             boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
             fontSize: 13,
+            color: 'var(--mantine-color-text, inherit)',
         }}>
             <div style={{ marginBottom: 4, fontWeight: 500 }}>
                 {displayAxisValue}
@@ -168,6 +268,192 @@ function CompositeAxisTooltipContent({ scatterSeries, proximity }) {
                 </div>
             ))}
         </div>
+    );
+}
+
+/**
+ * External axis tooltip that renders when syncedTooltipIndex is set from
+ * outside (e.g. via Dash callback). Uses MUI hooks to position the tooltip
+ * at the correct x-pixel based on the axis scale.
+ * Must be rendered INSIDE ChartDataProviderPro to access hooks.
+ */
+function ExternalAxisTooltip({ dataIndex, seriesConfig, scatterSeries, proximity }) {
+    const xScale = useXScale();
+    const drawingArea = useDrawingArea();
+    const xAxisObj = useXAxis();
+    const series = useSeries();
+
+    if (dataIndex == null || !drawingArea) return null;
+
+    // Get the x-axis value and pixel position
+    const axisData = xAxisObj?.data;
+    if (!axisData || dataIndex < 0 || dataIndex >= axisData.length) return null;
+
+    const axisValue = axisData[dataIndex];
+    let xPixel;
+    try {
+        xPixel = xScale(axisValue);
+    } catch {
+        return null;
+    }
+    if (xPixel == null || isNaN(xPixel)) return null;
+
+    // Format the axis label
+    let displayAxisValue;
+    if (axisValue instanceof Date) {
+        displayAxisValue = axisValue.toLocaleString(undefined, {
+            month: 'short', day: 'numeric', year: 'numeric',
+            hour: 'numeric', minute: '2-digit',
+        });
+    } else if (typeof axisValue === 'number' && axisValue > 1e12) {
+        displayAxisValue = new Date(axisValue).toLocaleString(undefined, {
+            month: 'short', day: 'numeric', year: 'numeric',
+            hour: 'numeric', minute: '2-digit',
+        });
+    } else if (xAxisObj?.valueFormatter) {
+        try {
+            displayAxisValue = xAxisObj.valueFormatter(axisValue, { location: 'tooltip' });
+        } catch {
+            displayAxisValue = String(axisValue);
+        }
+    } else {
+        displayAxisValue = String(axisValue);
+    }
+
+    // Gather line series entries from MUI's processed series data
+    const entries = [];
+    const lineSeries = series.line;
+    if (lineSeries) {
+        lineSeries.seriesOrder.forEach(seriesId => {
+            const s = lineSeries.series[seriesId];
+            if (!s) return;
+            const val = s.data?.[dataIndex];
+            if (val == null) return;
+            entries.push({
+                seriesId,
+                color: s.color || '#666',
+                formattedLabel: s.label || seriesId,
+                formattedValue: typeof val === 'number'
+                    ? val.toLocaleString(undefined, { maximumFractionDigits: 2 })
+                    : String(val),
+            });
+        });
+    }
+
+    // Gather scatter series entries via proximity matching
+    const scatterSeriesIds = new Set((scatterSeries || []).map(s => s.id));
+    if (scatterSeries && axisValue != null) {
+        const numericValue = axisValue instanceof Date ? axisValue.getTime() : Number(axisValue);
+        for (const s of scatterSeries) {
+            if (!s.data) continue;
+            for (const point of s.data) {
+                const dist = Math.abs(point.x - numericValue);
+                if (dist <= proximity) {
+                    entries.push({
+                        seriesId: s.id,
+                        color: s.color || '#666',
+                        formattedLabel: s.label || s.id,
+                        formattedValue: typeof point.y === 'number'
+                            ? point.y.toLocaleString(undefined, { maximumFractionDigits: 2 })
+                            : String(point.y),
+                    });
+                }
+            }
+        }
+    }
+
+    if (entries.length === 0) return null;
+
+    // Position tooltip relative to the chart drawing area
+    const tooltipLeft = drawingArea.left + xPixel;
+    const chartMidpoint = drawingArea.left + drawingArea.width / 2;
+    const showOnLeft = (drawingArea.left + xPixel) > chartMidpoint;
+
+    const rowStyle = { display: 'flex', alignItems: 'center', gap: 6, padding: '2px 0' };
+    const dotStyle = (color) => ({
+        display: 'inline-block',
+        width: 10,
+        height: 10,
+        borderRadius: '50%',
+        backgroundColor: color,
+        flexShrink: 0,
+    });
+
+    return (
+        <div style={{
+            position: 'absolute',
+            top: drawingArea.top + 8,
+            left: showOnLeft ? undefined : tooltipLeft + 12,
+            right: showOnLeft ? `calc(100% - ${tooltipLeft - 12}px)` : undefined,
+            backgroundColor: 'var(--mantine-color-body, white)',
+            border: '1px solid var(--mantine-color-default-border, #e0e0e0)',
+            borderRadius: 4,
+            padding: '8px 12px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+            fontSize: 13,
+            zIndex: 1000,
+            pointerEvents: 'none',
+            whiteSpace: 'nowrap',
+            color: 'var(--mantine-color-text, inherit)',
+        }}>
+            <div style={{ marginBottom: 4, fontWeight: 500 }}>
+                {displayAxisValue}
+            </div>
+            {entries.map((entry, idx) => (
+                <div key={`${entry.seriesId}-${idx}`} style={rowStyle}>
+                    <span style={dotStyle(entry.color)} />
+                    <span>{entry.formattedLabel}:</span>
+                    <span style={{ fontWeight: 500 }}>{entry.formattedValue}</span>
+                </div>
+            ))}
+        </div>
+    );
+}
+
+/**
+ * ForecastOverlay — renders a dashed trend line + shaded uncertainty band
+ * as custom SVG inside ChartsSurface. Must be a child of ChartDataProviderPro.
+ *
+ * Props:
+ *   forecast: array of {x, y, upper, lower} objects (x = timestamp or axis value)
+ *   color: line/fill color (default '#ff9800')
+ *   opacity: fill opacity for the band (default 0.15)
+ *   yAxisId: optional y-axis id if multi-axis
+ */
+function ForecastOverlay({ forecast, color = '#ff9800', opacity = 0.15, yAxisId }) {
+    const xScale = useXScale();
+    const yScale = useYScale(yAxisId);
+
+    if (!forecast || forecast.length === 0) return null;
+
+    const pts = [];
+    for (let i = 0; i < forecast.length; i++) {
+        const f = forecast[i];
+        const xVal = f.x instanceof Date ? f.x : (typeof f.x === 'number' && f.x > 1e10 ? new Date(f.x) : f.x);
+        const x = xScale(xVal);
+        const y = yScale(f.y);
+        const yUp = yScale(f.upper != null ? f.upper : f.y);
+        const yLo = yScale(f.lower != null ? f.lower : f.y);
+        if (x == null || y == null || isNaN(x) || isNaN(y)) continue;
+        pts.push({ x, y, yUp: isNaN(yUp) ? y : yUp, yLo: isNaN(yLo) ? y : yLo });
+    }
+    if (pts.length < 2) return null;
+
+    // Dashed center line
+    let linePath = `M ${pts[0].x} ${pts[0].y}`;
+    for (let i = 1; i < pts.length; i++) linePath += ` L ${pts[i].x} ${pts[i].y}`;
+
+    // Uncertainty band (upper forward, lower backward)
+    let areaPath = `M ${pts[0].x} ${pts[0].yUp}`;
+    for (let i = 1; i < pts.length; i++) areaPath += ` L ${pts[i].x} ${pts[i].yUp}`;
+    for (let i = pts.length - 1; i >= 0; i--) areaPath += ` L ${pts[i].x} ${pts[i].yLo}`;
+    areaPath += ' Z';
+
+    return (
+        <g>
+            <path d={areaPath} fill={color} fillOpacity={opacity} />
+            <path d={linePath} stroke={color} strokeWidth={2} strokeDasharray="6 4" fill="none" />
+        </g>
     );
 }
 
@@ -205,8 +491,22 @@ export default function CompositeChart(props) {
         showToolbar = false,
         showSlider = false,
         zoomInteractionConfig,
-        // Dash output props
+        // Controlled highlight/tooltip props
+        highlightedAxis,
         highlightedItem,
+        tooltipItem,
+        // Synced tooltip: set to a dataIndex to render a tooltip overlay
+        // at that position even without pointer hover (for cross-chart sync)
+        syncedTooltipIndex,
+        // Forecast overlay: array of {x, y, upper, lower} for dashed line + band
+        forecast,
+        forecastColor = '#ff9800',
+        forecastOpacity = 0.15,
+        // Crosshair tracking
+        enableCrosshair = false,
+        crosshairPosition,
+        crosshairClick,
+        // Dash output props
         clickData,
         n_clicks = 0,
         zoomData,
@@ -234,7 +534,30 @@ export default function CompositeChart(props) {
         }
     }, [initialZoom]);
 
-    // Controlled highlight state
+    // --- Controlled Axis Highlight State ---
+    const lastKnownHighlightedAxisRef = useRef(JSON.stringify(highlightedAxis ?? []));
+    const [controlledHighlightedAxis, setControlledHighlightedAxis] = useState(() =>
+        highlightedAxis && Array.isArray(highlightedAxis) ? highlightedAxis : []
+    );
+
+    useEffect(() => {
+        const currentStr = JSON.stringify(highlightedAxis ?? []);
+        if (currentStr !== lastKnownHighlightedAxisRef.current) {
+            lastKnownHighlightedAxisRef.current = currentStr;
+            setControlledHighlightedAxis(highlightedAxis ?? []);
+        }
+    }, [highlightedAxis]);
+
+    const handleHighlightedAxisChange = (newValue) => {
+        const value = newValue ?? [];
+        setControlledHighlightedAxis(value);
+        lastKnownHighlightedAxisRef.current = JSON.stringify(value);
+        if (setProps) {
+            setProps({ highlightedAxis: value });
+        }
+    };
+
+    // --- Controlled Item Highlight State ---
     const [controlledHighlightedItem, setControlledHighlightedItem] = useState(highlightedItem || null);
     const lastHighlightPropRef = useRef(JSON.stringify(highlightedItem));
 
@@ -245,6 +568,29 @@ export default function CompositeChart(props) {
             setControlledHighlightedItem(highlightedItem || null);
         }
     }, [highlightedItem]);
+
+    // --- Controlled Tooltip Item State ---
+    const lastKnownTooltipItemRef = useRef(JSON.stringify(tooltipItem ?? null));
+    const [controlledTooltipItem, setControlledTooltipItem] = useState(() =>
+        tooltipItem ?? null
+    );
+
+    useEffect(() => {
+        const currentStr = JSON.stringify(tooltipItem ?? null);
+        if (currentStr !== lastKnownTooltipItemRef.current) {
+            lastKnownTooltipItemRef.current = currentStr;
+            setControlledTooltipItem(tooltipItem ?? null);
+        }
+    }, [tooltipItem]);
+
+    const handleTooltipItemChange = (newValue) => {
+        const value = newValue ?? null;
+        setControlledTooltipItem(value);
+        lastKnownTooltipItemRef.current = JSON.stringify(value);
+        if (setProps) {
+            setProps({ tooltipItem: value });
+        }
+    };
 
     // Process series - ensure IDs
     const processedSeries = useMemo(() => {
@@ -449,12 +795,20 @@ export default function CompositeChart(props) {
         providerProps.initialZoom = initialZoom;
     }
 
-    // Controlled highlight
+    // Controlled axis highlight - enables axis interaction tracking for useAxesTooltip()
+    providerProps.highlightedAxis = controlledHighlightedAxis;
+    providerProps.onHighlightedAxisChange = handleHighlightedAxisChange;
+
+    // Controlled item highlight
     providerProps.highlightedItem = controlledHighlightedItem;
     providerProps.onHighlightChange = handleHighlightChange;
 
+    // Controlled tooltip item - for synchronized tooltips across charts
+    providerProps.tooltipItem = controlledTooltipItem;
+    providerProps.onTooltipItemChange = handleTooltipItemChange;
+
     return (
-        <div id={id}>
+        <div id={id} style={{ position: 'relative' }}>
             <ChartDataProviderPro key={chartKey} {...providerProps}>
                 {/* Toolbar (Pro) */}
                 {showToolbar && <ChartsToolbarPro />}
@@ -510,10 +864,24 @@ export default function CompositeChart(props) {
                         y={axisHighlight?.y ?? 'none'}
                     />
 
+                    {/* Forecast overlay — dashed line + uncertainty band */}
+                    {forecast && forecast.length > 0 && (
+                        <ForecastOverlay
+                            forecast={forecast}
+                            color={forecastColor}
+                            opacity={forecastOpacity}
+                        />
+                    )}
+
                     {/* Reference lines */}
                     {referenceLines && referenceLines.map((ref, idx) => (
                         <ChartsReferenceLine key={`ref-${idx}`} {...ref} />
                     ))}
+
+                    {/* Crosshair position tracker — invisible SVG overlay */}
+                    {enableCrosshair && (
+                        <CrosshairTracker setProps={setProps} />
+                    )}
 
                     {/* Zoom slider */}
                     {(showSlider || hasSliderInAxisConfig) && <ChartZoomSlider />}
@@ -532,6 +900,18 @@ export default function CompositeChart(props) {
                         <ChartsTooltip trigger={tooltipTrigger} />
                     )
                 )}
+
+                {/* External synced tooltip overlay - renders when syncedTooltipIndex is set
+                    from a Dash callback, showing tooltip at that data index even without hover */}
+                {syncedTooltipIndex != null && syncedTooltipIndex >= 0 && (
+                    <ExternalAxisTooltip
+                        dataIndex={syncedTooltipIndex}
+                        seriesConfig={processedSeries}
+                        scatterSeries={scatterSeriesData}
+                        proximity={scatterProximity}
+                    />
+                )}
+
             </ChartDataProviderPro>
         </div>
     );
@@ -823,9 +1203,103 @@ CompositeChart.propTypes = {
     }),
 
     /**
+     * Controlled axis highlight state. Array of objects specifying which axis values
+     * are highlighted. Each object has:
+     * - axisId (string|number): The axis identifier
+     * - dataIndex (number): The data index to highlight
+     * Set to empty array [] to clear highlights.
+     */
+    highlightedAxis: PropTypes.arrayOf(PropTypes.shape({
+        axisId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+        dataIndex: PropTypes.number.isRequired,
+    })),
+
+    /**
      * Currently highlighted item (controlled input/output).
      */
     highlightedItem: PropTypes.object,
+
+    /**
+     * Controlled tooltip item state. Used to synchronize tooltips across multiple charts.
+     * Object with:
+     * - type (string): Chart type ('line', 'scatter', etc.)
+     * - seriesId (string): The series identifier
+     * - dataIndex (number): The data index within the series
+     * Set to null to hide tooltip.
+     */
+    tooltipItem: PropTypes.shape({
+        type: PropTypes.string,
+        seriesId: PropTypes.string,
+        dataIndex: PropTypes.number,
+    }),
+
+    /**
+     * Forecast overlay data. Array of objects with x, y (center), upper, and lower
+     * values. Renders a dashed trend line with a shaded uncertainty band in the
+     * chart's SVG layer, matching the LiveTradingChart forecast style.
+     */
+    forecast: PropTypes.arrayOf(PropTypes.shape({
+        x: PropTypes.number.isRequired,
+        y: PropTypes.number.isRequired,
+        upper: PropTypes.number,
+        lower: PropTypes.number,
+    })),
+
+    /**
+     * Forecast line and band color. Default '#ff9800' (orange).
+     */
+    forecastColor: PropTypes.string,
+
+    /**
+     * Forecast band fill opacity. Default 0.15.
+     */
+    forecastOpacity: PropTypes.number,
+
+    /**
+     * Enable crosshair position tracking. When true, the crosshairPosition
+     * output prop reports the pointer's x/y data-space coordinates in real time
+     * as the user moves the mouse over the chart. Requires axisHighlight
+     * set to {x: 'line', y: 'line'} for the visual crosshair.
+     */
+    enableCrosshair: PropTypes.bool,
+
+    /**
+     * Current crosshair position in data coordinates. Read-only output that
+     * updates as the user moves the mouse. Object with:
+     * - x (number): x-axis data value (epoch ms for time scales)
+     * - y (number): y-axis data value
+     * Set to null when the pointer leaves the chart area.
+     */
+    crosshairPosition: PropTypes.shape({
+        x: PropTypes.number,
+        y: PropTypes.number,
+    }),
+
+    /**
+     * Fires on right-click within the chart drawing area when enableCrosshair
+     * is true. Object with:
+     * - x (number): x-axis data value at click position
+     * - y (number): y-axis data value at click position
+     * - button (string): always 'right'
+     * - timestamp (string): ISO timestamp of the click
+     * Use this to implement context menus (e.g. "Set Alert") at precise
+     * data coordinates.
+     */
+    crosshairClick: PropTypes.shape({
+        x: PropTypes.number,
+        y: PropTypes.number,
+        button: PropTypes.string,
+        timestamp: PropTypes.string,
+    }),
+
+    /**
+     * Synced tooltip data index. When set to a non-negative integer, renders a
+     * tooltip overlay at that x-axis data index position, even without pointer hover.
+     * Use this to synchronize tooltip display across multiple CompositeCharts:
+     * read highlightedAxis.dataIndex from one chart, write it to syncedTooltipIndex
+     * on the other charts. Set to null or -1 to hide.
+     */
+    syncedTooltipIndex: PropTypes.number,
 
     /**
      * Data from the most recent click event.

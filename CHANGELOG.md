@@ -7,8 +7,87 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Planned
-- BarChart component
+---
+
+## [1.2.0] - 2026-04-10
+
+### Added
+
+#### BarChart Component (New)
+- **Vertical & Horizontal Bars**: `layout='vertical'` (default) or `layout='horizontal'`
+- **Multi-Series**: Multiple data series with individual colors side by side
+- **Stacking**: `stack` group ID on series, with `stackOffset` ('none', 'expand', 'diverging') and `stackOrder` ('none', 'appearance', 'ascending', 'descending', 'reverse')
+- **Bar Labels**: `barLabel='value'` with `barLabelPlacement` ('center' or 'outside')
+- **Border Radius**: Rounded bar corners via `borderRadius` prop
+- **Dataset Mode**: `dataset` + `dataKey` pattern for table-format data (no duplication)
+- **Bar Spacing**: `categoryGapRatio` and `barGapRatio` on band axis for gap control
+- **Reference Lines**: Horizontal (`y`) and vertical (`x`) markers for targets, thresholds
+- **Axis Highlight**: Configurable `axisHighlight` with 'band', 'line', or 'none'
+- **Tooltip Modes**: `tooltip={'trigger': 'axis'}` or `tooltip={'trigger': 'item'}`
+- **Highlighting**: `highlightedItem` prop (controlled, bidirectional) with per-series `highlightScope`
+- **Custom Colors**: `colors` palette prop for series color override
+- **Batch Renderer**: `renderer='svg-batch'` for large dataset performance
+- **Click Events**: `clickData` (bar click) and `axisClickData` (axis area click) output props
+- **Pro Features** (require `licenseKey`):
+  - `initialZoom` + `showSlider` for zoom with range slider
+  - `showToolbar` for zoom/export toolbar
+  - `brushConfig` for brush selection
+  - `zoomInteractionConfig` for pan/wheel/pinch behaviors
+  - `zoomData` output prop for zoom state callbacks
+
+#### CandlestickChart Component (New)
+- **OHLC Candlestick Rendering**: Custom SVG candles (body + wicks) built on MUI X Charts Pro composition API
+- **Array Format**: `series=[{data: [[open,high,low,close], ...], upColor, downColor}]`
+- **Dataset Format**: `dataset` + `series=[{datasetKeys: {open, high, low, close}}]`
+- **Volume Overlay**: Optional volume bars below candles via `showVolume=True` with `volumeKey` or `volume` array
+- **Candle Styling**: `bodyWidthRatio` (0-1) and `wickWidth` (px) for custom candle appearance
+- **OHLC Tooltip**: Built-in hover tooltip showing Open, High, Low, Close values
+- **Reference Lines**: Support/resistance lines, moving averages markers
+- **Click Events**: `clickData` with `{dataIndex, label, open, high, low, close, timestamp}`
+- **Auto Y-Axis Domain**: Automatically computes min/max from OHLC data with 5% padding
+- **Grid Support**: `grid={'horizontal': True, 'vertical': True}`
+- **Pro Features**: Zoom, slider, toolbar (via composition API)
+- **No Premium Dependency**: Works with existing `@mui/x-charts-pro` v8.24.0 (no `@mui/x-charts-premium` required)
+
+#### Demo Pages (7 New)
+- `/barchart-basic` — Multi-series, stacked, horizontal, bar labels, rounded corners, negative values
+- `/barchart-dataset` — Dataset mode with dataKey, bar/category gap control
+- `/barchart-stacking` — Stack offsets (none, expand, diverging), multiple stack groups, horizontal stacked
+- `/barchart-interaction` — Click events, axis click, highlighting, axis highlight modes, tooltip triggers
+- `/barchart-reference` — Target lines, min/avg/max refs, vertical refs, animation, legend, color palette
+- `/barchart-pro` — Zoom+slider, toolbar, stacked zoom (Pro features)
+- `/candlestick` — Array format, dataset mode, volume overlay, styling, support/resistance lines, click events
+
+#### Application UI/UX Redesign
+- **DMC AppShell Layout**: Replaced flat blue top-bar with `dmc.AppShell` (header + sidebar navbar + main content area)
+- **Sidebar Tree Navigation**: `SimpleTreeView` organizes all 37 demo pages into 11 component groups with expand/collapse
+- **Dark/Light Mode**: `dmc.ColorSchemeToggle` (DMC 2.6.1) with `dmc.pre_render_color_scheme()` to prevent theme flash on load
+- **MUI Charts Dark Mode**: Global CSS overrides for axis labels, tick marks, grid lines, legend labels, tooltips, bar labels, and reference lines — all auto-switch via `[data-mantine-color-scheme="dark"]`
+- **Theme-Aware Loading Screen**: Animated liquid-blob splash screen with 2plot logo, swaps between light/dark assets based on saved preference (`localStorage`)
+- **Page Loading Overlay**: `/composite-render-bp` uses deferred content loading via callback with `dmc.LoadingOverlay` — shows logo + blur overlay while heavy chart sections build server-side
+- **Home Page Redesign**: Responsive 3-column component card grid with `dmc.Paper`, `dmc.Badge`, `dmc.CodeHighlight` for installation and usage examples
+
+### Changed
+- **CompositeChart**: Custom tooltip components (`MuiAxisTooltip`, `ExternalAxisTooltip`) now use Mantine CSS variables (`--mantine-color-body`, `--mantine-color-text`, `--mantine-color-default-border`) instead of hardcoded `white`/`#e0e0e0` — tooltips auto-adapt to dark mode
+- **SimpleTreeView**: Replaced `Component.defaultProps` with JavaScript default parameters to eliminate React 18 deprecation warning
+- **Composite Render BP page**: Deferred chart section building to a callback (from static layout) for instant page load with loading overlay
+- Updated component count from 7 to 9
+- `src/lib/index.js` exports BarChart and CandlestickChart
+- Auto-generated Python wrappers for both components via `dash-generate-components`
+- Upgraded `dash-mantine-components` from `>=1.0.0` to `>=2.6.0` in `requirements.txt`
+- All demo pages updated with Mantine CSS variables for dark mode support (card backgrounds, text colors, code blocks, tooltips, borders)
+- Pages with `dmc.MantineProvider` wrappers (8 files) unwrapped — single root provider in `app.py`
+
+### Fixed
+- **Legend labels not switching in dark mode**: Added CSS selectors for `.MuiChartsLegend-label` and `.MuiChartsLabel-root` (HTML span elements used by MUI X Charts v8)
+- **Custom tooltip dark mode** in crosshair, highlighting sync, composite, and composite render pages — replaced hardcoded `white`/`#333`/`#e0e0e0` with theme-adaptive CSS variables
+- **Highlighting demo**: Per-Series Highlight Scope example now uses 3 series with distinct `highlightScope` configs to clearly demonstrate `series` vs `item` highlight and `global` vs `none` fade behaviors
+- **Circular dependency**: Replaced server-side nav callbacks with clientside `window.location` navigation to break `url.pathname ↔ nav-tree.selectedItems` cycle
+
+### Documentation
+- Updated CLAUDE.md with BarChart and CandlestickChart features
+- Updated SKILLS.md with implementation details, prop references, and usage patterns
+- Updated README.md with new component listings and examples
 
 ---
 
@@ -324,15 +403,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 | Component | License Required |
 |-----------|-----------------|
 | LineChart (zoom/pan) | MUI X Pro |
+| BarChart (zoom/brush) | MUI X Pro |
+| CandlestickChart (zoom) | MUI X Pro |
 | PieChart | Community (Free) |
 | ScatterChart | Community (Free) |
 | CompositeChart (zoom/pan) | MUI X Pro |
 | Heatmap | MUI X Pro |
 | SparklineChart | Community (Free) |
+| LiveTradingChart | Community (Free) |
 
 ---
 
-[Unreleased]: https://github.com/pip-install-python/dash-mui-charts/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/pip-install-python/dash-mui-charts/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/pip-install-python/dash-mui-charts/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/pip-install-python/dash-mui-charts/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/pip-install-python/dash-mui-charts/compare/v0.0.8...v1.0.0
 [0.0.8]: https://github.com/pip-install-python/dash-mui-charts/compare/v0.0.7...v0.0.8

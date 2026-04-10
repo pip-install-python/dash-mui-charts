@@ -72,9 +72,7 @@ def create_control_card(title, children):
     )
 
 
-layout = dmc.MantineProvider(
-    children=[
-        html.Div(
+layout = html.Div(
             style={'maxWidth': '1200px', 'margin': '0 auto', 'padding': '20px'},
             children=[
                 # Header
@@ -82,7 +80,7 @@ layout = dmc.MantineProvider(
                 html.P(
                     'Interactive control board for customizing sparkline appearance. '
                     'Adjust the controls below to see real-time changes.',
-                    style={'color': '#666', 'marginBottom': '30px'}
+                    style={'color': 'var(--mantine-color-dimmed)', 'marginBottom': '30px'}
                 ),
 
                 # Live Preview Section
@@ -102,7 +100,7 @@ layout = dmc.MantineProvider(
                                 'justifyContent': 'center',
                                 'alignItems': 'center',
                                 'minHeight': '120px',
-                                'backgroundColor': '#ffffff',
+                                'backgroundColor': 'var(--mantine-color-body)',
                                 'transition': 'background-color 0.3s ease',
                             },
                             children=[
@@ -115,7 +113,7 @@ layout = dmc.MantineProvider(
                             style={
                                 'marginTop': '15px',
                                 'padding': '10px',
-                                'backgroundColor': '#f5f5f5',
+                                'backgroundColor': 'var(--mantine-color-default)',
                                 'borderRadius': '4px',
                                 'textAlign': 'center',
                                 'fontFamily': 'monospace',
@@ -369,7 +367,7 @@ layout = dmc.MantineProvider(
                                                 'fontSize': '14px',
                                                 'cursor': 'pointer',
                                                 'padding': '5px 10px',
-                                                'backgroundColor': '#1976d2',
+                                                'backgroundColor': 'var(--mantine-color-blue-6)',
                                                 'color': 'white',
                                                 'border': 'none',
                                                 'borderRadius': '4px',
@@ -383,7 +381,7 @@ layout = dmc.MantineProvider(
                             id='generated-code',
                             block=True,
                             style={
-                                'backgroundColor': '#1e1e1e',
+                                'backgroundColor': 'var(--mantine-color-dark-8)',
                                 'color': '#d4d4d4',
                                 'padding': '20px',
                                 'borderRadius': '8px',
@@ -396,9 +394,7 @@ layout = dmc.MantineProvider(
                     ]
                 ),
             ]
-        ),
-    ]
-)
+        )
 
 
 @callback(

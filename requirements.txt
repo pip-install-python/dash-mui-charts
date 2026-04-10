@@ -1,3 +1,4 @@
 dash>=3.0.0
 python-dotenv>=1.0.0
-dash-mantine-components>=1.0.0
+dash-mantine-components>=2.6.0
+dash-iconify>=0.1.2

@@ -46,11 +46,71 @@ Keyword arguments:
 - colors (list of strings; optional):
     Color palette array.
 
+- crosshairClick (dict; optional):
+    Fires on right-click within the chart drawing area when
+    enableCrosshair is True. Object with: - x (number): x-axis data
+    value at click position - y (number): y-axis data value at click
+    position - button (string): always 'right' - timestamp (string):
+    ISO timestamp of the click Use this to implement context menus
+    (e.g. \"Set Alert\") at precise data coordinates.
+
+    `crosshairClick` is a dict with keys:
+
+    - x (number; optional)
+
+    - y (number; optional)
+
+    - button (string; optional)
+
+    - timestamp (string; optional)
+
+- crosshairPosition (dict; optional):
+    Current crosshair position in data coordinates. Read-only output
+    that updates as the user moves the mouse. Object with: - x
+    (number): x-axis data value (epoch ms for time scales) - y
+    (number): y-axis data value Set to None when the pointer leaves
+    the chart area.
+
+    `crosshairPosition` is a dict with keys:
+
+    - x (number; optional)
+
+    - y (number; optional)
+
 - dataset (list of dicts; optional):
     Dataset array for datasetKeys-driven series.
 
 - disableVoronoi (boolean; optional):
     If True, disables Voronoi cell interaction.
+
+- enableCrosshair (boolean; optional):
+    Enable crosshair position tracking. When True, the
+    crosshairPosition output prop reports the pointer's x/y data-space
+    coordinates in real time as the user moves the mouse over the
+    chart. Requires axisHighlight set to {x: 'line', y: 'line'} for
+    the visual crosshair.
+
+- forecast (list of dicts; optional):
+    Forecast overlay data. Array of objects with x, y (center), upper,
+    and lower values. Renders a dashed trend line with a shaded
+    uncertainty band in the chart's SVG layer, matching the
+    LiveTradingChart forecast style.
+
+    `forecast` is a list of dicts with keys:
+
+    - x (number; required)
+
+    - y (number; required)
+
+    - upper (number; optional)
+
+    - lower (number; optional)
+
+- forecastColor (string; optional):
+    Forecast line and band color. Default '#ff9800' (orange).
+
+- forecastOpacity (number; optional):
+    Forecast band fill opacity. Default 0.15.
 
 - grid (dict; optional):
     Grid configuration.
@@ -66,6 +126,18 @@ Keyword arguments:
 
 - hideLegend (boolean; optional):
     If True, the legend is hidden.
+
+- highlightedAxis (list of dicts; optional):
+    Controlled axis highlight state. Array of objects specifying which
+    axis values are highlighted. Each object has: - axisId
+    (string|number): The axis identifier - dataIndex (number): The
+    data index to highlight Set to empty array [] to clear highlights.
+
+    `highlightedAxis` is a list of dicts with keys:
+
+    - axisId (string | number; required)
+
+    - dataIndex (number; required)
 
 - highlightedItem (dict; optional):
     Currently highlighted item (controlled input/output).
@@ -206,12 +278,35 @@ Keyword arguments:
 - slotProps (dict; optional):
     Props passed to internal slot components.
 
+- syncedTooltipIndex (number; optional):
+    Synced tooltip data index. When set to a non-negative integer,
+    renders a tooltip overlay at that x-axis data index position, even
+    without pointer hover. Use this to synchronize tooltip display
+    across multiple CompositeCharts: read highlightedAxis.dataIndex
+    from one chart, write it to syncedTooltipIndex on the other
+    charts. Set to None or -1 to hide.
+
 - tooltip (dict; optional):
     Tooltip configuration.
 
     `tooltip` is a dict with keys:
 
     - trigger (a value equal to: 'item', 'axis', 'none'; optional)
+
+- tooltipItem (dict; optional):
+    Controlled tooltip item state. Used to synchronize tooltips across
+    multiple charts. Object with: - type (string): Chart type ('line',
+    'scatter', etc.) - seriesId (string): The series identifier -
+    dataIndex (number): The data index within the series Set to None
+    to hide tooltip.
+
+    `tooltipItem` is a dict with keys:
+
+    - type (string; optional)
+
+    - seriesId (string; optional)
+
+    - dataIndex (number; optional)
 
 - voronoiMaxRadius (number | a value equal to: 'item'; optional):
     Maximum distance for Voronoi scatter interaction.
@@ -604,6 +699,51 @@ Keyword arguments:
         }
     )
 
+    HighlightedAxis = TypedDict(
+        "HighlightedAxis",
+            {
+            "axisId": typing.Union[str, NumberType],
+            "dataIndex": NumberType
+        }
+    )
+
+    TooltipItem = TypedDict(
+        "TooltipItem",
+            {
+            "type": NotRequired[str],
+            "seriesId": NotRequired[str],
+            "dataIndex": NotRequired[NumberType]
+        }
+    )
+
+    Forecast = TypedDict(
+        "Forecast",
+            {
+            "x": NumberType,
+            "y": NumberType,
+            "upper": NotRequired[NumberType],
+            "lower": NotRequired[NumberType]
+        }
+    )
+
+    CrosshairPosition = TypedDict(
+        "CrosshairPosition",
+            {
+            "x": NotRequired[NumberType],
+            "y": NotRequired[NumberType]
+        }
+    )
+
+    CrosshairClick = TypedDict(
+        "CrosshairClick",
+            {
+            "x": NotRequired[NumberType],
+            "y": NotRequired[NumberType],
+            "button": NotRequired[str],
+            "timestamp": NotRequired[str]
+        }
+    )
+
     ZoomData = TypedDict(
         "ZoomData",
             {
@@ -641,15 +781,24 @@ Keyword arguments:
         showToolbar: typing.Optional[bool] = None,
         showSlider: typing.Optional[bool] = None,
         zoomInteractionConfig: typing.Optional["ZoomInteractionConfig"] = None,
+        highlightedAxis: typing.Optional[typing.Sequence["HighlightedAxis"]] = None,
         highlightedItem: typing.Optional[dict] = None,
+        tooltipItem: typing.Optional["TooltipItem"] = None,
+        forecast: typing.Optional[typing.Sequence["Forecast"]] = None,
+        forecastColor: typing.Optional[str] = None,
+        forecastOpacity: typing.Optional[NumberType] = None,
+        enableCrosshair: typing.Optional[bool] = None,
+        crosshairPosition: typing.Optional["CrosshairPosition"] = None,
+        crosshairClick: typing.Optional["CrosshairClick"] = None,
+        syncedTooltipIndex: typing.Optional[NumberType] = None,
         clickData: typing.Optional[dict] = None,
         n_clicks: typing.Optional[NumberType] = None,
         zoomData: typing.Optional[typing.Sequence["ZoomData"]] = None,
         **kwargs
     ):
-        self._prop_names = ['id', 'axisHighlight', 'clickData', 'colors', 'dataset', 'disableVoronoi', 'grid', 'height', 'hideLegend', 'highlightedItem', 'initialZoom', 'licenseKey', 'loading', 'margin', 'n_clicks', 'referenceLines', 'series', 'showSlider', 'showToolbar', 'skipAnimation', 'slotProps', 'tooltip', 'voronoiMaxRadius', 'width', 'xAxis', 'yAxis', 'zAxis', 'zoomData', 'zoomInteractionConfig']
+        self._prop_names = ['id', 'axisHighlight', 'clickData', 'colors', 'crosshairClick', 'crosshairPosition', 'dataset', 'disableVoronoi', 'enableCrosshair', 'forecast', 'forecastColor', 'forecastOpacity', 'grid', 'height', 'hideLegend', 'highlightedAxis', 'highlightedItem', 'initialZoom', 'licenseKey', 'loading', 'margin', 'n_clicks', 'referenceLines', 'series', 'showSlider', 'showToolbar', 'skipAnimation', 'slotProps', 'syncedTooltipIndex', 'tooltip', 'tooltipItem', 'voronoiMaxRadius', 'width', 'xAxis', 'yAxis', 'zAxis', 'zoomData', 'zoomInteractionConfig']
         self._valid_wildcard_attributes =            []
-        self.available_properties = ['id', 'axisHighlight', 'clickData', 'colors', 'dataset', 'disableVoronoi', 'grid', 'height', 'hideLegend', 'highlightedItem', 'initialZoom', 'licenseKey', 'loading', 'margin', 'n_clicks', 'referenceLines', 'series', 'showSlider', 'showToolbar', 'skipAnimation', 'slotProps', 'tooltip', 'voronoiMaxRadius', 'width', 'xAxis', 'yAxis', 'zAxis', 'zoomData', 'zoomInteractionConfig']
+        self.available_properties = ['id', 'axisHighlight', 'clickData', 'colors', 'crosshairClick', 'crosshairPosition', 'dataset', 'disableVoronoi', 'enableCrosshair', 'forecast', 'forecastColor', 'forecastOpacity', 'grid', 'height', 'hideLegend', 'highlightedAxis', 'highlightedItem', 'initialZoom', 'licenseKey', 'loading', 'margin', 'n_clicks', 'referenceLines', 'series', 'showSlider', 'showToolbar', 'skipAnimation', 'slotProps', 'syncedTooltipIndex', 'tooltip', 'tooltipItem', 'voronoiMaxRadius', 'width', 'xAxis', 'yAxis', 'zAxis', 'zoomData', 'zoomInteractionConfig']
         self.available_wildcard_properties =            []
         _explicit_args = kwargs.pop('_explicit_args')
         _locals = locals()

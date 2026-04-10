@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-**dash_mui_charts** is a Dash component library that wraps [MUI X Charts](https://mui.com/x/react-charts/) for use in Plotly Dash applications. It provides 7 chart components with full Python type hints and interactive callbacks.
+**dash_mui_charts** is a Dash component library that wraps [MUI X Charts](https://mui.com/x/react-charts/) for use in Plotly Dash applications. It provides 9 chart components with full Python type hints and interactive callbacks.
 
 ---
 
@@ -11,12 +11,43 @@
 | Component | Purpose | License |
 |-----------|---------|---------|
 | **LineChart** | Line/area charts, biaxial, zoom/pan, brush, reference lines | Community / Pro |
+| **BarChart** | Vertical/horizontal bars, stacking, labels, dataset mode, zoom/brush | Community / Pro |
+| **CandlestickChart** | OHLC candlestick charts with volume overlay, reference lines | Community / Pro |
 | **PieChart** | Pie, donut, nested pies | Community |
 | **ScatterChart** | Scatter/point charts, z-axis color mapping, voronoi interaction | Community |
 | **CompositeChart** | Layer scatter + line plots on a single surface | Community / Pro |
 | **Heatmap** | Matrix/grid visualization | Pro |
 | **SparklineChart** | Compact inline charts | Community |
 | **LiveTradingChart** | Real-time streaming charts | Community / Pro |
+
+### BarChart Features (v1.2.0)
+- **Vertical & Horizontal**: `layout='vertical'` (default) or `layout='horizontal'`
+- **Stacking**: `stack` group ID, `stackOffset` ('none', 'expand', 'diverging'), `stackOrder`
+- **Bar Labels**: `barLabel='value'` with `barLabelPlacement` ('center', 'outside')
+- **Border Radius**: `borderRadius` prop for rounded bar corners
+- **Dataset Mode**: `dataset` + `dataKey` pattern for table-format data
+- **Bar Spacing**: `categoryGapRatio` (0-1) and `barGapRatio` (-1 to Inf) on band axis
+- **Reference Lines**: Horizontal and vertical markers (same API as LineChart)
+- **Axis Highlight**: `axisHighlight` with 'band', 'line', or 'none'
+- **Tooltip Modes**: `tooltip={'trigger': 'axis'}` or `{'trigger': 'item'}`
+- **Highlighting**: Controlled `highlightedItem` prop, per-series `highlightScope`
+- **Click Events**: `clickData` (bar click) and `axisClickData` (axis area click)
+- **Custom Colors**: `colors` palette prop, `renderer='svg-batch'` for performance
+- **Pro Features** (require `licenseKey`): `initialZoom`, `showSlider`, `showToolbar`, `brushConfig`, `zoomData` output
+- **Architecture**: Uses `BarChart` from `@mui/x-charts` and `BarChartPro` from `@mui/x-charts-pro` — auto-switches based on Pro feature usage
+
+### CandlestickChart Features (v1.2.0)
+- **Custom OHLC Rendering**: Built on MUI X Charts Pro composition API with custom SVG candles
+- **Array Format**: `series=[{data: [[open,high,low,close], ...], upColor, downColor}]`
+- **Dataset Format**: `dataset` + `series=[{datasetKeys: {open, high, low, close}}]`
+- **Volume Overlay**: `showVolume=True` with `volumeKey` (dataset) or `volume` array (series)
+- **Candle Styling**: `bodyWidthRatio` (0-1, default 0.6), `wickWidth` (px, default 2)
+- **OHLC Tooltip**: Built-in hover tooltip showing O/H/L/C values with vertical crosshair
+- **Reference Lines**: Support/resistance levels, moving average markers
+- **Click Events**: `clickData` with full OHLC values
+- **Auto Y-Domain**: Computes min/max from data with 5% padding
+- **Architecture**: Uses `ChartDataProviderPro` + custom `CandlePlot` SVG component (no `@mui/x-charts-premium` needed)
+- **Pro Features**: Zoom, slider, toolbar via composition API
 
 ### LineChart & CompositeChart Features (v1.1.0)
 - **Built-in Date Formatting**: `dateFormat` / `dateTickFormat` props on xAxis/yAxis for time-scale axes

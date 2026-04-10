@@ -60,8 +60,8 @@ chart_container_style = {
 # Custom tooltip base style (hidden by default)
 custom_tooltip_style = {
     'position': 'absolute',
-    'backgroundColor': 'white',
-    'border': '1px solid #e0e0e0',
+    'backgroundColor': 'var(--mantine-color-body)',
+    'border': '1px solid var(--mantine-color-default-border)',
     'borderRadius': '4px',
     'padding': '8px 12px',
     'boxShadow': '0 2px 8px rgba(0,0,0,0.15)',
@@ -71,6 +71,7 @@ custom_tooltip_style = {
     'display': 'none',
     'whiteSpace': 'nowrap',
     'fontSize': '13px',
+    'color': 'var(--mantine-color-text)',
 }
 
 layout = html.Div([
@@ -509,7 +510,7 @@ def sync_dual_line_with_custom_tooltips(highlight_a, highlight_b):
         month = months[data_index]
         revenue = revenue_data[data_index]
         return html.Div([
-            html.Div(month, style={'fontWeight': 'bold', 'marginBottom': '4px', 'color': '#333'}),
+            html.Div(month, style={'fontWeight': 'bold', 'marginBottom': '4px', 'color': 'var(--mantine-color-text)'}),
             html.Div([
                 html.Span("Revenue: ", style={'color': '#666'}),
                 html.Span(f"${revenue}K", style={'color': '#1976d2', 'fontWeight': 'bold'}),
@@ -523,7 +524,7 @@ def sync_dual_line_with_custom_tooltips(highlight_a, highlight_b):
         month = months[data_index]
         expenses = expenses_data[data_index]
         return html.Div([
-            html.Div(month, style={'fontWeight': 'bold', 'marginBottom': '4px', 'color': '#333'}),
+            html.Div(month, style={'fontWeight': 'bold', 'marginBottom': '4px', 'color': 'var(--mantine-color-text)'}),
             html.Div([
                 html.Span("Expenses: ", style={'color': '#666'}),
                 html.Span(f"${expenses}K", style={'color': '#f44336', 'fontWeight': 'bold'}),

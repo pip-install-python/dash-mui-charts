@@ -34,7 +34,7 @@ code_style = {
     'maxHeight': '300px',
 }
 
-layout = dmc.MantineProvider(html.Div([
+layout = html.Div([
     html.H1("Live Trading Chart"),
     html.P(
         "Real-time candlestick trading simulation with OHLCV data, volume bars, "
@@ -193,7 +193,7 @@ layout = dmc.MantineProvider(html.Div([
     # currentPrice, tickCount, alertHistory
 )""", style=code_style),
     ]),
-], style={'padding': '20px'}))
+], style={'padding': '20px'})
 
 
 # ── Callbacks ─────────────────────────────────────────────────────────────

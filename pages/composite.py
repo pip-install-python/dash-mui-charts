@@ -80,9 +80,9 @@ for i in range(ts_hours):
 
 # Common styles
 section_style = {'marginBottom': '50px'}
-description_style = {'color': '#666', 'marginBottom': '15px'}
+description_style = {'color': 'var(--mantine-color-dimmed)', 'marginBottom': '15px'}
 code_style = {
-    'backgroundColor': '#f5f5f5',
+    'backgroundColor': 'var(--mantine-color-default)',
     'padding': '15px',
     'borderRadius': '5px',
     'whiteSpace': 'pre-wrap',
@@ -116,7 +116,7 @@ new_badge = html.Span(
     }
 )
 
-layout = dmc.MantineProvider(html.Div([
+layout = html.Div([
     html.Div([
         html.H1("Composite Chart", style={'display': 'inline'}),
         new_badge,
@@ -125,7 +125,7 @@ layout = dmc.MantineProvider(html.Div([
         "New in 0.0.8: CompositeChart layers scatter and line plots on a single surface. "
         "Each series specifies its type ('scatter' or 'line'). Supports zoom, reference lines, "
         "and multi-axis configurations.",
-        style={'fontSize': '16px', 'color': '#666', 'marginBottom': '30px'}
+        style={'fontSize': '16px', 'color': 'var(--mantine-color-dimmed)', 'marginBottom': '30px'}
     ),
 
     # ==========================================================================
@@ -530,7 +530,7 @@ layout = dmc.MantineProvider(html.Div([
 )""", style=code_style),
         ]),
     ], style=section_style),
-]))
+])
 
 
 @callback(

@@ -28,6 +28,8 @@ Dash Application
 dash-mui-charts/
 ├── src/lib/components/              # React component source files
 │   ├── LineChart.react.js          # Line/Area chart with Pro features
+│   ├── BarChart.react.js           # Vertical/horizontal bar charts
+│   ├── CandlestickChart.react.js   # OHLC candlestick charts
 │   ├── PieChart.react.js           # Pie/Donut/Nested pie charts
 │   ├── ScatterChart.react.js       # Scatter/point charts
 │   ├── CompositeChart.react.js     # Layered scatter + line charts
@@ -37,6 +39,8 @@ dash-mui-charts/
 ├── dash_mui_charts/                 # Python package (auto-generated)
 │   ├── __init__.py                 # Package initialization
 │   ├── LineChart.py                # Python wrapper for LineChart
+│   ├── BarChart.py                 # Python wrapper for BarChart
+│   ├── CandlestickChart.py         # Python wrapper for CandlestickChart
 │   ├── PieChart.py                 # Python wrapper for PieChart
 │   ├── ScatterChart.py             # Python wrapper for ScatterChart
 │   ├── CompositeChart.py           # Python wrapper for CompositeChart
@@ -55,6 +59,13 @@ dash-mui-charts/
 │   ├── linechart_referencelines.py # Reference lines
 │   ├── linechart_tick_hover.py      # Tick config, axis formatting, zoom best practices
 │   ├── live_trading.py             # LiveTradingChart demo
+│   ├── barchart_basic.py           # Bar chart: multi-series, horizontal, labels, negative
+│   ├── barchart_dataset.py         # Bar chart: dataset mode, bar gap control
+│   ├── barchart_stacking.py        # Bar chart: stack offsets, diverging, groups
+│   ├── barchart_interaction.py     # Bar chart: click events, highlighting, tooltips
+│   ├── barchart_reference.py       # Bar chart: reference lines, colors, animation
+│   ├── barchart_pro.py             # Bar chart: zoom, slider, toolbar (Pro)
+│   ├── barchart_candlestick.py     # Candlestick: OHLC, volume, styling, click events
 │   ├── pie.py                      # Pie chart examples
 │   ├── pie_props.py                # Nested pie property explorer
 │   ├── scatter.py                  # Scatter chart examples
@@ -79,7 +90,7 @@ dash-mui-charts/
 
 ---
 
-## Components (7 Total)
+## Components (9 Total)
 
 ### 1. LineChart
 
@@ -409,7 +420,218 @@ The `resolveFunctionProp` utility in LineChart/CompositeChart resolves `{functio
 
 ---
 
-### 2. PieChart
+### 2. BarChart
+
+**File:** `src/lib/components/BarChart.react.js`
+**License:** Community (basic) / Pro (zoom/brush/toolbar)
+
+**Purpose:** Vertical and horizontal bar charts with stacking, labels, dataset mode, and Pro features.
+
+**Architecture:** Uses direct `BarChart` from `@mui/x-charts/BarChart` for community features, automatically switches to `BarChartPro` from `@mui/x-charts-pro/BarChartPro` when Pro features (zoom, brush, toolbar) are requested with a license key.
+
+**Key Implementation:**
+
+```javascript
+// Series structure
+series: [
+  {
+    data: [4, 3, 5],                // Bar values
+    dataKey: 'sales',               // OR use with dataset prop
+    label: 'Sales',
+    color: '#1976d2',
+    stack: 'group1',                // Stack group ID
+    stackOffset: 'none',            // 'none', 'expand', 'diverging'
+    stackOrder: 'none',             // 'none', 'appearance', 'ascending', 'descending'
+    barLabel: 'value',              // Show value on bars
+    barLabelPlacement: 'center',    // 'center' or 'outside'
+    highlightScope: { highlight: 'series', fade: 'global' },
+    yAxisId: 'left',                // For biaxial
+  }
+]
+
+// Band axis for categories
+xAxis: [
+  {
+    data: ['Q1', 'Q2', 'Q3'],
+    scaleType: 'band',              // Required for bar charts
+    categoryGapRatio: 0.3,          // Gap between categories (0-1)
+    barGapRatio: 0.1,               // Gap between bars in category (-1 to Inf)
+  }
+]
+```
+
+**Dataset Mode:**
+```python
+BarChart(
+    dataset=[
+        {'month': 'Jan', 'london': 18, 'paris': 15},
+        {'month': 'Feb', 'london': 22, 'paris': 18},
+    ],
+    xAxis=[{'dataKey': 'month', 'scaleType': 'band'}],
+    series=[
+        {'dataKey': 'london', 'label': 'London'},
+        {'dataKey': 'paris', 'label': 'Paris'},
+    ],
+)
+```
+
+**Stacking Patterns:**
+```python
+# Normalized to 100%
+series=[
+    {'data': [40, 35], 'stack': 'g', 'stackOffset': 'expand'},
+    {'data': [30, 25], 'stack': 'g', 'stackOffset': 'expand'},
+]
+
+# Diverging (positive above, negative below zero)
+series=[
+    {'data': [20, -10], 'stack': 'net', 'stackOffset': 'diverging'},
+    {'data': [-15, 25], 'stack': 'net', 'stackOffset': 'diverging'},
+]
+
+# Multiple stack groups (side by side)
+series=[
+    {'data': [40], 'stack': '2024'},
+    {'data': [20], 'stack': '2024'},
+    {'data': [35], 'stack': '2025'},
+    {'data': [25], 'stack': '2025'},
+]
+```
+
+**Horizontal Layout:**
+```python
+BarChart(
+    series=[{'data': revenue, 'label': 'Revenue'}],
+    yAxis=[{'data': months, 'scaleType': 'band'}],  # Categories on Y
+    xAxis=[{'label': 'Amount'}],                      # Values on X
+    layout='horizontal',
+    borderRadius=6,
+)
+```
+
+**Reference Lines:**
+```python
+BarChart(
+    referenceLines=[
+        {'y': 60, 'label': 'Target', 'lineStyle': {'stroke': '#f44336', 'strokeDasharray': '6 4'}},
+        {'x': 'May', 'label': 'New Policy', 'lineStyle': {'stroke': '#9c27b0'}},
+    ],
+)
+```
+
+**Click Events:**
+```python
+# clickData output: {seriesId, dataIndex, timestamp}
+# axisClickData output: {axisValue, dataIndex, seriesValues, timestamp}
+@callback(
+    Output('display', 'children'),
+    Input('my-bar', 'clickData'),
+)
+def show_click(data):
+    return json.dumps(data) if data else 'Click a bar...'
+```
+
+**Pro Features (require licenseKey):**
+```python
+BarChart(
+    licenseKey=os.getenv('MUI_PRO_API_KEY'),
+    series=[{'data': big_data, 'label': 'Sales'}],
+    xAxis=[{'data': categories, 'scaleType': 'band', 'zoom': {'minSpan': 5}}],
+    showSlider=True,
+    showToolbar=True,
+    initialZoom=[{'axisId': 'auto-generated-id-0', 'start': 0, 'end': 40}],
+)
+```
+
+---
+
+### 3. CandlestickChart
+
+**File:** `src/lib/components/CandlestickChart.react.js`
+**License:** Community (basic) / Pro (zoom/toolbar)
+
+**Purpose:** Static OHLC candlestick charts for financial data. NOT the same as LiveTradingChart (which is a real-time client-side simulation).
+
+**Architecture:** Uses MUI X Charts Pro composition API (`ChartDataProviderPro` + `ChartsSurface`) with custom SVG rendering for candle bodies and wicks. Does NOT require `@mui/x-charts-premium` — works with existing v8.24.0 stack. Internal components:
+- `CandlePlot` — Renders candle bodies (rect) and wicks (line) using `useXScale`/`useYScale` hooks
+- `VolumePlot` — Renders semi-transparent volume bars (optional)
+- `CandleTooltip` — Custom OHLC hover tooltip with crosshair line
+- Hidden bar series drives band scale + y-axis domain computation
+
+**Data Formats:**
+
+```python
+# Array format — OHLC tuples
+CandlestickChart(
+    series=[{
+        'data': [
+            [100, 110, 95, 105],   # [open, high, low, close]
+            [105, 115, 100, 112],
+        ],
+        'upColor': '#4caf50',       # Close >= Open
+        'downColor': '#f44336',     # Close < Open
+    }],
+    xAxis=[{'data': ['Mon', 'Tue']}],
+)
+
+# Dataset format — row objects
+CandlestickChart(
+    dataset=[
+        {'date': '2025-01-02', 'open': 100, 'high': 110, 'low': 95, 'close': 105, 'volume': 1200},
+    ],
+    series=[{
+        'datasetKeys': {'open': 'open', 'high': 'high', 'low': 'low', 'close': 'close'},
+        'volumeKey': 'volume',
+        'upColor': '#4caf50',
+        'downColor': '#f44336',
+    }],
+    xAxis=[{'dataKey': 'date'}],
+)
+```
+
+**Volume Overlay:**
+```python
+CandlestickChart(
+    showVolume=True,
+    volumeHeightRatio=0.3,  # 30% of chart height
+    series=[{..., 'volumeKey': 'volume'}],  # dataset mode
+    # OR
+    series=[{..., 'volume': [100, 200, 300]}],  # array mode
+)
+```
+
+**Candle Styling:**
+```python
+CandlestickChart(
+    bodyWidthRatio=0.8,  # Wider candles (default 0.6)
+    wickWidth=3,          # Thicker wicks (default 2)
+)
+```
+
+**Reference Lines (Support/Resistance):**
+```python
+CandlestickChart(
+    referenceLines=[
+        {'y': 110, 'label': 'Resistance', 'lineStyle': {'stroke': '#f44336', 'strokeDasharray': '6 4'}},
+        {'y': 95, 'label': 'Support', 'lineStyle': {'stroke': '#4caf50', 'strokeDasharray': '6 4'}},
+    ],
+)
+```
+
+**Click Events:**
+```python
+# clickData output: {dataIndex, label, open, high, low, close, timestamp}
+@callback(
+    Output('display', 'children'),
+    Input('my-candles', 'clickData'),
+)
+def show_click(data):
+    return json.dumps(data) if data else 'Click a candle...'
+```
+
+---
+
+### 4. PieChart
 
 **File:** `src/lib/components/PieChart.react.js`
 **License:** Community (Free)
@@ -488,7 +710,7 @@ def sync_pie_highlight(line_item):
 
 ---
 
-### 3. ScatterChart
+### 5. ScatterChart
 
 **File:** `src/lib/components/ScatterChart.react.js`
 **License:** Community (Free)
@@ -561,7 +783,7 @@ clickData = {
 
 ---
 
-### 4. CompositeChart
+### 6. CompositeChart
 
 **File:** `src/lib/components/CompositeChart.react.js`
 **License:** Community (basic) / Pro (zoom/pan)
@@ -650,7 +872,7 @@ CompositeChart(
 
 ---
 
-### 5. Heatmap (unchanged)
+### 7. Heatmap
 
 **File:** `src/lib/components/Heatmap.react.js`
 **License:** Pro (Required)
@@ -686,7 +908,7 @@ colorScale = {
 
 ---
 
-### 6. SparklineChart
+### 8. SparklineChart
 
 **File:** `src/lib/components/SparklineChart.react.js`
 **License:** Community (Free)
@@ -714,7 +936,7 @@ SparklineChart(
 
 ---
 
-### 7. LiveTradingChart
+### 9. LiveTradingChart
 
 **File:** `src/lib/components/LiveTradingChart.react.js`
 **License:** Community (basic) / Pro (zoom/slider)
@@ -1028,6 +1250,8 @@ After `npm run build`:
 | Component | Community (Free) | Pro Required |
 |-----------|------------------|--------------|
 | LineChart | Basic features, Reference Lines, dateFormat | Zoom, Pan, Brush |
+| BarChart | Bars, stacking, labels, dataset mode, reference lines | Zoom, Brush, Toolbar |
+| CandlestickChart | OHLC candles, volume, reference lines, tooltips | Zoom, Toolbar |
 | PieChart | All features | - |
 | ScatterChart | All features | - |
 | CompositeChart | Basic layering, Reference Lines, dateFormat | Zoom, Pan, Toolbar |
@@ -1055,14 +1279,17 @@ python usage.py
 ## Future Enhancements
 
 Potential components from MUI X Charts:
-- BarChart
 - GaugeChart (Pro)
 - TreemapChart (Pro)
 - RadarChart
+- RangeBarChart (Premium — requires `@mui/x-charts-premium` and `@mui/material` v7+)
+- Native CandlestickChart (Premium — available in `@mui/x-charts-premium` v9+, requires `@mui/material` v7+)
 
 Potential features:
 - Extend `resolveFunctionProp` to support more axis props (e.g. `tickInterval`, `tickLabelInterval` as function references)
 - Support `valueFormatter` on series (not just axes) for custom tooltip value formatting
 - Support `valueFormatter` on yAxis (currently `processedXAxis` handles it, need matching `processedYAxis`)
+- BarChart: `barLabelFormat` string prop (like `dateFormat` on LineChart) for custom label formatting without JS
+- CandlestickChart: moving average line overlay, Bollinger bands, RSI sub-chart
 
 Follow existing component patterns for implementation.

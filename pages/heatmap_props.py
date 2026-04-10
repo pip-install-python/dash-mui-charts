@@ -60,15 +60,14 @@ def create_control_card(title, children):
     )
 
 
-layout = dmc.MantineProvider(
-    html.Div([
+layout = html.Div([
         # Header
         html.Div([
             html.H1('Heatmap Props Playground'),
             html.P(
                 'Interactively explore and customize Heatmap component properties. '
                 'Changes are reflected in real-time.',
-                style={'color': '#666', 'marginBottom': '30px'}
+                style={'color': 'var(--mantine-color-dimmed)', 'marginBottom': '30px'}
             ),
         ]),
 
@@ -78,7 +77,7 @@ layout = dmc.MantineProvider(
                 shadow='xs',
                 radius='md',
                 p='md',
-                style={'backgroundColor': '#fff3e0', 'borderLeft': '4px solid #ff9800'},
+                style={'backgroundColor': 'var(--mantine-color-orange-0)', 'borderLeft': '4px solid #ff9800'},
                 children=[
                     dmc.Text(
                         'This feature requires an MUI X Pro license key. '
@@ -105,7 +104,7 @@ layout = dmc.MantineProvider(
                         'justifyContent': 'center',
                         'alignItems': 'center',
                         'minHeight': '350px',
-                        'backgroundColor': '#f8f9fa',
+                        'backgroundColor': 'var(--mantine-color-default)',
                         'borderRadius': '8px',
                         'padding': '20px',
                         'transition': 'background-color 0.3s ease',
@@ -123,7 +122,7 @@ layout = dmc.MantineProvider(
                         dmc.Paper(
                             p='sm',
                             radius='sm',
-                            style={'backgroundColor': '#e3f2fd'},
+                            withBorder=True,
                             children=[
                                 dmc.Text('Hover Info', size='xs', c='dimmed', mb='xs'),
                                 html.Div(
@@ -136,7 +135,7 @@ layout = dmc.MantineProvider(
                         dmc.Paper(
                             p='sm',
                             radius='sm',
-                            style={'backgroundColor': '#e8f5e9'},
+                            withBorder=True,
                             children=[
                                 dmc.Text('Click Data', size='xs', c='dimmed', mb='xs'),
                                 html.Div(
@@ -385,7 +384,7 @@ layout = dmc.MantineProvider(
                                     target_id='generated-heatmap-code',
                                     style={
                                         'display': 'inline-block',
-                                        'backgroundColor': '#1976d2',
+                                        'backgroundColor': 'var(--mantine-color-blue-6)',
                                         'color': 'white',
                                         'padding': '6px 12px',
                                         'borderRadius': '4px',
@@ -400,7 +399,7 @@ layout = dmc.MantineProvider(
                 html.Pre(
                     id='generated-heatmap-code',
                     style={
-                        'backgroundColor': '#1e1e1e',
+                        'backgroundColor': 'var(--mantine-color-dark-8)',
                         'color': '#d4d4d4',
                         'padding': '20px',
                         'borderRadius': '8px',
@@ -413,8 +412,7 @@ layout = dmc.MantineProvider(
             ],
         ),
 
-    ], style={'maxWidth': '1200px', 'margin': '0 auto', 'padding': '20px'}),
-)
+    ], style={'maxWidth': '1200px', 'margin': '0 auto', 'padding': '20px'})
 
 
 @callback(

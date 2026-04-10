@@ -54,9 +54,10 @@ const pad2 = (n) => n < 10 ? '0' + n : '' + n;
 
 function formatDateStr(date, pattern) {
     const d = date instanceof Date ? date : new Date(date);
-    return pattern.replace(/YYYY|MMM|MM|dd|HH|mm|M|d/g, (token) => {
+    return pattern.replace(/YYYY|YY|MMM|MM|dd|HH|mm|M|d/g, (token) => {
         switch (token) {
             case 'YYYY': return d.getFullYear();
+            case 'YY':   return String(d.getFullYear()).slice(-2);
             case 'MMM':  return MONTHS_SHORT[d.getMonth()];
             case 'MM':   return pad2(d.getMonth() + 1);
             case 'M':    return d.getMonth() + 1;

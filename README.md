@@ -8,11 +8,14 @@ A Dash component library wrapping [MUI X Charts](https://mui.com/x/react-charts/
 ## Features
 
 - **LineChart** - Line and area charts with zoom/pan, multiple axes, and stacking
+- **BarChart** - Vertical/horizontal bars with stacking, labels, dataset mode, and zoom/brush (Pro)
+- **CandlestickChart** - OHLC candlestick charts with volume overlay, reference lines, and click events
 - **PieChart** - Pie, donut, and nested/concentric pie charts
 - **ScatterChart** - Scatter/point charts with z-axis color mapping and voronoi interaction
 - **CompositeChart** - Layer scatter + line plots on a single surface with zoom/pan
 - **Heatmap** - Matrix visualizations with customizable color scales
 - **SparklineChart** - Compact inline charts for dashboards and tables
+- **LiveTradingChart** - Real-time streaming charts for live data visualization
 
 ## Installation
 
@@ -97,6 +100,132 @@ LineChart(
 - `clickData` - Data from click events
 - `zoomData` - Current zoom state
 - `n_clicks` - Click counter
+
+---
+
+### BarChart
+
+Create vertical and horizontal bar charts with stacking, labels, and dataset mode.
+
+```python
+from dash_mui_charts import BarChart
+
+BarChart(
+    id='my-bar-chart',
+    series=[
+        {'data': [4, 3, 5], 'label': 'Group A', 'color': '#1976d2'},
+        {'data': [1, 6, 3], 'label': 'Group B', 'color': '#388e3c'},
+    ],
+    xAxis=[{'data': ['Q1', 'Q2', 'Q3'], 'scaleType': 'band'}],
+    height=350,
+    grid={'horizontal': True},
+)
+
+# Stacked horizontal bars with rounded corners
+BarChart(
+    series=[
+        {'data': [30, 25, 40], 'label': 'Online', 'stack': 'channel', 'color': '#1976d2'},
+        {'data': [20, 15, 25], 'label': 'Retail', 'stack': 'channel', 'color': '#42a5f5'},
+    ],
+    yAxis=[{'data': ['2023', '2024', '2025'], 'scaleType': 'band'}],
+    layout='horizontal',
+    borderRadius=6,
+    height=300,
+)
+
+# Dataset mode (no data duplication)
+BarChart(
+    dataset=[
+        {'month': 'Jan', 'sales': 100, 'returns': 5},
+        {'month': 'Feb', 'sales': 150, 'returns': 8},
+    ],
+    xAxis=[{'dataKey': 'month', 'scaleType': 'band'}],
+    series=[
+        {'dataKey': 'sales', 'label': 'Sales'},
+        {'dataKey': 'returns', 'label': 'Returns'},
+    ],
+    height=350,
+)
+```
+
+**Key Props:**
+| Prop | Type | Description |
+|------|------|-------------|
+| `series` | list | Bar series (data, label, color, stack, barLabel, barLabelPlacement) |
+| `dataset` | list | Table-format data for dataKey-based series |
+| `xAxis` | list | X-axis config (data, scaleType, categoryGapRatio, barGapRatio) |
+| `layout` | str | 'vertical' (default) or 'horizontal' |
+| `borderRadius` | int | Rounded bar corners (pixels) |
+| `referenceLines` | list | Horizontal/vertical reference markers |
+| `initialZoom` | list | Initial zoom state (Pro) |
+| `showSlider` | bool | Show zoom slider (Pro) |
+| `showToolbar` | bool | Show toolbar (Pro) |
+
+**Output Props:**
+- `clickData` - Bar click event (seriesId, dataIndex)
+- `axisClickData` - Axis area click event
+- `highlightedItem` - Currently hovered item
+- `zoomData` - Zoom state (Pro)
+- `n_clicks` - Click counter
+
+---
+
+### CandlestickChart
+
+Create OHLC candlestick charts for financial data visualization.
+
+```python
+from dash_mui_charts import CandlestickChart
+
+# Array format
+CandlestickChart(
+    id='my-candles',
+    series=[{
+        'data': [
+            [100, 110, 95, 105],   # [open, high, low, close]
+            [105, 115, 100, 112],
+            [112, 120, 108, 118],
+        ],
+        'upColor': '#4caf50',
+        'downColor': '#f44336',
+    }],
+    xAxis=[{'data': ['Mon', 'Tue', 'Wed']}],
+    yAxis=[{'label': 'Price ($)'}],
+    grid={'horizontal': True},
+    height=400,
+)
+
+# Dataset format with volume
+CandlestickChart(
+    dataset=[
+        {'date': '2025-01-02', 'open': 100, 'high': 110, 'low': 95, 'close': 105, 'volume': 1200},
+        {'date': '2025-01-03', 'open': 105, 'high': 115, 'low': 100, 'close': 112, 'volume': 1500},
+    ],
+    series=[{
+        'datasetKeys': {'open': 'open', 'high': 'high', 'low': 'low', 'close': 'close'},
+        'volumeKey': 'volume',
+        'upColor': '#4caf50',
+        'downColor': '#f44336',
+    }],
+    xAxis=[{'dataKey': 'date'}],
+    showVolume=True,
+    height=450,
+)
+```
+
+**Key Props:**
+| Prop | Type | Description |
+|------|------|-------------|
+| `series` | list | OHLC series with data or datasetKeys, upColor, downColor |
+| `dataset` | list | Row objects for dataset mode |
+| `showVolume` | bool | Show volume bars overlay |
+| `bodyWidthRatio` | float | Candle body width ratio (0-1, default 0.6) |
+| `wickWidth` | int | Wick line width in pixels (default 2) |
+| `referenceLines` | list | Support/resistance reference lines |
+
+**Output Props:**
+- `clickData` - Candle click event (dataIndex, open, high, low, close)
+- `zoomData` - Zoom state (Pro)
 
 ---
 
@@ -341,11 +470,14 @@ SparklineChart(
 | Component | Community (Free) | Pro License Required |
 |-----------|------------------|---------------------|
 | LineChart | Basic features | Zoom & Pan |
+| BarChart | Basic features | Zoom, Brush & Toolbar |
+| CandlestickChart | Basic features | Zoom & Toolbar |
 | PieChart | All features | - |
 | ScatterChart | All features | - |
 | CompositeChart | Basic layering | Zoom & Pan |
 | Heatmap | - | All features |
 | SparklineChart | All features | - |
+| LiveTradingChart | All features | - |
 
 To use Pro features, obtain a license from [MUI](https://mui.com/x/introduction/licensing/) and pass it via the `licenseKey` prop:
 
@@ -367,13 +499,16 @@ pip install -r requirements.txt
 python app.py
 ```
 
-Visit `http://127.0.0.1:8050` to see:
+Visit `http://127.0.0.1:7666` to see:
 - Basic and advanced line chart examples
+- Bar chart demos: stacking, dataset mode, interactions, Pro zoom
+- Candlestick OHLC charts with volume overlay and click events
 - Pie chart property explorer with nested pies
 - Scatter chart with z-axis color mapping and voronoi interaction
 - Composite charts layering scatter + line with zoom/pan
 - Heatmap configuration playground
 - Sparkline styling options
+- Live trading real-time chart
 
 ## Development
 
