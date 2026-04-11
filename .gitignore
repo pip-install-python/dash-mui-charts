@@ -59,4 +59,4 @@ htmlcov/
 .env.*.local
 
 # Dash
-*.min.js.map
+# Note: .min.js.map files ARE committed — needed for production deployment
