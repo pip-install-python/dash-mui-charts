@@ -66,8 +66,25 @@
         (function() {
             var useBar = Math.random() < 0.5;
             var suffix = useBar ? 'barchart' : 'areachart';
+            // Set favicon and apple-touch-icon
             document.getElementById('favicon').href = '/assets/favicon_' + suffix + '.ico';
             document.getElementById('apple-touch-icon').href = '/assets/apple-touch-icon_' + suffix + '.png';
+            // Sync the header avatar after Dash renders
+            window.__dmuiIconSuffix = suffix;
+            function syncAvatar() {
+                var img = document.querySelector('#header-avatar img');
+                if (img) {
+                    img.src = '/assets/favicon_' + suffix + '.ico';
+                } else {
+                    // Retry — Dash may not have rendered yet
+                    setTimeout(syncAvatar, 200);
+                }
+            }
+            if (document.readyState === 'complete') {
+                setTimeout(syncAvatar, 300);
+            } else {
+                window.addEventListener('load', function() { setTimeout(syncAvatar, 300); });
+            }
         })();
     </script>
 
@@ -106,7 +123,7 @@
                 "https://pypi.org/user/pip-install-python/"
             ]
         },
-        "softwareVersion": "1.2.0",
+        "softwareVersion": "1.2.1",
         "programmingLanguage": "Python",
         "codeRepository": "https://github.com/pip-install-python/dash-mui-charts",
         "license": "https://opensource.org/licenses/MIT"
@@ -178,7 +195,7 @@
 
             <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid #dee2e6; color: #868e96; font-size: 0.875rem;">
                 <p><strong>MIT License — Pip Install Python LLC</strong></p>
-                <p>v1.2.0 — 9 components, dark/light mode, Pro features</p>
+                <p>v1.2.1 — 9 components, dark/light mode, Pro features</p>
             </div>
         </div>
     </noscript>

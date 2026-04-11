@@ -41,9 +41,9 @@ expenses_data = [80, 85, 95, 90, 100, 110]
 
 # Common styles
 section_style = {'marginBottom': '50px'}
-description_style = {'color': '#666', 'marginBottom': '15px'}
+description_style = {'color': 'var(--mantine-color-dimmed)', 'marginBottom': '15px'}
 code_style = {
-    'backgroundColor': '#f5f5f5',
+    'backgroundColor': 'var(--mantine-color-default)',
     'padding': '15px',
     'borderRadius': '5px',
     'whiteSpace': 'pre-wrap',
@@ -79,7 +79,7 @@ layout = html.Div([
     html.P(
         "This page demonstrates synchronized highlights across multiple charts. "
         "Hovering over one chart highlights the corresponding data in other charts.",
-        style={'fontSize': '16px', 'color': '#666', 'marginBottom': '20px'}
+        style={'fontSize': '16px', 'color': 'var(--mantine-color-dimmed)', 'marginBottom': '20px'}
     ),
 
     # ==========================================================================
@@ -312,10 +312,10 @@ def sync_highlights(line_highlight, pie_highlight):
                 html.H4("Profit Summary", style={'margin': '0 0 10px 0'}),
                 html.Div(id='profit-display', children=[
                     html.P("Hover over either chart to see monthly profit calculation",
-                           style={'color': '#666', 'margin': 0})
+                           style={'color': 'var(--mantine-color-dimmed)', 'margin': 0})
                 ]),
             ], style={
-                'backgroundColor': '#f5f5f5',
+                'backgroundColor': 'var(--mantine-color-default)',
                 'padding': '15px 20px',
                 'borderRadius': '8px',
                 'marginTop': '15px',
@@ -379,25 +379,25 @@ def sync_charts_with_custom_tooltips(highlight_a, highlight_b):
                 html.P(
                     "In a dashboard with multiple charts showing different aspects of the same data, "
                     "synchronized highlighting helps users understand relationships across visualizations.",
-                    style={'color': '#666'}
+                    style={'color': 'var(--mantine-color-dimmed)'}
                 ),
-            ], style={'flex': '1', 'padding': '15px', 'backgroundColor': '#f5f5f5', 'borderRadius': '8px', 'margin': '5px'}),
+            ], style={'flex': '1', 'padding': '15px', 'backgroundColor': 'var(--mantine-color-default)', 'borderRadius': '8px', 'margin': '5px'}),
             html.Div([
                 html.H4("Comparison Views"),
                 html.P(
                     "When comparing two datasets side-by-side (like revenue vs expenses, or year-over-year), "
                     "synchronized axis highlights make it easy to compare values at the same point in time.",
-                    style={'color': '#666'}
+                    style={'color': 'var(--mantine-color-dimmed)'}
                 ),
-            ], style={'flex': '1', 'padding': '15px', 'backgroundColor': '#f5f5f5', 'borderRadius': '8px', 'margin': '5px'}),
+            ], style={'flex': '1', 'padding': '15px', 'backgroundColor': 'var(--mantine-color-default)', 'borderRadius': '8px', 'margin': '5px'}),
             html.Div([
                 html.H4("Drill-down Navigation"),
                 html.P(
                     "Highlight a category in an overview chart (like a pie chart) to show corresponding "
                     "detail in a line chart. This pattern enables intuitive data exploration.",
-                    style={'color': '#666'}
+                    style={'color': 'var(--mantine-color-dimmed)'}
                 ),
-            ], style={'flex': '1', 'padding': '15px', 'backgroundColor': '#f5f5f5', 'borderRadius': '8px', 'margin': '5px'}),
+            ], style={'flex': '1', 'padding': '15px', 'backgroundColor': 'var(--mantine-color-default)', 'borderRadius': '8px', 'margin': '5px'}),
         ], style={'display': 'flex', 'gap': '10px', 'flexWrap': 'wrap'}),
     ], style=section_style),
 ])
@@ -512,7 +512,7 @@ def sync_dual_line_with_custom_tooltips(highlight_a, highlight_b):
         return html.Div([
             html.Div(month, style={'fontWeight': 'bold', 'marginBottom': '4px', 'color': 'var(--mantine-color-text)'}),
             html.Div([
-                html.Span("Revenue: ", style={'color': '#666'}),
+                html.Span("Revenue: ", style={'color': 'var(--mantine-color-dimmed)'}),
                 html.Span(f"${revenue}K", style={'color': '#1976d2', 'fontWeight': 'bold'}),
             ]),
         ])
@@ -526,7 +526,7 @@ def sync_dual_line_with_custom_tooltips(highlight_a, highlight_b):
         return html.Div([
             html.Div(month, style={'fontWeight': 'bold', 'marginBottom': '4px', 'color': 'var(--mantine-color-text)'}),
             html.Div([
-                html.Span("Expenses: ", style={'color': '#666'}),
+                html.Span("Expenses: ", style={'color': 'var(--mantine-color-dimmed)'}),
                 html.Span(f"${expenses}K", style={'color': '#f44336', 'fontWeight': 'bold'}),
             ]),
         ])
@@ -535,7 +535,7 @@ def sync_dual_line_with_custom_tooltips(highlight_a, highlight_b):
         """Generate profit display for a given data index."""
         if data_index is None or data_index < 0 or data_index >= len(months):
             return html.P("Hover over either chart to see monthly profit calculation",
-                         style={'color': '#666', 'margin': 0})
+                         style={'color': 'var(--mantine-color-dimmed)', 'margin': 0})
 
         month = months[data_index]
         revenue = revenue_data[data_index]
@@ -551,17 +551,17 @@ def sync_dual_line_with_custom_tooltips(highlight_a, highlight_b):
             ], style={'marginBottom': '10px'}),
             html.Div([
                 html.Div([
-                    html.Span("Revenue: ", style={'color': '#666'}),
+                    html.Span("Revenue: ", style={'color': 'var(--mantine-color-dimmed)'}),
                     html.Span(f"${revenue}K", style={'color': '#1976d2', 'fontWeight': 'bold'}),
                 ], style={'display': 'inline-block', 'marginRight': '20px'}),
                 html.Div([
-                    html.Span("Expenses: ", style={'color': '#666'}),
+                    html.Span("Expenses: ", style={'color': 'var(--mantine-color-dimmed)'}),
                     html.Span(f"${expenses}K", style={'color': '#f44336', 'fontWeight': 'bold'}),
                 ], style={'display': 'inline-block', 'marginRight': '20px'}),
                 html.Div([
-                    html.Span("Profit: ", style={'color': '#666'}),
+                    html.Span("Profit: ", style={'color': 'var(--mantine-color-dimmed)'}),
                     html.Span(f"${profit}K", style={'color': profit_color, 'fontWeight': 'bold'}),
-                    html.Span(f" ({margin:.1f}% margin)", style={'color': '#666', 'fontSize': '12px'}),
+                    html.Span(f" ({margin:.1f}% margin)", style={'color': 'var(--mantine-color-dimmed)', 'fontSize': '12px'}),
                 ], style={'display': 'inline-block'}),
             ]),
         ])
@@ -569,7 +569,7 @@ def sync_dual_line_with_custom_tooltips(highlight_a, highlight_b):
     # Hidden tooltip style
     hidden_tooltip_style = {**custom_tooltip_style, 'display': 'none'}
     default_profit = html.P("Hover over either chart to see monthly profit calculation",
-                            style={'color': '#666', 'margin': 0})
+                            style={'color': 'var(--mantine-color-dimmed)', 'margin': 0})
 
     # Determine which chart triggered and get data index
     data_index = None

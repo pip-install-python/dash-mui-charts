@@ -10,20 +10,30 @@ import {SimpleTreeView as MuiSimpleTreeView} from '@mui/x-tree-view/SimpleTreeVi
 import {TreeItem} from '@mui/x-tree-view/TreeItem';
 import {resolveIcon} from '../fragments/iconResolver';
 
-/** Recursively render items as TreeItem children */
+/** Recursively render items as TreeItem children, with optional per-item icons */
 const renderItems = (items) => {
     if (!items || items.length === 0) return null;
-    return items.map((item) => (
-        <TreeItem
-            key={item.itemId}
-            itemId={item.itemId}
-            label={item.label}
-            disabled={item.disabled}
-            disableSelection={item.disableSelection}
-        >
-            {renderItems(item.children)}
-        </TreeItem>
-    ));
+    return items.map((item) => {
+        const IconComponent = item.icon ? resolveIcon(item.icon) : null;
+        const label = IconComponent ? (
+            <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <IconComponent style={{ fontSize: 18, opacity: 0.7, flexShrink: 0 }} />
+                <span>{item.label}</span>
+            </span>
+        ) : item.label;
+
+        return (
+            <TreeItem
+                key={item.itemId}
+                itemId={item.itemId}
+                label={label}
+                disabled={item.disabled}
+                disableSelection={item.disableSelection}
+            >
+                {renderItems(item.children)}
+            </TreeItem>
+        );
+    });
 };
 
 const SimpleTreeView = ({

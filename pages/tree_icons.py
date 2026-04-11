@@ -34,12 +34,12 @@ section_style = {'marginBottom': '40px'}
 
 layout = html.Div([
     html.H2("Tree View - Icons & Appearance"),
-    html.P("Customize icons, indentation, height, and styling.", style={'color': '#666'}),
+    html.P("Customize icons, indentation, height, and styling.", style={'color': 'var(--mantine-color-dimmed)'}),
 
     # --- 1. Default icons ---
     html.Div([
         html.H3("1. Default Icons"),
-        html.P("No icon props set — uses MUI defaults.", style={'color': '#666'}),
+        html.P("No icon props set — uses MUI defaults.", style={'color': 'var(--mantine-color-dimmed)'}),
         TreeView(
             id="tree-icon-default",
             items=FILE_SYSTEM,
@@ -52,7 +52,7 @@ layout = html.Div([
         html.H3("2. File Explorer Icons"),
         html.P(
             'expandIcon="ChevronRight", collapseIcon="ExpandMore", endIcon="InsertDriveFile"',
-            style={'color': '#666'},
+            style={'color': 'var(--mantine-color-dimmed)'},
         ),
         TreeView(
             id="tree-icon-file",
@@ -69,7 +69,7 @@ layout = html.Div([
         html.H3("3. Add/Remove Style Icons"),
         html.P(
             'expandIcon="Add", collapseIcon="Remove"',
-            style={'color': '#666'},
+            style={'color': 'var(--mantine-color-dimmed)'},
         ),
         TreeView(
             id="tree-icon-addremove",
@@ -85,7 +85,7 @@ layout = html.Div([
         html.H3("4. Arrow Drop Down Icons"),
         html.P(
             'expandIcon="ArrowRight", collapseIcon="ArrowDropDown"',
-            style={'color': '#666'},
+            style={'color': 'var(--mantine-color-dimmed)'},
         ),
         TreeView(
             id="tree-icon-arrow",
@@ -99,7 +99,7 @@ layout = html.Div([
     # --- 5. Custom indentation ---
     html.Div([
         html.H3("5. Custom Indentation"),
-        html.P("Compare different itemChildrenIndentation values.", style={'color': '#666'}),
+        html.P("Compare different itemChildrenIndentation values.", style={'color': 'var(--mantine-color-dimmed)'}),
         html.Div([
             html.Div([
                 html.P("indentation=8", style={'fontSize': '13px', 'fontWeight': 'bold'}),
@@ -134,7 +134,7 @@ layout = html.Div([
     # --- 6. Fixed height with scroll ---
     html.Div([
         html.H3("6. Fixed Height with Scroll"),
-        html.P("height=200 constrains the tree and adds scrolling.", style={'color': '#666'}),
+        html.P("height=200 constrains the tree and adds scrolling.", style={'color': 'var(--mantine-color-dimmed)'}),
         TreeView(
             id="tree-icon-height",
             items=FILE_SYSTEM,
@@ -147,7 +147,7 @@ layout = html.Div([
     # --- 7. SX styling ---
     html.Div([
         html.H3("7. SX Styling"),
-        html.P("Custom styles via the sx prop.", style={'color': '#666'}),
+        html.P("Custom styles via the sx prop.", style={'color': 'var(--mantine-color-dimmed)'}),
         TreeView(
             id="tree-icon-sx",
             items=FILE_SYSTEM,

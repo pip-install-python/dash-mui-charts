@@ -24,6 +24,37 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import LockIcon from '@mui/icons-material/Lock';
+// Navigation icons
+import ShowChartIcon from '@mui/icons-material/ShowChart';
+import BarChartIcon from '@mui/icons-material/BarChart';
+import PieChartIcon from '@mui/icons-material/PieChart';
+import ScatterPlotIcon from '@mui/icons-material/ScatterPlot';
+import GridOnIcon from '@mui/icons-material/GridOn';
+import TimelineIcon from '@mui/icons-material/Timeline';
+import CandlestickChartIcon from '@mui/icons-material/CandlestickChart';
+import SpeedIcon from '@mui/icons-material/Speed';
+import LayersIcon from '@mui/icons-material/Layers';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import HistoryIcon from '@mui/icons-material/History';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import TuneIcon from '@mui/icons-material/Tune';
+import BrushIcon from '@mui/icons-material/Brush';
+import HighlightIcon from '@mui/icons-material/Highlight';
+import SyncIcon from '@mui/icons-material/Sync';
+import ZoomInIcon from '@mui/icons-material/ZoomIn';
+import TouchAppIcon from '@mui/icons-material/TouchApp';
+import TableChartIcon from '@mui/icons-material/TableChart';
+import StackedBarChartIcon from '@mui/icons-material/StackedBarChart';
+import PaletteIcon from '@mui/icons-material/Palette';
+import RuleIcon from '@mui/icons-material/Rule';
+import MouseIcon from '@mui/icons-material/Mouse';
+import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
+import BlockIcon from '@mui/icons-material/Block';
+import DiamondIcon from '@mui/icons-material/Diamond';
+import AutoGraphIcon from '@mui/icons-material/AutoGraph';
+import ViewListIcon from '@mui/icons-material/ViewList';
+import GpsFixedIcon from '@mui/icons-material/GpsFixed';
 
 const ICON_MAP = {
     ExpandMore: ExpandMoreIcon,
@@ -46,6 +77,37 @@ const ICON_MAP = {
     Edit: EditIcon,
     Visibility: VisibilityIcon,
     Lock: LockIcon,
+    // Navigation
+    ShowChart: ShowChartIcon,
+    BarChart: BarChartIcon,
+    PieChart: PieChartIcon,
+    ScatterPlot: ScatterPlotIcon,
+    GridOn: GridOnIcon,
+    Timeline: TimelineIcon,
+    CandlestickChart: CandlestickChartIcon,
+    Speed: SpeedIcon,
+    Layers: LayersIcon,
+    TrendingUp: TrendingUpIcon,
+    History: HistoryIcon,
+    PlayArrow: PlayArrowIcon,
+    Tune: TuneIcon,
+    Brush: BrushIcon,
+    Highlight: HighlightIcon,
+    Sync: SyncIcon,
+    ZoomIn: ZoomInIcon,
+    TouchApp: TouchAppIcon,
+    TableChart: TableChartIcon,
+    StackedBarChart: StackedBarChartIcon,
+    Palette: PaletteIcon,
+    Rule: RuleIcon,
+    Mouse: MouseIcon,
+    CheckBox: CheckBoxIcon,
+    UnfoldMore: UnfoldMoreIcon,
+    Block: BlockIcon,
+    Diamond: DiamondIcon,
+    AutoGraph: AutoGraphIcon,
+    ViewList: ViewListIcon,
+    GpsFixed: GpsFixedIcon,
 };
 
 /**

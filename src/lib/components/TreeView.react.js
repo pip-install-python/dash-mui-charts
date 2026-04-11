@@ -71,7 +71,9 @@ const TreeView = (props) => {
     }, [disabledItems, getItemId]);
 
     const isItemEditableFn = useMemo(() => {
-        if (typeof isItemEditable === 'boolean') return isItemEditable;
+        // If isItemEditable is explicitly true, all items are editable
+        if (isItemEditable === true) return true;
+        // If editableItems list is provided, use per-item check
         if (editableItems && editableItems.length > 0) {
             const editableSet = new Set(editableItems);
             return (item) => editableSet.has(getItemId(item));

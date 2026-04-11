@@ -18,14 +18,14 @@ MUI_LICENSE_KEY = os.environ.get('MUI_PRO_API_KEY', '')
 
 # Styles
 stat_card = {
-    'backgroundColor': '#f5f5f5',
+    'backgroundColor': 'var(--mantine-color-default)',
     'padding': '12px 20px',
     'borderRadius': '8px',
     'textAlign': 'center',
     'minWidth': '130px',
 }
 code_style = {
-    'backgroundColor': '#f5f5f5',
+    'backgroundColor': 'var(--mantine-color-default)',
     'padding': '15px',
     'borderRadius': '5px',
     'whiteSpace': 'pre-wrap',
@@ -40,7 +40,7 @@ layout = html.Div([
         "Real-time candlestick trading simulation with OHLCV data, volume bars, "
         "forecast line with uncertainty bands, and alert labels on significant moves. "
         "All simulation parameters are controllable via the sliders below.",
-        style={'fontSize': '16px', 'color': '#666', 'marginBottom': '20px'}
+        style={'fontSize': '16px', 'color': 'var(--mantine-color-dimmed)', 'marginBottom': '20px'}
     ),
 
     # ── Controls Row 1: Buttons + Toggles ─────────────────────────────────
@@ -102,22 +102,22 @@ layout = html.Div([
     # ── Stats Row ─────────────────────────────────────────────────────────
     html.Div([
         html.Div([
-            html.Div("Price", style={'fontSize': '11px', 'color': '#999'}),
+            html.Div("Price", style={'fontSize': '11px', 'color': 'var(--mantine-color-dimmed)'}),
             html.Div(id='lt-price-display', children="$100.00",
                      style={'fontSize': '22px', 'fontWeight': 'bold'}),
         ], style=stat_card),
         html.Div([
-            html.Div("Ticks", style={'fontSize': '11px', 'color': '#999'}),
+            html.Div("Ticks", style={'fontSize': '11px', 'color': 'var(--mantine-color-dimmed)'}),
             html.Div(id='lt-tick-display', children="0",
                      style={'fontSize': '22px', 'fontWeight': 'bold'}),
         ], style=stat_card),
         html.Div([
-            html.Div("Alerts", style={'fontSize': '11px', 'color': '#999'}),
+            html.Div("Alerts", style={'fontSize': '11px', 'color': 'var(--mantine-color-dimmed)'}),
             html.Div(id='lt-alert-count', children="0",
                      style={'fontSize': '22px', 'fontWeight': 'bold'}),
         ], style=stat_card),
         html.Div([
-            html.Div("Status", style={'fontSize': '11px', 'color': '#999'}),
+            html.Div("Status", style={'fontSize': '11px', 'color': 'var(--mantine-color-dimmed)'}),
             html.Div(id='lt-status', children="Stopped",
                      style={'fontSize': '22px', 'fontWeight': 'bold', 'color': '#999'}),
         ], style=stat_card),

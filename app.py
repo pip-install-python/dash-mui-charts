@@ -21,6 +21,23 @@ except ImportError:
 
 MUI_LICENSE_KEY = os.environ.get('MUI_PRO_API_KEY', '')
 
+# ---------------------------------------------------------------------------
+# WidgetBot Discord Crate — must register BEFORE Dash()
+# ---------------------------------------------------------------------------
+from dash_widgetbot import add_discord_crate
+
+WIDGETBOT_SERVER = os.environ.get('WIDGETBOT_SERVER', '')
+WIDGETBOT_CHANNEL = os.environ.get('WIDGETBOT_CHANNEL', '')
+
+if WIDGETBOT_SERVER and WIDGETBOT_CHANNEL:
+    add_discord_crate(
+        server=WIDGETBOT_SERVER,
+        channel=WIDGETBOT_CHANNEL,
+        color="#1976d2",
+        location=["bottom", "right"],
+        defer=True,
+    )
+
 # Load custom index template with SEO meta tags, favicon randomizer, and analytics
 _template_path = os.path.join(os.path.dirname(__file__), 'templates', 'index.html')
 with open(_template_path, encoding='utf-8') as _f:
@@ -41,62 +58,63 @@ app.server.config['MUI_LICENSE_KEY'] = MUI_LICENSE_KEY
 # Navigation tree items — groups use "group-*" ids, leaves use page paths
 # ---------------------------------------------------------------------------
 NAV_ITEMS = [
-    {"itemId": "/", "label": "Home"},
-    {"itemId": "group-linechart", "label": "LineChart", "children": [
-        {"itemId": "/linechart-basic", "label": "Basics"},
-        {"itemId": "/linechart-pro", "label": "Pro Features"},
-        {"itemId": "/linechart-brush", "label": "Brush Selection"},
-        {"itemId": "/linechart-referencelines", "label": "Reference Lines"},
-        {"itemId": "/linechart-highlighting", "label": "Highlighting"},
-        {"itemId": "/highlighting-sync", "label": "Highlighting Sync"},
-        {"itemId": "/linechart-zoom-preview", "label": "Zoom Preview"},
-        {"itemId": "/linechart-tick-hover", "label": "Ticks & Hover"},
-        {"itemId": "/crosshair", "label": "Crosshair"},
+    {"itemId": "/", "label": "Home", "icon": "Home"},
+    {"itemId": "/changelog", "label": "Changelog", "icon": "History"},
+    {"itemId": "group-sparkline", "label": "SparklineChart", "icon": "Timeline", "children": [
+        {"itemId": "/sparkline", "label": "Examples", "icon": "PlayArrow"},
+        {"itemId": "/sparkline-style", "label": "Styling", "icon": "Palette"},
+        {"itemId": "/sparkline-style-advanced", "label": "Advanced", "icon": "AutoGraph"},
     ]},
-    {"itemId": "group-barchart", "label": "BarChart", "children": [
-        {"itemId": "/barchart-basic", "label": "Basic"},
-        {"itemId": "/barchart-dataset", "label": "Dataset Mode"},
-        {"itemId": "/barchart-stacking", "label": "Stacking"},
-        {"itemId": "/barchart-interaction", "label": "Interaction"},
-        {"itemId": "/barchart-reference", "label": "Reference Lines"},
-        {"itemId": "/barchart-pro", "label": "Pro Features"},
+    {"itemId": "group-pie", "label": "PieChart", "icon": "PieChart", "children": [
+        {"itemId": "/pie", "label": "Examples", "icon": "PlayArrow"},
+        {"itemId": "/pie-props", "label": "Props Explorer", "icon": "Tune"},
     ]},
-    {"itemId": "group-candlestick", "label": "CandlestickChart", "children": [
-        {"itemId": "/candlestick", "label": "OHLC Charts"},
+    {"itemId": "group-barchart", "label": "BarChart", "icon": "BarChart", "children": [
+        {"itemId": "/barchart-basic", "label": "Basic", "icon": "PlayArrow"},
+        {"itemId": "/barchart-dataset", "label": "Dataset Mode", "icon": "TableChart"},
+        {"itemId": "/barchart-stacking", "label": "Stacking", "icon": "StackedBarChart"},
+        {"itemId": "/barchart-interaction", "label": "Interaction", "icon": "TouchApp"},
+        {"itemId": "/barchart-reference", "label": "Reference Lines", "icon": "Rule"},
+        {"itemId": "/barchart-pro", "label": "Pro Features", "icon": "Diamond"},
     ]},
-    {"itemId": "group-pie", "label": "PieChart", "children": [
-        {"itemId": "/pie", "label": "Examples"},
-        {"itemId": "/pie-props", "label": "Props Explorer"},
+    {"itemId": "group-heatmap", "label": "Heatmap", "icon": "GridOn", "children": [
+        {"itemId": "/heatmap", "label": "Examples", "icon": "PlayArrow"},
+        {"itemId": "/heatmap-props", "label": "Props Explorer", "icon": "Tune"},
     ]},
-    {"itemId": "group-scatter", "label": "ScatterChart", "children": [
-        {"itemId": "/scatter", "label": "Examples"},
+    {"itemId": "group-scatter", "label": "ScatterChart", "icon": "ScatterPlot", "children": [
+        {"itemId": "/scatter", "label": "Examples", "icon": "PlayArrow"},
     ]},
-    {"itemId": "group-composite", "label": "CompositeChart", "children": [
-        {"itemId": "/composite", "label": "Examples"},
-        {"itemId": "/composite-v120", "label": "v1.2.0"},
-        {"itemId": "/composite-render-bp", "label": "Render BP"},
+    {"itemId": "group-linechart", "label": "LineChart", "icon": "ShowChart", "children": [
+        {"itemId": "/linechart-basic", "label": "Basics", "icon": "PlayArrow"},
+        {"itemId": "/linechart-pro", "label": "Pro Features", "icon": "Diamond"},
+        {"itemId": "/linechart-brush", "label": "Brush Selection", "icon": "Brush"},
+        {"itemId": "/linechart-referencelines", "label": "Reference Lines", "icon": "Rule"},
+        {"itemId": "/linechart-highlighting", "label": "Highlighting", "icon": "Highlight"},
+        {"itemId": "/highlighting-sync", "label": "Highlighting Sync", "icon": "Sync"},
+        {"itemId": "/linechart-zoom-preview", "label": "Zoom Preview", "icon": "ZoomIn"},
+        {"itemId": "/linechart-tick-hover", "label": "Ticks & Hover", "icon": "Mouse"},
+        {"itemId": "/crosshair", "label": "Crosshair", "icon": "GpsFixed"},
     ]},
-    {"itemId": "group-heatmap", "label": "Heatmap", "children": [
-        {"itemId": "/heatmap", "label": "Examples"},
-        {"itemId": "/heatmap-props", "label": "Props Explorer"},
+    {"itemId": "group-candlestick", "label": "CandlestickChart", "icon": "CandlestickChart", "children": [
+        {"itemId": "/candlestick", "label": "OHLC Charts", "icon": "PlayArrow"},
     ]},
-    {"itemId": "group-sparkline", "label": "SparklineChart", "children": [
-        {"itemId": "/sparkline", "label": "Examples"},
-        {"itemId": "/sparkline-style", "label": "Styling"},
-        {"itemId": "/sparkline-style-advanced", "label": "Advanced"},
+    {"itemId": "group-livetrading", "label": "LiveTradingChart", "icon": "TrendingUp", "children": [
+        {"itemId": "/live-trading", "label": "Examples", "icon": "PlayArrow"},
     ]},
-    {"itemId": "group-livetrading", "label": "LiveTradingChart", "children": [
-        {"itemId": "/live-trading", "label": "Examples"},
+    {"itemId": "group-composite", "label": "CompositeChart", "icon": "Layers", "children": [
+        {"itemId": "/composite", "label": "Examples", "icon": "PlayArrow"},
+        {"itemId": "/composite-v120", "label": "v1.2.1", "icon": "Star"},
+        {"itemId": "/composite-render-bp", "label": "Render BP", "icon": "Speed"},
     ]},
-    {"itemId": "group-treeview", "label": "TreeView", "children": [
-        {"itemId": "/tree-basic", "label": "Basic"},
-        {"itemId": "/tree-simple", "label": "Simple"},
-        {"itemId": "/tree-selection", "label": "Selection"},
-        {"itemId": "/tree-expansion", "label": "Expansion"},
-        {"itemId": "/tree-editing", "label": "Editing"},
-        {"itemId": "/tree-icons", "label": "Icons"},
-        {"itemId": "/tree-disabled", "label": "Disabled"},
-        {"itemId": "/tree-pro", "label": "Pro"},
+    {"itemId": "group-treeview", "label": "TreeView", "icon": "AccountTree", "children": [
+        {"itemId": "/tree-basic", "label": "Basic", "icon": "PlayArrow"},
+        {"itemId": "/tree-simple", "label": "Simple", "icon": "ViewList"},
+        {"itemId": "/tree-selection", "label": "Selection", "icon": "CheckBox"},
+        {"itemId": "/tree-expansion", "label": "Expansion", "icon": "UnfoldMore"},
+        {"itemId": "/tree-editing", "label": "Editing", "icon": "Edit"},
+        {"itemId": "/tree-icons", "label": "Icons", "icon": "Palette"},
+        {"itemId": "/tree-disabled", "label": "Disabled", "icon": "Block"},
+        {"itemId": "/tree-pro", "label": "Pro", "icon": "Diamond"},
     ]},
 ]
 
@@ -117,15 +135,31 @@ header = dmc.AppShellHeader(
             dmc.Group(
                 [
                     dmc.Burger(id="burger", size="sm", hiddenFrom="sm", opened=False),
+                    dmc.Avatar(
+                        id="header-avatar",
+                        src="/assets/favicon_areachart.ico",
+                        size="sm",
+                        radius="sm",
+                    ),
                     dmc.Text("Dash MUI Charts", fw=700, size="lg"),
-                    dmc.Badge("v1.2.0", variant="light", size="sm", color="blue",
+                    dmc.Badge("v1.2.1", variant="light", size="sm", color="blue",
                               visibleFrom="xs"),
                 ],
                 gap="xs",
             ),
             dmc.Group(
                 [
-                    theme_toggle,
+                    html.A(
+                        dmc.ActionIcon(
+                            DashIconify(icon="mdi:book-open-variant", width=22),
+                            variant="subtle",
+                            color="gray",
+                            size="lg",
+                        ),
+                        href="https://pip-install-python.com",
+                        target="_blank",
+                        title="Pip Install Python — All Packages",
+                    ),
                     html.A(
                         dmc.ActionIcon(
                             DashIconify(icon="mdi:github", width=22),
@@ -135,7 +169,9 @@ header = dmc.AppShellHeader(
                         ),
                         href="https://github.com/pip-install-python/dash-mui-charts",
                         target="_blank",
+                        title="GitHub Repository",
                     ),
+                    theme_toggle,
                 ],
                 gap="sm",
             ),
@@ -154,8 +190,8 @@ navbar = dmc.AppShellNavbar(
                 SimpleTreeView(
                     id="nav-tree",
                     items=NAV_ITEMS,
-                    defaultExpandedItems=ALL_GROUP_IDS,
-                    itemChildrenIndentation="20px",
+                    defaultExpandedItems=[],
+                    itemChildrenIndentation="8px",
                     sx={
                         "& .MuiTreeItem-label": {
                             "fontSize": "14px",
@@ -176,7 +212,7 @@ navbar = dmc.AppShellNavbar(
                 },
             ),
             html.Div(
-                dmc.Text("Pip Install Python", size="xs", c="dimmed", ta="center", py="xs"),
+                dmc.Text("Pip Install Python LLC", size="xs", c="dimmed", ta="center", py="xs"),
                 style={"borderTop": "1px solid var(--mantine-color-default-border)"},
             ),
         ],
@@ -207,7 +243,7 @@ app.layout = dmc.MantineProvider(
             padding="md",
             id="appshell",
         ),
-        dcc.Location(id="url", refresh=False),
+        dcc.Location(id="url", refresh="callback-nav"),
         dcc.Store(id="license-key-store", data=MUI_LICENSE_KEY),
     ],
 )
@@ -216,32 +252,33 @@ app.layout = dmc.MantineProvider(
 # Callbacks
 # ---------------------------------------------------------------------------
 
-# 1. Tree selection → navigate via window.location (avoids Dash circular deps)
+# 1. Tree selection → SPA navigate via dcc.Location
 clientside_callback(
     """
     (selected) => {
         if (selected && typeof selected === 'string' && selected.startsWith('/')) {
             if (window.location.pathname !== selected) {
-                window.location.pathname = selected;
+                return selected;
             }
         }
         return window.dash_clientside.no_update;
     }
     """,
-    Output("nav-tree", "id"),
+    Output("url", "pathname"),
     Input("nav-tree", "selectedItems"),
 )
 
-# 2. Sync tree highlight to current URL on page load (no cycle — url.pathname
-#    is only changed by window.location, not by any Dash Output)
+# 2. Persist expanded state to localStorage (output to dummy, no cycle)
 clientside_callback(
     """
-    (pathname) => {
-        return pathname || '/';
+    (expanded) => {
+        try { localStorage.setItem('nav-tree-expanded', JSON.stringify(expanded || [])); }
+        catch(e) {}
+        return window.dash_clientside.no_update;
     }
     """,
-    Output("nav-tree", "selectedItems"),
-    Input("url", "pathname"),
+    Output("nav-tree", "id"),
+    Input("nav-tree", "expandedItems"),
 )
 
 # 3. Burger toggle for mobile navbar

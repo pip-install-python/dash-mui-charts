@@ -196,7 +196,46 @@ body:has(._dash-loading)::after {
     color: rgba(255, 255, 255, 0.5) !important;
 }
 
-/* --- SimpleTreeView inside navbar --- */
+/* --- MUI TreeView: Edit mode input fields --- */
+[data-mantine-color-scheme="dark"] .MuiTreeItem-labelInput input,
+[data-mantine-color-scheme="dark"] .MuiTreeItem-labelInput .MuiInput-input,
+[data-mantine-color-scheme="dark"] .MuiTreeItem-labelInput .MuiInputBase-input {
+    color: rgba(255, 255, 255, 0.9) !important;
+    background-color: #25262b !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    caret-color: rgba(255, 255, 255, 0.9) !important;
+}
+[data-mantine-color-scheme="dark"] .MuiTreeItem-labelInput .MuiInput-root::before {
+    border-bottom-color: rgba(255, 255, 255, 0.3) !important;
+}
+[data-mantine-color-scheme="dark"] .MuiTreeItem-labelInput .MuiInput-root::after {
+    border-bottom-color: #90caf9 !important;
+}
+[data-mantine-color-scheme="dark"] .MuiTreeItem-labelInput {
+    background-color: transparent !important;
+}
+
+/* --- MUI TreeView / RichTreeView (all instances, not just navbar) --- */
+[data-mantine-color-scheme="dark"] .MuiRichTreeView-root .MuiTreeItem-label,
+[data-mantine-color-scheme="dark"] .MuiSimpleTreeView-root .MuiTreeItem-label {
+    color: rgba(255, 255, 255, 0.82) !important;
+}
+[data-mantine-color-scheme="dark"] .MuiRichTreeView-root .MuiTreeItem-iconContainer svg,
+[data-mantine-color-scheme="dark"] .MuiSimpleTreeView-root .MuiTreeItem-iconContainer svg {
+    fill: rgba(255, 255, 255, 0.5) !important;
+    color: rgba(255, 255, 255, 0.5) !important;
+}
+[data-mantine-color-scheme="dark"] .MuiTreeItem-content:hover {
+    background-color: rgba(255, 255, 255, 0.06) !important;
+}
+[data-mantine-color-scheme="dark"] .MuiTreeItem-content.Mui-selected {
+    background-color: rgba(25, 118, 210, 0.2) !important;
+}
+[data-mantine-color-scheme="dark"] .MuiTreeItem-content.Mui-selected .MuiTreeItem-label {
+    color: #90caf9 !important;
+}
+
+/* --- SimpleTreeView inside navbar (additional specificity) --- */
 [data-mantine-color-scheme="dark"] .MuiTreeItem-label {
     color: rgba(255, 255, 255, 0.82) !important;
 }
@@ -324,6 +363,33 @@ body:has(._dash-loading)::after {
 [data-mantine-color-scheme="dark"] .MuiPopper-root .MuiPaper-root {
     background-color: #25262b !important;
     color: rgba(255, 255, 255, 0.82) !important;
+}
+
+/* --- Changelog page markdown --- */
+.changelog-content a {
+    color: var(--mantine-color-blue-6);
+    text-decoration: none;
+}
+.changelog-content a:hover {
+    text-decoration: underline;
+}
+.changelog-content table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 12px 0;
+}
+.changelog-content th,
+.changelog-content td {
+    border: 1px solid var(--mantine-color-default-border);
+    padding: 8px 12px;
+    text-align: left;
+    font-size: 13px;
+}
+.changelog-content th {
+    font-weight: 600;
+}
+[data-mantine-color-scheme="dark"] .changelog-content th {
+    background-color: rgba(255, 255, 255, 0.04);
 }
 
 /* --- Page-level LoadingOverlay logo theme swap --- */

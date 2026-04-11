@@ -9,6 +9,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2.1] - 2026-04-11
+
+### Fixed
+- **TreeView `editableItems` prop not working**: `isItemEditable` defaulted to `false` (a boolean), causing `typeof isItemEditable === 'boolean'` to short-circuit before checking the `editableItems` array. Changed to `isItemEditable === true` so per-item editing via `editableItems` works correctly.
+- **SimpleTreeView React 18 `defaultProps` warning**: Replaced `Component.defaultProps` with JavaScript default parameters in the function signature.
+- **TreeView edit input dark mode**: Added CSS overrides for `.MuiTreeItem-labelInput` input fields — dark background, white text, and blue focus underline in dark mode.
+
+### Added
+- **Per-item icons in SimpleTreeView**: Items now support an `icon` field (string) resolved via `iconResolver`. Renders inline MUI icon (18px, 0.7 opacity) next to the label.
+- **30+ new MUI icons in `iconResolver.js`**: `ShowChart`, `BarChart`, `PieChart`, `ScatterPlot`, `GridOn`, `CandlestickChart`, `Timeline`, `TrendingUp`, `Layers`, `AccountTree`, `Brush`, `Highlight`, `Sync`, `ZoomIn`, `TouchApp`, `TableChart`, `StackedBarChart`, `Palette`, `Rule`, `Mouse`, `CheckBox`, `UnfoldMore`, `Block`, `Diamond`, `AutoGraph`, `ViewList`, `GpsFixed`, `Speed`, `Star`, `PlayArrow`, `Tune`, `History`.
+- **Changelog page**: `/changelog` renders `CHANGELOG.md` via `dcc.Markdown` with styled tables and dark mode support.
+
+### Changed
+- **Navigation tree**: Reordered (Home, Changelog, SparklineChart, PieChart, BarChart, Heatmap, ScatterChart, LineChart, CandlestickChart, LiveTradingChart, CompositeChart, TreeView). All items have unique MUI icons. Groups start collapsed. `itemChildrenIndentation` reduced to 8px.
+- **Tree state persistence**: Expanded groups saved to `localStorage` via clientside callback, restored on page load via `dash_clientside.set_props`. No circular dependency.
+- **SPA navigation**: Tree selection uses `dcc.Location(refresh="callback-nav")` — page content swaps without full reload, preserving tree state.
+
+---
+
 ## [1.2.0] - 2026-04-10
 
 ### Added
@@ -414,7 +433,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/pip-install-python/dash-mui-charts/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/pip-install-python/dash-mui-charts/compare/v1.2.1...HEAD
+[1.2.1]: https://github.com/pip-install-python/dash-mui-charts/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/pip-install-python/dash-mui-charts/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/pip-install-python/dash-mui-charts/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/pip-install-python/dash-mui-charts/compare/v0.0.8...v1.0.0

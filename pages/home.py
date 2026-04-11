@@ -171,7 +171,7 @@ layout = html.Div([
             ),
             dmc.Group(
                 [
-                    dmc.Badge("v1.2.0", size="lg", variant="light", color="blue"),
+                    dmc.Badge("v1.2.1", size="lg", variant="light", color="blue"),
                     dmc.Badge("9 Components", size="lg", variant="light", color="gray"),
                     dmc.Badge("MIT License", size="lg", variant="light", color="green"),
                 ],
@@ -214,8 +214,8 @@ layout = html.Div([
         mb="xl",
     ),
 
-    # New in v1.2.0
-    dmc.Title("New in v1.2.0", order=2, mb="md"),
+    # New in v1.2.1
+    dmc.Title("New in v1.2.1", order=2, mb="md"),
     dmc.SimpleGrid(
         [
             dmc.Paper(

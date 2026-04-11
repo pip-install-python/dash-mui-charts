@@ -39,8 +39,8 @@ section_style = {'marginBottom': '40px'}
 output_style = {
     'fontSize': '12px', 'margin': 0,
     'padding': '10px 14px', 'borderRadius': '6px',
-    'backgroundColor': '#f5f5f5',
-    'border': '1px solid #ddd',
+    'backgroundColor': 'var(--mantine-color-default)',
+    'border': '1px solid var(--mantine-color-default-border)',
     'whiteSpace': 'pre-wrap',
     'maxHeight': '200px',
     'overflow': 'auto',
@@ -48,12 +48,12 @@ output_style = {
 
 layout = html.Div([
     html.H2("Tree View - Label Editing"),
-    html.P("Double-click an item label to edit. Press Enter to save, Esc to cancel.", style={'color': '#666'}),
+    html.P("Double-click an item label to edit. Press Enter to save, Esc to cancel.", style={'color': 'var(--mantine-color-dimmed)'}),
 
     # --- 1. All items editable ---
     html.Div([
         html.H3("1. All Items Editable"),
-        html.P("isItemEditable=True makes every item's label editable.", style={'color': '#666'}),
+        html.P("isItemEditable=True makes every item's label editable.", style={'color': 'var(--mantine-color-dimmed)'}),
         TreeView(
             id="tree-edit-all",
             items=FILE_SYSTEM,
@@ -63,7 +63,7 @@ layout = html.Div([
             collapseIcon="ExpandMore",
             endIcon="InsertDriveFile",
         ),
-        html.P("Last edit:", style={'marginTop': '10px', 'fontSize': '13px', 'color': '#666'}),
+        html.P("Last edit:", style={'marginTop': '10px', 'fontSize': '13px', 'color': 'var(--mantine-color-dimmed)'}),
         html.Pre(id="tree-edit-all-out", children="Double-click to edit...", style=output_style),
     ], style=section_style),
 
@@ -72,7 +72,7 @@ layout = html.Div([
         html.H3("2. Specific Items Editable"),
         html.P(
             'editableItems=["docs-resume", "docs-cover", "src-main"] — only those 3 items can be edited.',
-            style={'color': '#666'},
+            style={'color': 'var(--mantine-color-dimmed)'},
         ),
         TreeView(
             id="tree-edit-specific",
@@ -83,14 +83,14 @@ layout = html.Div([
             collapseIcon="ExpandMore",
             endIcon="InsertDriveFile",
         ),
-        html.P("Last edit:", style={'marginTop': '10px', 'fontSize': '13px', 'color': '#666'}),
+        html.P("Last edit:", style={'marginTop': '10px', 'fontSize': '13px', 'color': 'var(--mantine-color-dimmed)'}),
         html.Pre(id="tree-edit-specific-out", children="Double-click an editable item...", style=output_style),
     ], style=section_style),
 
     # --- 3. Edit history log ---
     html.Div([
         html.H3("3. Edit History"),
-        html.P("Each edit appends to a log showing itemId and newLabel.", style={'color': '#666'}),
+        html.P("Each edit appends to a log showing itemId and newLabel.", style={'color': 'var(--mantine-color-dimmed)'}),
         TreeView(
             id="tree-edit-log",
             items=[
@@ -107,7 +107,7 @@ layout = html.Div([
             defaultExpandedItems=["fruits", "vegs"],
             isItemEditable=True,
         ),
-        html.P("Edit log:", style={'marginTop': '10px', 'fontSize': '13px', 'color': '#666'}),
+        html.P("Edit log:", style={'marginTop': '10px', 'fontSize': '13px', 'color': 'var(--mantine-color-dimmed)'}),
         html.Pre(id="tree-edit-log-out", children="No edits yet...", style=output_style),
     ], style=section_style),
 ])
