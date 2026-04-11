@@ -21,10 +21,16 @@ except ImportError:
 
 MUI_LICENSE_KEY = os.environ.get('MUI_PRO_API_KEY', '')
 
+# Load custom index template with SEO meta tags, favicon randomizer, and analytics
+_template_path = os.path.join(os.path.dirname(__file__), 'templates', 'index.html')
+with open(_template_path, encoding='utf-8') as _f:
+    _index_string = _f.read()
+
 app = Dash(
     __name__,
     use_pages=True,
     suppress_callback_exceptions=True,
+    index_string=_index_string,
 )
 server = app.server  # WSGI entry point for gunicorn: gunicorn app:server
 
