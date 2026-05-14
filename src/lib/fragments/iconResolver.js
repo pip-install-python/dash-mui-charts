@@ -55,6 +55,12 @@ import DiamondIcon from '@mui/icons-material/Diamond';
 import AutoGraphIcon from '@mui/icons-material/AutoGraph';
 import ViewListIcon from '@mui/icons-material/ViewList';
 import GpsFixedIcon from '@mui/icons-material/GpsFixed';
+// Action / kebab-menu icons
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ArchiveIcon from '@mui/icons-material/Archive';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 
 const ICON_MAP = {
     ExpandMore: ExpandMoreIcon,
@@ -108,6 +114,12 @@ const ICON_MAP = {
     AutoGraph: AutoGraphIcon,
     ViewList: ViewListIcon,
     GpsFixed: GpsFixedIcon,
+    // Action / kebab-menu
+    ContentCopy: ContentCopyIcon,
+    PersonAdd: PersonAddIcon,
+    CheckCircle: CheckCircleIcon,
+    Archive: ArchiveIcon,
+    MoreVert: MoreVertIcon,
 };
 
 /**

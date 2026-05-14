@@ -9,6 +9,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2.2] - 2026-05-13
+
+### Added
+
+#### TreeViewPro — Per-Item Slider + Kebab Menu
+- **`showItemControls` (bool)** — render a 0–100 `Slider` and a kebab `IconButton` directly after each tree item's label. Designed for "tree paired with a map / canvas" patterns where each leaf is a layer with an opacity / progress value and a row-level actions menu.
+- **`controlsItems` (list of IDs)** — optional subset filter; the slider + kebab only appear on listed items (leaves only, by convention). Omit to show controls on every row.
+- **`sliderValues` (dict, bidirectional)** — `{itemId: value}`. Pre-seed initial values from Python; the prop also updates live as the user drags so callbacks can mirror the state.
+- **`sliderMin` / `sliderMax` / `sliderStep`** — bounds and granularity (defaults 0 / 100 / 1).
+- **`sliderColor` (string)** — accepts Mantine palette names (`"teal"`, `"blue.5"` → `var(--mantine-color-...-6)`), CSS literals (`"#ff6b6b"`, `"rgb(...)"`, `"oklch(...)"`), or CSS expressions (`"var(--mantine-...)`, `"light-dark(...)`). Applied via `sx` to the slider track, thumb, hover ring, value label, and rail.
+- **`kebabMenuItems` (list)** — `[{label, value, icon?}]` defines the actions menu. `icon` resolves through `iconResolver`.
+- **`sliderChange` (output)** — `{itemId, value, event_timestamp}`, fired on slider commit (mouse-up / touch-end).
+- **`kebabAction` (output)** — `{itemId, action, event_timestamp}` fired when a menu item is selected.
+- **`orderedItems` (output)** — the full live tree after any drag-reorder. Emitted on every `onItemPositionChange` via an internal `applyReorder` walk so Dash callbacks can render the nested current order. Falls back to `items` until the first reorder.
+- **Dark / light mode detection** — TreeViewPro now wraps its subtree in an MUI `ThemeProvider` whose `mode` is driven by a `MutationObserver` on `<html data-mantine-color-scheme>`. Checkbox, slider, IconButton, Menu paper and MenuItems re-skin automatically when the Mantine color scheme toggles.
+- **Slider responsiveness on desktop** — `ItemLabelWithControls` holds a local React state during drag, so the thumb tracks instantly even when Dash callback round-trips are slow. Native `dragstart` is cancelled on the slider + kebab area to keep `itemsReordering` from swallowing mouse drags; passive pointer/touch events no longer call `preventDefault` (silences the "Unable to preventDefault inside passive event listener invocation" console message).
+- **`MoreVert`, `ContentCopy`, `PersonAdd`, `CheckCircle`, `Archive` icons** registered in `iconResolver.js` for kebab menu usage.
+
+#### Demo page `/tree-pro` rebuilt
+- Two-column grid (`dmc.Grid`): the Pro tree on the left, a "map companion" panel on the right that mirrors the tree's state via `dmc.Text` tiles (Last slider, Last menu), a JSON readout titled **"Slider values and nested order:"**, and a rolling action log.
+- **Slug-derived IDs**: `slugify_label` + `assign_ids` turn label strings into stable IDs at startup. Spaces and non-alphanumerics → `-`, duplicate slugs auto-disambiguate with `-1`, `-2`, … so `Site survey overlay` becomes `site-survey-overlay` and the JSON output reads like a layer manifest instead of `task-1`, `task-2`.
+- **Nested order JSON** — `build_nested_view` walks `orderedItems` (or the initial `items` on first render) and injects slider values at the leaves, so the readout always reflects the current reordered tree.
+- Layer-themed labels (Planning / Active / Reference) replace the placeholder "Backlog / In Progress / Done" copy to match the map-companion use case.
+- Section 3 wires `sliderColor="teal"`; `ThemeIcon` and action-log icons reuse the same constant.
+
+### Notes
+- Two `Each child in a list should have a unique "key" prop` warnings remain when `checkboxSelection={true}` and when the kebab menu opens. Both originate in MUI v6 internals (`ButtonBase` ripple array, `FocusTrap` children) and are tracked upstream — they are not caused by our code. They clear on upgrade to MUI v7.
+
+---
+
 ## [1.2.1] - 2026-04-11
 
 ### Fixed

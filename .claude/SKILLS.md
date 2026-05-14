@@ -90,7 +90,7 @@ dash-mui-charts/
 
 ---
 
-## Components (9 Total)
+## Components (12 Total)
 
 ### 1. LineChart
 
@@ -942,6 +942,87 @@ SparklineChart(
 **License:** Community (basic) / Pro (zoom/slider)
 
 **Purpose:** Real-time streaming chart for live data visualization (trading, sensor feeds, etc.).
+
+---
+
+### 10. SimpleTreeView
+
+**File:** `src/lib/components/SimpleTreeView.react.js`
+**License:** Community
+
+**Purpose:** JSX-driven tree (no MUI store). Useful for navigation sidebars and small static trees. Items support an `icon` field resolved through `iconResolver.js`.
+
+---
+
+### 11. TreeView
+
+**File:** `src/lib/components/TreeView.react.js`
+**License:** Community
+
+**Purpose:** Data-driven `RichTreeView` wrapper. Accepts a nested `items` array with `getItemId` / `getItemLabel` / `getItemChildren` string accessors. Supports controlled selection, expansion, in-place label editing, and per-item disabling.
+
+---
+
+### 12. TreeViewPro
+
+**File:** `src/lib/components/TreeViewPro.react.js`
+**License:** Pro (drag-and-drop reordering, lazy loading)
+
+**Purpose:** Extends `TreeView` with MUI X Pro features and per-item UI controls. Designed for the "tree paired with a map / canvas" pattern where each leaf is a layer with a 0–100 value and a row-level actions menu.
+
+**Pro features:**
+
+```python
+TreeViewPro(
+    id="layers",
+    items=LAYER_ITEMS,
+    licenseKey=os.environ["MUI_PRO_API_KEY"],
+    itemsReordering=True,            # drag-and-drop reorder
+    reorderableItems=["task-1"],     # optional subset
+    lazyLoading=True,                # fire `lazyLoadRequest` on expand
+    lazyLoadedChildren={...},        # parentId -> [child items]
+)
+```
+
+**Outputs from reorder / lazy:**
+- `itemPositionChanged` — `{itemId, oldPosition, newPosition, event_timestamp}` per move.
+- `orderedItems` — the full live tree after each reorder (computed via internal `applyReorder` walk). Lets Python render the current nested order without re-applying deltas. Falls back to `items` until the first reorder.
+- `lazyLoadRequest` — `{itemId, event_timestamp}` when an unloaded node is expanded.
+
+**Per-item Slider + Kebab controls** (`showItemControls=True`):
+
+```python
+TreeViewPro(
+    showItemControls=True,
+    controlsItems=LEAF_IDS,                  # optional subset (leaves only)
+    sliderValues={"layer-a": 80, ...},       # bidirectional dict
+    sliderMin=0, sliderMax=100, sliderStep=1,
+    sliderColor="teal",                       # see resolver below
+    kebabMenuItems=[
+        {"label": "Duplicate", "value": "duplicate", "icon": "ContentCopy"},
+        {"label": "Delete",    "value": "delete",    "icon": "Delete"},
+    ],
+)
+```
+
+**Slider color resolver:**
+- Mantine palette names — `"teal"` → `var(--mantine-color-teal-6)`, `"blue.5"` → `var(--mantine-color-blue-5)` (bare names use shade 6).
+- CSS literals — `"#ff6b6b"`, `"rgb(255,100,50)"`, `"oklch(...)"`.
+- CSS expressions — `"var(--mantine-color-...)"`, `"light-dark(white, black)"`.
+- Applied via `sx` to the slider track, thumb, hover ring, value label and rail.
+
+**Per-item outputs:**
+- `sliderChange` — `{itemId, value, event_timestamp}` on slider commit (mouse-up / touch-end). For live mid-drag readouts, observe `sliderValues` directly — it updates on every change.
+- `kebabAction` — `{itemId, action, event_timestamp}` when a menu item is selected; `action` is the `value` field of the chosen menu entry.
+
+**Implementation notes:**
+- `useMantineColorScheme` watches `<html data-mantine-color-scheme>` via a `MutationObserver` and re-skins MUI components through an `MUI ThemeProvider` (Checkbox, Slider, IconButton, Menu paper, MenuItems) when the Mantine theme toggles.
+- `ItemLabelWithControls` holds a **local React state** for each slider during drag so the thumb tracks instantly even when Dash callback round-trips are slow. `useEffect` re-syncs from props when no drag is in flight.
+- `dragstart` is `preventDefault`-cancelled on the slider + kebab area to keep `itemsReordering`'s HTML5 native drag from swallowing desktop mouse drags. Passive pointer/touch events use `stopPropagation` only.
+- Demo page: `/tree-pro` (see `pages/tree_pro.py`). `slugify_label` + `assign_ids` derive stable IDs from labels at startup; duplicates get `-1`, `-2`, … suffixes.
+
+**Known upstream warnings (benign):**
+- `Each child in a list should have a unique "key" prop` from `ButtonBase`/`SwitchBase`/`Checkbox` (triggered by `checkboxSelection=True`) and from `FocusTrap` inside an open `Menu`. Both originate in MUI v6 internals — not our code. They clear on upgrade to MUI v7.
 
 ---
 

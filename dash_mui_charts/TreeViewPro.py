@@ -48,6 +48,10 @@ Keyword arguments:
 - collapseIcon (string; optional):
     MUI icon name for collapse icon.
 
+- controlsItems (list of strings; optional):
+    Restrict slider+kebab to a subset of item IDs. Empty/omitted means
+    all items.
+
 - defaultExpandedItems (list of strings; optional):
     Default expanded items (uncontrolled).
 
@@ -127,6 +131,30 @@ Keyword arguments:
 - itemsReordering (boolean; default False):
     Enable drag-and-drop item reordering.
 
+- kebabAction (dict; optional):
+    Output: fires when a kebab menu item is chosen. {itemId, action,
+    event_timestamp}.
+
+    `kebabAction` is a dict with keys:
+
+    - itemId (string; optional)
+
+    - action (string; optional)
+
+    - event_timestamp (number; optional)
+
+- kebabMenuItems (list of dicts; optional):
+    Kebab menu options: [{label, value, icon?}]. `value` is sent back
+    as `action`.
+
+    `kebabMenuItems` is a list of dicts with keys:
+
+    - label (string; required)
+
+    - value (string; required)
+
+    - icon (string; optional)
+
 - lazyLoadRequest (dict; optional):
     Output: Fired when unloaded node is expanded. {itemId,
     event_timestamp}.
@@ -150,6 +178,12 @@ Keyword arguments:
 - multiSelect (boolean; default False):
     Allow selecting multiple items.
 
+- orderedItems (list of dicts; optional):
+    Output: the current tree after any drag-and-drop reorder,
+    preserving each node's original fields (id, label, children,
+    etc.). Updates on every reorder so Python callbacks can render the
+    live order.
+
 - reorderableItems (list of strings; optional):
     List of item IDs that can be reordered. If empty, all items are
     reorderable.
@@ -166,6 +200,41 @@ Keyword arguments:
     - parents (boolean; optional)
 
     - descendants (boolean; optional)
+
+- showItemControls (boolean; default False):
+    Show a Slider + kebab menu on each item row.
+
+- sliderChange (dict; optional):
+    Output: fires once on each commit (mouse-up) of a slider drag.
+    {itemId, value, event_timestamp}.
+
+    `sliderChange` is a dict with keys:
+
+    - itemId (string; optional)
+
+    - value (number; optional)
+
+    - event_timestamp (number; optional)
+
+- sliderColor (string; optional):
+    Slider color. Accepts a Mantine theme color name (\"teal\",
+    \"blue.5\"), a CSS color literal (\"#ff6b6b\", \"rgb(...)\"), or a
+    CSS expression (\"var(--mantine-color-teal-6)\",
+    \"light-dark(...)\"). Bare names use shade 6 by default. When
+    omitted, the slider falls back to MUI's `primary` palette color.
+
+- sliderMax (number; default 100):
+    Slider maximum.
+
+- sliderMin (number; default 0):
+    Slider minimum.
+
+- sliderStep (number; default 1):
+    Slider step.
+
+- sliderValues (dict; optional):
+    Controlled slider values keyed by itemId, e.g. {\"task-1\": 40}.
+    Also updated as user drags.
 
 - sx (dict; optional):
     MUI sx styling object."""
@@ -185,6 +254,33 @@ Keyword arguments:
         "LazyLoadRequest",
             {
             "itemId": NotRequired[str],
+            "event_timestamp": NotRequired[NumberType]
+        }
+    )
+
+    KebabMenuItems = TypedDict(
+        "KebabMenuItems",
+            {
+            "label": str,
+            "value": str,
+            "icon": NotRequired[str]
+        }
+    )
+
+    SliderChange = TypedDict(
+        "SliderChange",
+            {
+            "itemId": NotRequired[str],
+            "value": NotRequired[NumberType],
+            "event_timestamp": NotRequired[NumberType]
+        }
+    )
+
+    KebabAction = TypedDict(
+        "KebabAction",
+            {
+            "itemId": NotRequired[str],
+            "action": NotRequired[str],
             "event_timestamp": NotRequired[NumberType]
         }
     )
@@ -247,17 +343,28 @@ Keyword arguments:
         itemsReordering: typing.Optional[bool] = None,
         reorderableItems: typing.Optional[typing.Sequence[str]] = None,
         itemPositionChanged: typing.Optional[dict] = None,
+        orderedItems: typing.Optional[typing.Sequence[dict]] = None,
         lazyLoading: typing.Optional[bool] = None,
         lazyLoadedChildren: typing.Optional[dict] = None,
         lazyLoadRequest: typing.Optional["LazyLoadRequest"] = None,
+        showItemControls: typing.Optional[bool] = None,
+        controlsItems: typing.Optional[typing.Sequence[str]] = None,
+        sliderValues: typing.Optional[dict] = None,
+        sliderMin: typing.Optional[NumberType] = None,
+        sliderMax: typing.Optional[NumberType] = None,
+        sliderStep: typing.Optional[NumberType] = None,
+        sliderColor: typing.Optional[str] = None,
+        kebabMenuItems: typing.Optional[typing.Sequence["KebabMenuItems"]] = None,
+        sliderChange: typing.Optional["SliderChange"] = None,
+        kebabAction: typing.Optional["KebabAction"] = None,
         clickedItem: typing.Optional["ClickedItem"] = None,
         focusedItem: typing.Optional["FocusedItem"] = None,
         editedItemLabel: typing.Optional["EditedItemLabel"] = None,
         **kwargs
     ):
-        self._prop_names = ['id', 'ariaLabel', 'ariaLabelledBy', 'checkboxSelection', 'clickedItem', 'collapseIcon', 'defaultExpandedItems', 'defaultSelectedItems', 'disableSelection', 'disabledItems', 'disabledItemsFocusable', 'editableItems', 'editedItemLabel', 'endIcon', 'expandIcon', 'expandedItems', 'expansionTrigger', 'focusedItem', 'getItemChildren', 'getItemId', 'getItemLabel', 'height', 'isItemEditable', 'itemChildrenIndentation', 'itemPositionChanged', 'items', 'itemsReordering', 'lazyLoadRequest', 'lazyLoadedChildren', 'lazyLoading', 'licenseKey', 'multiSelect', 'reorderableItems', 'selectedItems', 'selectionPropagation', 'sx']
+        self._prop_names = ['id', 'ariaLabel', 'ariaLabelledBy', 'checkboxSelection', 'clickedItem', 'collapseIcon', 'controlsItems', 'defaultExpandedItems', 'defaultSelectedItems', 'disableSelection', 'disabledItems', 'disabledItemsFocusable', 'editableItems', 'editedItemLabel', 'endIcon', 'expandIcon', 'expandedItems', 'expansionTrigger', 'focusedItem', 'getItemChildren', 'getItemId', 'getItemLabel', 'height', 'isItemEditable', 'itemChildrenIndentation', 'itemPositionChanged', 'items', 'itemsReordering', 'kebabAction', 'kebabMenuItems', 'lazyLoadRequest', 'lazyLoadedChildren', 'lazyLoading', 'licenseKey', 'multiSelect', 'orderedItems', 'reorderableItems', 'selectedItems', 'selectionPropagation', 'showItemControls', 'sliderChange', 'sliderColor', 'sliderMax', 'sliderMin', 'sliderStep', 'sliderValues', 'sx']
         self._valid_wildcard_attributes =            []
-        self.available_properties = ['id', 'ariaLabel', 'ariaLabelledBy', 'checkboxSelection', 'clickedItem', 'collapseIcon', 'defaultExpandedItems', 'defaultSelectedItems', 'disableSelection', 'disabledItems', 'disabledItemsFocusable', 'editableItems', 'editedItemLabel', 'endIcon', 'expandIcon', 'expandedItems', 'expansionTrigger', 'focusedItem', 'getItemChildren', 'getItemId', 'getItemLabel', 'height', 'isItemEditable', 'itemChildrenIndentation', 'itemPositionChanged', 'items', 'itemsReordering', 'lazyLoadRequest', 'lazyLoadedChildren', 'lazyLoading', 'licenseKey', 'multiSelect', 'reorderableItems', 'selectedItems', 'selectionPropagation', 'sx']
+        self.available_properties = ['id', 'ariaLabel', 'ariaLabelledBy', 'checkboxSelection', 'clickedItem', 'collapseIcon', 'controlsItems', 'defaultExpandedItems', 'defaultSelectedItems', 'disableSelection', 'disabledItems', 'disabledItemsFocusable', 'editableItems', 'editedItemLabel', 'endIcon', 'expandIcon', 'expandedItems', 'expansionTrigger', 'focusedItem', 'getItemChildren', 'getItemId', 'getItemLabel', 'height', 'isItemEditable', 'itemChildrenIndentation', 'itemPositionChanged', 'items', 'itemsReordering', 'kebabAction', 'kebabMenuItems', 'lazyLoadRequest', 'lazyLoadedChildren', 'lazyLoading', 'licenseKey', 'multiSelect', 'orderedItems', 'reorderableItems', 'selectedItems', 'selectionPropagation', 'showItemControls', 'sliderChange', 'sliderColor', 'sliderMax', 'sliderMin', 'sliderStep', 'sliderValues', 'sx']
         self.available_wildcard_properties =            []
         _explicit_args = kwargs.pop('_explicit_args')
         _locals = locals()
