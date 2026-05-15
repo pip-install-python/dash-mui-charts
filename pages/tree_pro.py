@@ -22,7 +22,7 @@ import re
 
 import dash
 import dash_mantine_components as dmc
-from dash import html, callback, Input, Output, State, no_update
+from dash import html, dcc, callback, Input, Output, State, no_update
 from dash_iconify import DashIconify
 
 dash.register_page(__name__, path='/tree-pro', name='Tree Pro')
@@ -112,6 +112,31 @@ def _index_leaves(items):
 
 _index_leaves(LAYER_ITEMS)
 LEAF_IDS = list(ITEM_LABELS.keys())
+
+# id -> label for *every* node (groups + leaves), used to render labels
+# instead of raw ids in the readouts.
+ALL_LABELS = {}
+
+
+def _index_all(items):
+    for it in items:
+        ALL_LABELS[it["id"]] = it["label"]
+        if it.get("children"):
+            _index_all(it["children"])
+
+
+_index_all(LAYER_ITEMS)
+
+
+def label_for(item_id, overrides=None):
+    """Resolve an item id to its current label.
+
+    Edited labels (from `editedItemLabel`) take priority via `overrides`,
+    then the static tree labels, then the id itself as a last resort.
+    """
+    if not item_id:
+        return item_id
+    return (overrides or {}).get(item_id) or ALL_LABELS.get(item_id, item_id)
 
 
 # --- Helpers used by the JSON readout --------------------------------------
@@ -415,6 +440,12 @@ layout = dmc.Stack(
             gap="sm",
             style=section_style,
         ),
+
+        # Client-side state used to keep the readouts in sync. Label overrides
+        # let "Last slider" / "Last menu" / "Selected" reflect renamed cells.
+        dcc.Store(id="tps-label-overrides", data={}),
+        dcc.Store(id="tps-last-slider", data=None),
+        dcc.Store(id="tps-last-kebab", data=None),
     ],
     gap="lg",
 )
@@ -434,24 +465,36 @@ def show_reorder(data):
 @callback(
     Output("tree-pro-combo-sel", "children"),
     Input("tree-pro-combo", "selectedItems"),
+    Input("tps-label-overrides", "data"),
     prevent_initial_call=True,
 )
-def show_combo_sel(sel):
-    return json.dumps(sel, indent=2) if sel else "[]"
+def show_combo_sel(sel, overrides):
+    if not sel:
+        return "[]"
+    ids = [sel] if isinstance(sel, str) else list(sel)
+    labels = [label_for(i, overrides) for i in ids]
+    return json.dumps(labels, indent=2)
 
 
 @callback(
     Output("tree-pro-combo-edit", "children"),
+    Output("tps-label-overrides", "data"),
     Input("tree-pro-combo", "editedItemLabel"),
+    State("tps-label-overrides", "data"),
     prevent_initial_call=True,
 )
-def show_combo_edit(data):
-    return json.dumps(data, indent=2) if data else "..."
+def show_combo_edit(data, overrides):
+    if not data:
+        return "...", no_update
+    overrides = dict(overrides or {})
+    if data.get("itemId") and data.get("newLabel"):
+        overrides[data["itemId"]] = data["newLabel"]
+    return json.dumps(data, indent=2), overrides
 
 
 @callback(
     Output("tree-pro-combo-sliders", "children"),
-    Output("tree-pro-combo-slider-label", "children"),
+    Output("tps-last-slider", "data"),
     Input("tree-pro-combo", "sliderValues"),
     Input("tree-pro-combo", "sliderChange"),
     Input("tree-pro-combo", "orderedItems"),
@@ -462,37 +505,32 @@ def show_combo_sliders(values, change, ordered):
     nested = build_nested_view(tree, values or {})
     pretty = json.dumps(nested, indent=2)
 
+    last = no_update
     if change:
-        item = change.get("itemId")
-        label = ITEM_LABELS.get(item, item)
-        text = f"{label}: {change.get('value')}"
+        last = {"itemId": change.get("itemId"), "value": change.get("value")}
     elif values:
         diff = {k: v for k, v in values.items() if v != DEFAULT_SLIDER_VALUES.get(k)}
         if diff:
             k = next(iter(diff))
-            text = f"{ITEM_LABELS.get(k, k)}: {diff[k]}"
-        else:
-            text = "Drag a slider…"
-    else:
-        text = "Drag a slider…"
+            last = {"itemId": k, "value": diff[k]}
 
-    return pretty, text
+    return pretty, last
 
 
 @callback(
-    Output("tree-pro-combo-menu-label", "children"),
     Output("tree-pro-combo-action-log", "children"),
+    Output("tps-last-kebab", "data"),
     Input("tree-pro-combo", "kebabAction"),
     State("tree-pro-combo-action-log", "children"),
+    State("tps-label-overrides", "data"),
     prevent_initial_call=True,
 )
-def show_combo_kebab(action, log):
+def show_combo_kebab(action, log, overrides):
     if not action:
         return no_update, no_update
 
-    label_for = KEBAB_LABEL_BY_VALUE.get(action.get("action"), action.get("action") or "—")
-    item_label = ITEM_LABELS.get(action.get("itemId"), action.get("itemId"))
-    summary = f"{label_for} · {item_label}"
+    action_label = KEBAB_LABEL_BY_VALUE.get(action.get("action"), action.get("action") or "—")
+    item_label = label_for(action.get("itemId"), overrides)
 
     entry = dmc.Group(
         [
@@ -503,7 +541,7 @@ def show_combo_kebab(action, log):
                 color=SLIDER_COLOR,
                 radius="xl",
             ),
-            dmc.Text(label_for, size="sm", fw=600),
+            dmc.Text(action_label, size="sm", fw=600),
             dmc.Text(item_label, size="sm", c="dimmed"),
         ],
         gap="xs",
@@ -518,4 +556,34 @@ def show_combo_kebab(action, log):
 
     log_list.insert(0, entry)
     log_list = log_list[:6]
-    return summary, log_list
+    return log_list, {"itemId": action.get("itemId"), "action": action.get("action")}
+
+
+@callback(
+    Output("tree-pro-combo-slider-label", "children"),
+    Output("tree-pro-combo-menu-label", "children"),
+    Input("tps-last-slider", "data"),
+    Input("tps-last-kebab", "data"),
+    Input("tps-label-overrides", "data"),
+    prevent_initial_call=True,
+)
+def render_readouts(last_slider, last_kebab, overrides):
+    """Render the two summary tiles from stored state.
+
+    Driven by the label-overrides store too, so renaming a cell immediately
+    refreshes "Last slider" / "Last menu" with the new label.
+    """
+    if last_slider and last_slider.get("itemId"):
+        slider_text = f"{label_for(last_slider['itemId'], overrides)}: {last_slider.get('value')}"
+    else:
+        slider_text = "Drag a slider…"
+
+    if last_kebab and last_kebab.get("itemId"):
+        action_label = KEBAB_LABEL_BY_VALUE.get(
+            last_kebab.get("action"), last_kebab.get("action") or "—"
+        )
+        menu_text = f"{action_label} · {label_for(last_kebab['itemId'], overrides)}"
+    else:
+        menu_text = "Open a ⋮ menu…"
+
+    return slider_text, menu_text

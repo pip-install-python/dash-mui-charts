@@ -21,6 +21,7 @@ import PropTypes from 'prop-types';
 import {LicenseInfo} from '@mui/x-license';
 import {RichTreeViewPro} from '@mui/x-tree-view-pro/RichTreeViewPro';
 import {TreeItem} from '@mui/x-tree-view/TreeItem';
+import {TreeItemLabelInput} from '@mui/x-tree-view/TreeItemLabelInput';
 import {ThemeProvider, createTheme} from '@mui/material/styles';
 import Slider from '@mui/material/Slider';
 import IconButton from '@mui/material/IconButton';
@@ -135,7 +136,19 @@ const applyReorder = (items, change, idField, childrenField) => {
 // --- Shared context for per-item slider + kebab ------------------------------
 const ItemControlsContext = React.createContext(null);
 
-const ItemLabelWithControls = ({itemId, originalLabel}) => {
+// Rendered as the TreeItem `label` *slot* (not the `label` prop). MUI passes
+// the real string label as `children`, plus `onDoubleClick`/`className` that
+// drive the built-in editing flow — we forward those untouched so editing and
+// `onItemLabelChange` keep working. `itemId` arrives via slotProps.label.
+// `editable` is a MUI-internal boolean and must NOT hit the DOM.
+const ItemLabelWithControls = ({
+    itemId,
+    children,
+    className,
+    editable, // eslint-disable-line no-unused-vars
+    ownerState, // eslint-disable-line no-unused-vars
+    ...labelProps
+}) => {
     const ctx = React.useContext(ItemControlsContext);
     const [menuAnchor, setMenuAnchor] = useState(null);
 
@@ -154,7 +167,11 @@ const ItemLabelWithControls = ({itemId, originalLabel}) => {
     }, [externalValue]);
 
     if (!ctx) {
-        return <span style={{flex: 1}}>{originalLabel}</span>;
+        return (
+            <div className={className} {...labelProps}>
+                {children}
+            </div>
+        );
     }
 
     const {
@@ -170,7 +187,11 @@ const ItemLabelWithControls = ({itemId, originalLabel}) => {
 
     const showControls = !controlsItemSet || controlsItemSet.has(itemId);
     if (!showControls) {
-        return <span style={{flex: 1}}>{originalLabel}</span>;
+        return (
+            <div className={className} {...labelProps}>
+                {children}
+            </div>
+        );
     }
 
     // Don't preventDefault on pointer/touch events — they can be passive and
@@ -188,11 +209,13 @@ const ItemLabelWithControls = ({itemId, originalLabel}) => {
     };
 
     return (
-        <span
+        <div
+            className={className}
+            {...labelProps}
             style={{
                 display: 'flex',
                 alignItems: 'center',
-                flex: 1,
+                width: '100%',
                 minWidth: 0,
                 gap: '8px',
             }}
@@ -207,7 +230,7 @@ const ItemLabelWithControls = ({itemId, originalLabel}) => {
                     whiteSpace: 'nowrap',
                 }}
             >
-                {originalLabel}
+                {children}
             </span>
             <span
                 onClick={stopReact}
@@ -310,32 +333,107 @@ const ItemLabelWithControls = ({itemId, originalLabel}) => {
                     );
                 })}
             </Menu>
-        </span>
+        </div>
     );
 };
 
 ItemLabelWithControls.propTypes = {
     itemId: PropTypes.string,
-    originalLabel: PropTypes.node,
+    children: PropTypes.node,
+    className: PropTypes.string,
+    editable: PropTypes.bool,
+    ownerState: PropTypes.object,
+};
+
+// Custom label-input slot. When `itemsReordering` is on, MUI's reorder plugin
+// puts `draggable="true"` on the TreeItem root with NO editing guard. While the
+// label input is focused, that native draggable ancestor hijacks text
+// selection: dragging to highlight a word starts an HTML5 element drag, the
+// input loses focus, MUI's onBlur fires, and edit mode exits mid-gesture.
+//
+// Fix: while this input is mounted (i.e. editing), flip the nearest
+// draggable ancestor to draggable="false" and restore it on cleanup. Also
+// stop mouse/pointer/click from reaching the row (so clicking inside the cell
+// doesn't toggle selection or steal focus) and cancel any dragstart that does
+// fire. We deliberately do NOT preventDefault on mousedown — the browser needs
+// it for caret placement and native text selection inside the input.
+const EditableLabelInput = React.forwardRef(function EditableLabelInput(
+    props,
+    ref
+) {
+    const innerRef = useRef(null);
+    const restoreRef = useRef(null);
+
+    const setRefs = useCallback(
+        (node) => {
+            innerRef.current = node;
+            if (typeof ref === 'function') ref(node);
+            else if (ref) ref.current = node;
+        },
+        [ref]
+    );
+
+    useEffect(() => {
+        const el = innerRef.current;
+        if (!el || typeof el.closest !== 'function') return undefined;
+        const host = el.closest('[draggable="true"]');
+        if (host) {
+            restoreRef.current = host;
+            host.setAttribute('draggable', 'false');
+        }
+        return () => {
+            if (restoreRef.current) {
+                restoreRef.current.setAttribute('draggable', 'true');
+                restoreRef.current = null;
+            }
+        };
+    }, []);
+
+    const stopOnly = (handler) => (e) => {
+        e.stopPropagation();
+        if (handler) handler(e);
+    };
+
+    return (
+        <TreeItemLabelInput
+            {...props}
+            ref={setRefs}
+            draggable={false}
+            onMouseDown={stopOnly(props.onMouseDown)}
+            onPointerDown={stopOnly(props.onPointerDown)}
+            onClick={stopOnly(props.onClick)}
+            onDragStart={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            }}
+        />
+    );
+});
+
+EditableLabelInput.propTypes = {
+    onMouseDown: PropTypes.func,
+    onPointerDown: PropTypes.func,
+    onClick: PropTypes.func,
 };
 
 const CustomTreeItem = React.forwardRef(function CustomTreeItem(props, ref) {
-    const {itemId, label, ...rest} = props;
+    const {itemId} = props;
+    // Keep the real string `label` prop intact so MUI's edit input and
+    // `onItemLabelChange` get the actual text (not "[object Object]").
+    // Inject the slider + kebab through the label *slot*, and harden the
+    // label-input slot so editing stays stable under itemsReordering.
     return (
         <TreeItem
             ref={ref}
-            itemId={itemId}
-            label={
-                <ItemLabelWithControls itemId={itemId} originalLabel={label} />
-            }
-            {...rest}
+            {...props}
+            slots={{label: ItemLabelWithControls, labelInput: EditableLabelInput}}
+            slotProps={{label: {itemId}}}
         />
     );
 });
 
 CustomTreeItem.propTypes = {
     itemId: PropTypes.string,
-    label: PropTypes.node,
 };
 
 // --- Main component ----------------------------------------------------------

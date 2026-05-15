@@ -142,7 +142,7 @@ header = dmc.AppShellHeader(
                         radius="sm",
                     ),
                     dmc.Text("Dash MUI Charts", fw=700, size="lg"),
-                    dmc.Badge("v1.2.2", variant="light", size="sm", color="blue",
+                    dmc.Badge("v1.2.3", variant="light", size="sm", color="blue",
                               visibleFrom="xs"),
                 ],
                 gap="xs",

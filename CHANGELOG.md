@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2.3] - 2026-05-15
+
+### Fixed
+
+#### TreeViewPro — Cell editing
+- **`[object Object]` on edit**: `CustomTreeItem` previously passed the slider/kebab wrapper as the TreeItem `label` **prop**. MUI's `getLabelProps()` sets `children: label` and the edit input initialized from that same value, so entering edit mode stringified a React element to `[object Object]`. The custom UI is now injected through the **`slots.label` slot** while the real string `label` prop is left intact, so the edit input, `onItemLabelChange`, and double-click-to-edit all receive the correct text. `itemId` is forwarded to the slot via `slotProps.label`; MUI-internal props (`editable`, `ownerState`) are destructured out so they never reach the DOM. Group rows and the no-controls fallback also forward the slot props, keeping every row editable.
+- **Edit mode collapsing mid-gesture**: With `itemsReordering=True`, MUI's reorder plugin sets `draggable="true"` on the TreeItem root with no editing guard. While the label input was focused, drag-selecting a word started a native HTML5 element drag of the row, which blurred the input and committed/exited edit mode on mouse-up; clicking inside the cell also bubbled to the row's selection/focus handlers. A new custom **`labelInput` slot** (`EditableLabelInput`) now: (1) flips the nearest `draggable="true"` ancestor to `false` while the input is mounted and restores it on cleanup; (2) `stopPropagation()`s `mousedown`/`pointerdown`/`click` (without `preventDefault`, so native caret placement and text selection still work) so the row no longer reacts; (3) cancels stray `dragstart`. `onBlur`/`onKeyDown`/`value`/`autoFocus`/`data-element` pass through untouched, so click-outside and Enter/Escape still commit/cancel. Net: double-click to edit → click to position the caret, drag to highlight, edit freely → click outside or Enter to commit.
+
+#### Demo page `/tree-pro`
+- **Readouts use the renamed label**: `editedItemLabel` is now captured into a `dcc.Store` of `{itemId: newLabel}` overrides. "Last slider", "Last menu", and "Selected" resolve labels through `label_for(id, overrides)` (override → static tree label → id). The two summary tiles render from stored last-slider / last-kebab state plus the overrides store, so renaming a cell immediately refreshes them with the new label instead of showing the stale one.
+- **`Selected:` shows labels, not IDs**: selected items (groups or leaves, single or multi) now display their human labels via a full `ALL_LABELS` map instead of raw slugs.
+
+---
+
 ## [1.2.2] - 2026-05-13
 
 ### Added
