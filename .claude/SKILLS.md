@@ -35,7 +35,11 @@ dash-mui-charts/
 │   ├── CompositeChart.react.js     # Layered scatter + line charts
 │   ├── LiveTradingChart.react.js   # Real-time streaming charts
 │   ├── Heatmap.react.js            # Heatmap with Pro features
-│   └── SparklineChart.react.js     # Compact inline sparklines
+│   ├── SparklineChart.react.js     # Compact inline sparklines
+│   ├── SimpleTreeView.react.js     # JSX-driven tree
+│   ├── TreeView.react.js           # Data-driven RichTreeView
+│   ├── TreeViewPro.react.js        # Pro tree (reorder, lazy, per-item controls)
+│   └── TimeClock.react.js          # Inline clock-face time picker
 ├── dash_mui_charts/                 # Python package (auto-generated)
 │   ├── __init__.py                 # Package initialization
 │   ├── LineChart.py                # Python wrapper for LineChart
@@ -47,10 +51,15 @@ dash-mui-charts/
 │   ├── LiveTradingChart.py         # Python wrapper for LiveTradingChart
 │   ├── Heatmap.py                  # Python wrapper for Heatmap
 │   ├── SparklineChart.py           # Python wrapper for SparklineChart
+│   ├── SimpleTreeView.py           # Python wrapper for SimpleTreeView
+│   ├── TreeView.py                 # Python wrapper for TreeView
+│   ├── TreeViewPro.py              # Python wrapper for TreeViewPro
+│   ├── TimeClock.py                # Python wrapper for TimeClock
 │   ├── _imports_.py                # Auto-generated imports
 │   └── dash_mui_charts.min.js      # Bundled JavaScript
 ├── assets/                          # Dash assets (auto-loaded)
-│   └── muiChartsFunctions.js       # Functions-as-props registry
+│   ├── muiChartsFunctions.js       # Functions-as-props registry
+│   └── liquid_glass_clock.css      # Glassmorphic TimeClock theme (light/dark)
 ├── pages/                           # Demo pages
 │   ├── home.py                     # Landing page
 │   ├── linechart_basic.py          # Basic line chart examples
@@ -73,7 +82,10 @@ dash-mui-charts/
 │   ├── heatmap.py                  # Heatmap examples
 │   ├── heatmap_props.py            # Heatmap property explorer
 │   ├── sparkline.py                # Sparkline examples
-│   └── sparkline_style.py          # Sparkline styling
+│   ├── sparkline_style.py          # Sparkline styling
+│   ├── tree_basic.py … tree_pro.py # TreeView / TreeViewPro demos
+│   ├── time_clock.py               # TimeClock basics
+│   └── time_clock_lab.py           # TimeClock × dash-mantine-components
 ├── .claude/                         # Claude Code configuration
 │   ├── CLAUDE.md                   # Quick project reference
 │   ├── SKILLS.md                   # This file
@@ -90,7 +102,7 @@ dash-mui-charts/
 
 ---
 
-## Components (12 Total)
+## Components (13 Total)
 
 ### 1. LineChart
 
@@ -1026,6 +1038,47 @@ TreeViewPro(
 
 ---
 
+### 13. TimeClock
+
+**File:** `src/lib/components/TimeClock.react.js`
+**License:** Community (Free)
+**Package:** `@mui/x-date-pickers` (8.24.0) + `dayjs` adapter — the first **Date & Time Pickers** component, NOT a chart.
+
+**Purpose:** Inline clock-face time selector (no input / popper / modal). The user drags the hand or clicks the numbers to pick hours, minutes, and optionally seconds.
+
+**String ↔ dayjs boundary:** dayjs objects can't cross the Dash boundary, so values are exchanged as strings — full wall-time ISO (`"2022-04-17T15:30:00"`) or time-only (`"15:30"` / `"15:30:45"`). `parseToDayjs()` maps strings → dayjs on the way in; `newVal.format('YYYY-MM-DDTHH:mm:ss')` maps dayjs → string on the way out (local wall-time, NOT `toISOString()`, to avoid a UTC shift).
+
+```python
+from dash_mui_charts import TimeClock
+
+TimeClock(
+    id="clock",
+    value="15:30:00",                       # controlled, in/out (wall-time ISO out)
+    defaultValue="15:30:00",                # uncontrolled initial (use instead of value)
+    views=["hours", "minutes", "seconds"],  # default ["hours", "minutes"]
+    view="hours",                           # controlled view, in/out
+    ampm=False,                             # force 12h/24h (omit = locale default)
+    minutesStep=5,
+    minTime="09:00", maxTime="18:00",
+    disabled=False, readOnly=False,
+    showViewSwitcher=True,
+)
+
+# Outputs: value (wall-time ISO), view, and timeData:
+#   {"hours", "minutes", "seconds", "formatted" ("HH:mm:ss"), "event_timestamp"}
+@callback(Output("out", "children"), Input("clock", "timeData"))
+def show(td):
+    return td["formatted"] if td else "—"
+```
+
+**Function-only MUI props omitted** (not serializable): `shouldDisableTime`, `referenceDate`, `slots`/`slotProps`. `skipDisabled` is intentionally NOT exposed — it belongs to the *digital* clock variants, not the analog `TimeClock`, and leaks onto the DOM if forwarded.
+
+**Recolouring via `sx`** — internal MUI class names (verified from source): face `.MuiClock-clock`, hand `.MuiClockPointer-root` + `.MuiClockPointer-thumb` (set `backgroundColor` + `borderColor`) + centre `.MuiClock-pin`, digits `.MuiClockNumber-root` / `-selected`, meridiem `.MuiClock-amButton` / `-pmButton`. See `assets/liquid_glass_clock.css` and `/time-clock-lab` for a glassmorphic theme with a magnifying-lens thumb.
+
+**Demo pages:** `/time-clock` (basic) and `/time-clock-lab` (dynamic colours, liquid glass, stopwatch, and two-way pairings with `dmc.TimeInput` / `TimePicker` / `TimeGrid` / `DateTimePicker`).
+
+---
+
 ## Development Workflow
 
 ### Building Components
@@ -1076,6 +1129,9 @@ python app.py
 | `/heatmap-props` | Heatmap property explorer |
 | `/sparkline` | Sparkline examples |
 | `/sparkline-style` | Sparkline styling playground |
+| `/tree-basic` … `/tree-pro` | TreeView / TreeViewPro examples (selection, editing, drag-reorder, per-item controls) |
+| `/time-clock` | TimeClock basics (views, controlled, 12h/24h, form props) |
+| `/time-clock-lab` | TimeClock × DMC: dynamic colours, liquid glass, stopwatch, two-way pairings |
 
 ---
 
@@ -1290,6 +1346,9 @@ dmc.Slider(id='heatmap-ctrl-width', ...)
 |---------|---------|---------|
 | @mui/x-charts | 8.24.0 | Community charts |
 | @mui/x-charts-pro | 8.24.0 | Pro charts |
+| @mui/x-tree-view(-pro) | 8.27.2 | TreeView / TreeViewPro |
+| @mui/x-date-pickers | 8.24.0 (pinned) | TimeClock (Date & Time Pickers) |
+| dayjs | 1.11.13 | Date adapter for the pickers |
 | @mui/x-license | 7.24.0 | License management |
 | @mui/material | 6.5.0 | Material UI base |
 | react | 18.2.0 | React library |
@@ -1339,6 +1398,7 @@ After `npm run build`:
 | LiveTradingChart | Basic streaming | Zoom, Slider |
 | Heatmap | - | All features |
 | SparklineChart | All features | - |
+| TimeClock | All features | - |
 
 ---
 

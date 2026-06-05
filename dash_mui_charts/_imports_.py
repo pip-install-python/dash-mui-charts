@@ -8,6 +8,7 @@ from .PieChart import PieChart
 from .ScatterChart import ScatterChart
 from .SimpleTreeView import SimpleTreeView
 from .SparklineChart import SparklineChart
+from .TimeClock import TimeClock
 from .TreeView import TreeView
 from .TreeViewPro import TreeViewPro
 
@@ -22,6 +23,7 @@ __all__ = [
     "ScatterChart",
     "SimpleTreeView",
     "SparklineChart",
+    "TimeClock",
     "TreeView",
     "TreeViewPro"
 ]

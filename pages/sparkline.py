@@ -8,6 +8,7 @@ This is a Community feature - no license key required.
 
 import json
 import dash
+import dash_mantine_components as dmc
 from dash import html, callback, Input, Output, State, dcc
 
 dash.register_page(__name__, path='/sparkline', name='Sparkline')
@@ -99,12 +100,12 @@ layout = html.Div([
         ]),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""SparklineChart(
+            dmc.CodeHighlight(code="""SparklineChart(
     data=[10, 15, 8, 22, 18, 25, 30, 28, 35, 40],
     width=150,
     height=30,
     color='#1976d2',
-)""", style=code_style),
+)""", language="python"),
         ]),
     ], style=section_style),
 
@@ -170,7 +171,7 @@ layout = html.Div([
         ]),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""SparklineChart(
+            dmc.CodeHighlight(code="""SparklineChart(
     id='npm-sparkline',
     data=weekly_downloads,
     width=200,
@@ -196,7 +197,7 @@ def update_npm_display(hover_index, hover_value):
     if hover_index is not None and hover_value is not None:
         return f"{int(hover_value):,}", weeks[hover_index]
     return f"{weekly_downloads[-1]:,}", "Weekly Downloads"
-""", style=code_style),
+""", language="python"),
         ]),
     ], style=section_style),
 
@@ -276,7 +277,7 @@ def update_npm_display(hover_index, hover_value):
 
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '15px'}),
-            html.Pre("""# Three sparklines with synchronized hover
+            dmc.CodeHighlight(code="""# Three sparklines with synchronized hover
 SparklineChart(
     id='sync-revenue-spark',
     data=revenue_data,
@@ -300,7 +301,7 @@ def sync_hover(rev_idx, users_idx, sessions_idx):
     if idx is not None:
         return f"${revenue_data[idx]}K", f"{users_data[idx]:,}", f"{sessions_data[idx]:,}"
     return f"${revenue_data[-1]}K", f"{users_data[-1]:,}", f"{sessions_data[-1]:,}"
-""", style=code_style),
+""", language="python"),
         ]),
     ], style=section_style),
 
@@ -353,7 +354,7 @@ def sync_hover(rev_idx, users_idx, sessions_idx):
         ]),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""# baseline='min' - fills from minimum (default)
+            dmc.CodeHighlight(code="""# baseline='min' - fills from minimum (default)
 SparklineChart(data=data, area=True, baseline='min')
 
 # baseline='max' - fills from maximum (inverted)
@@ -361,7 +362,7 @@ SparklineChart(data=data, area=True, baseline='max')
 
 # baseline=75 - fills from a specific value
 SparklineChart(data=data, area=True, baseline=75)
-""", style=code_style),
+""", language="python"),
         ]),
     ], style=section_style),
 
@@ -401,13 +402,13 @@ SparklineChart(data=data, area=True, baseline=75)
         ]),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""SparklineChart(
+            dmc.CodeHighlight(code="""SparklineChart(
     data=[2, 5, 3, 8, 4, 2, 1, 3, 2, 4],
     width=150,
     height=40,
     plotType='bar',  # Bar chart instead of line
     color='#f44336',
-)""", style=code_style),
+)""", language="python"),
         ]),
     ], style=section_style),
 
@@ -515,7 +516,7 @@ SparklineChart(data=data, area=True, baseline=75)
         ]),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '15px'}),
-            html.Pre("""@callback(
+            dmc.CodeHighlight(code="""@callback(
     Output('dynamic-sparkline-container', 'children'),
     Output('dynamic-metric-label', 'children'),
     Output('dynamic-metric-value', 'children'),
@@ -539,7 +540,7 @@ def update_sparkline(metric):
         showHighlight=True,
         showTooltip=True,
     ), label, value
-""", style=code_style),
+""", language="python"),
         ]),
     ], style=section_style),
 
@@ -574,7 +575,7 @@ def update_sparkline(metric):
         ]),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""# Available curves: 'linear', 'natural', 'step', 'stepBefore',
+            dmc.CodeHighlight(code="""# Available curves: 'linear', 'natural', 'step', 'stepBefore',
 # 'stepAfter', 'monotoneX', 'monotoneY', 'catmullRom', 'bumpX', 'bumpY'
 
 SparklineChart(
@@ -583,7 +584,7 @@ SparklineChart(
     height=30,
     color='#4caf50',
     curve='natural',  # Smooth natural curve
-)""", style=code_style),
+)""", language="python"),
         ]),
     ], style=section_style),
 
@@ -629,7 +630,7 @@ SparklineChart(
         ]),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""SparklineChart(
+            dmc.CodeHighlight(code="""SparklineChart(
     id='interactive-stock-sparkline',
     data=stock_prices,
     width=300,
@@ -656,7 +657,7 @@ def update_stock_display(index, value):
             'day': f'Day {index + 1}'
         }, indent=2)
     return f"${stock_prices[-1]:.2f}", "Hover over the chart"
-""", style=code_style),
+""", language="python"),
         ]),
     ], style=section_style),
 ])

@@ -4,6 +4,7 @@ LineChart Reference Lines - Horizontal and vertical reference markers
 
 import os
 import dash
+import dash_mantine_components as dmc
 from dash import html, dcc, callback, Input, Output, State
 
 dash.register_page(__name__, path='/linechart-referencelines', name='LineChart Reference Lines')
@@ -97,7 +98,7 @@ layout = html.Div([
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""LineChart(
+            dmc.CodeHighlight(code="""LineChart(
     series=[{'data': sales_data, 'label': 'Monthly Sales'}],
     xAxis=[{'data': months, 'scaleType': 'point'}],
     referenceLines=[
@@ -114,7 +115,7 @@ layout = html.Div([
             'labelStyle': {'fill': '#ff9800'},
         },
     ],
-)""", style=code_style),
+)""", language="python"),
         ]),
     ], style=section_style),
 
@@ -176,7 +177,7 @@ layout = html.Div([
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""LineChart(
+            dmc.CodeHighlight(code="""LineChart(
     series=[{'data': sales_data, 'label': 'Monthly Sales', 'area': True}],
     xAxis=[{'data': months, 'scaleType': 'point'}],
     referenceLines=[
@@ -192,7 +193,7 @@ layout = html.Div([
             ...
         },
     ],
-)""", style=code_style),
+)""", language="python"),
         ]),
     ], style=section_style),
 
@@ -256,7 +257,7 @@ layout = html.Div([
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""referenceLines=[
+            dmc.CodeHighlight(code="""referenceLines=[
     # Horizontal reference lines (y prop)
     {
         'y': 100,
@@ -271,7 +272,7 @@ layout = html.Div([
         'lineStyle': {'stroke': '#673ab7', 'strokeDasharray': '8 4'},
         'labelAlign': 'start',  # Position at top
     },
-]""", style=code_style),
+]""", language="python"),
         ]),
     ], style=section_style),
 
@@ -412,7 +413,7 @@ layout = html.Div([
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""# Line style examples
+            dmc.CodeHighlight(code="""# Line style examples
 referenceLines=[
     {
         'y': 25,
@@ -436,7 +437,7 @@ referenceLines=[
             'strokeDasharray': '2 3',  # 2px dash, 3px gap
         },
     },
-]""", style=code_style),
+]""", language="python"),
         ]),
     ], style=section_style),
 
@@ -494,7 +495,7 @@ referenceLines=[
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""referenceLines=[
+            dmc.CodeHighlight(code="""referenceLines=[
     {
         'y': 55,
         'label': 'spacing=20',
@@ -505,7 +506,7 @@ referenceLines=[
         'label': 'Custom spacing',
         'spacing': {'x': 10, 'y': 15},  # Different x and y spacing
     },
-]""", style=code_style),
+]""", language="python"),
         ]),
     ], style=section_style),
 
@@ -586,7 +587,7 @@ referenceLines=[
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""# Reference lines on different axes
+            dmc.CodeHighlight(code="""# Reference lines on different axes
 yAxis=[
     {'id': 'temp-axis', 'label': 'Temperature', 'position': 'left'},
     {'id': 'humidity-axis', 'label': 'Humidity', 'position': 'right'},
@@ -605,7 +606,7 @@ referenceLines=[
         'label': 'Ideal humidity',
         'lineStyle': {'stroke': '#2196f3', 'strokeDasharray': '5 5'},
     },
-]""", style=code_style),
+]""", language="python"),
         ]),
     ], style=section_style),
 
@@ -676,7 +677,7 @@ referenceLines=[
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""@callback(
+            dmc.CodeHighlight(code="""@callback(
     Output('dynamic-ref-chart', 'referenceLines'),
     Input('threshold-input', 'value'),
     Input('show-avg-btn', 'n_clicks'),
@@ -698,7 +699,7 @@ def update_reference_lines(threshold, show_clicks, hide_clicks):
             'lineStyle': {'stroke': '#4caf50', 'strokeDasharray': '5 5'},
         })
 
-    return lines""", style=code_style),
+    return lines""", language="python"),
         ]),
     ], style=section_style),
 

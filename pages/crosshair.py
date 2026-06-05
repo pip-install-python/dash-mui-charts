@@ -247,13 +247,13 @@ layout = html.Div([
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '8px'}),
-            html.Pre("""CompositeChart(
+            dmc.CodeHighlight(code="""CompositeChart(
     axisHighlight={'x': 'line', 'y': 'line'},
     enableCrosshair=True,
     tooltip={'trigger': 'none'},
 )
 # Output: crosshairPosition = {x: epoch_ms, y: value}
-# Output: crosshairClick = {x, y, button: 'right', timestamp}""", style=code_style),
+# Output: crosshairClick = {x, y, button: 'right', timestamp}""", language="python"),
         ]),
     ], style=section_style),
 

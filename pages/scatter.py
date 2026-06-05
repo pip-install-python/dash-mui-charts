@@ -9,6 +9,7 @@ import math
 import random
 
 import dash
+import dash_mantine_components as dmc
 from dash import html, callback, Input, Output
 
 dash.register_page(__name__, path='/scatter', name='Scatter Chart (0.0.8)')
@@ -131,7 +132,7 @@ layout = html.Div([
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""ScatterChart(
+            dmc.CodeHighlight(code="""ScatterChart(
     height=350,
     series=[
         {
@@ -151,7 +152,7 @@ layout = html.Div([
     ],
     grid={'horizontal': True, 'vertical': True},
     voronoiMaxRadius=30,
-)""", style=code_style),
+)""", language="python"),
         ]),
     ], style=section_style),
 
@@ -192,12 +193,12 @@ layout = html.Div([
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""ScatterChart(
+            dmc.CodeHighlight(code="""ScatterChart(
     series=[
         {'label': 'Background (r=3)', 'markerSize': 3, ...},
         {'label': 'Focus Points (r=10)', 'markerSize': 10, ...},
     ],
-)""", style=code_style),
+)""", language="python"),
         ]),
     ], style=section_style),
 
@@ -247,7 +248,7 @@ layout = html.Div([
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""ScatterChart(
+            dmc.CodeHighlight(code="""ScatterChart(
     series=[{
         'data': [{'x': 10, 'y': 42, 'z': 52, 'id': 0}, ...],
         'markerSize': 5,
@@ -260,7 +261,7 @@ layout = html.Div([
             'color': ['#4fc3f7', '#e53935'],
         },
     }],
-)""", style=code_style),
+)""", language="python"),
         ]),
     ], style=section_style),
 
@@ -312,13 +313,13 @@ layout = html.Div([
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""ScatterChart(
+            dmc.CodeHighlight(code="""ScatterChart(
     series=[...],
     yAxis=[{
         'scaleType': 'log',
         'label': 'Density (units/mm\u00B2)',
     }],
-)""", style=code_style),
+)""", language="python"),
         ]),
     ], style=section_style),
 
@@ -383,13 +384,13 @@ layout = html.Div([
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""@callback(
+            dmc.CodeHighlight(code="""@callback(
     Output('scatter-click-output', 'children'),
     Input('scatter-click', 'clickData'),
     prevent_initial_call=True
 )
 def display_click(click_data):
-    return json.dumps(click_data, indent=2)""", style=code_style),
+    return json.dumps(click_data, indent=2)""", language="python"),
         ]),
     ], style=section_style),
 
@@ -442,7 +443,7 @@ def display_click(click_data):
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""ScatterChart(
+            dmc.CodeHighlight(code="""ScatterChart(
     dataset=[
         {'x1': 373, 'y1': 434, 'x2': 304, 'y2': 349},
         {'x1': 173, 'y1': 437, 'x2': 208, 'y2': 347},
@@ -452,7 +453,7 @@ def display_click(click_data):
         {'label': 'Series A', 'datasetKeys': {'x': 'x1', 'y': 'y1'}},
         {'label': 'Series B', 'datasetKeys': {'x': 'x2', 'y': 'y2'}},
     ],
-)""", style=code_style),
+)""", language="python"),
         ]),
     ], style=section_style),
 

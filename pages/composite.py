@@ -181,7 +181,7 @@ layout = html.Div([
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""CompositeChart(
+            dmc.CodeHighlight(code="""CompositeChart(
     series=[
         {
             'type': 'scatter',        # Scatter for actual readings
@@ -201,7 +201,7 @@ layout = html.Div([
         'data': [0, 1, 2, ...],       # linear axis for both types
         'scaleType': 'linear',
     }],
-)""", style=code_style),
+)""", language="python"),
         ]),
     ], style=section_style),
 
@@ -271,7 +271,7 @@ layout = html.Div([
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""CompositeChart(
+            dmc.CodeHighlight(code="""CompositeChart(
     series=[
         {'type': 'scatter', 'label': 'Readings', 'data': [...], 'markerSize': 2},
         {'type': 'line', 'label': 'Expected', 'data': [...], 'curve': 'natural'},
@@ -282,7 +282,7 @@ layout = html.Div([
         {'y': 16, 'label': 'Lower Limit',
          'lineStyle': {'stroke': '#e53935', 'strokeDasharray': '5 5'}},
     ],
-)""", style=code_style),
+)""", language="python"),
         ]),
     ], style=section_style),
 
@@ -357,7 +357,7 @@ layout = html.Div([
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""CompositeChart(
+            dmc.CodeHighlight(code="""CompositeChart(
     series=[
         {'type': 'scatter', 'yAxisId': 'pressure-axis', ...},
         {'type': 'line', 'yAxisId': 'model-axis', ...},
@@ -366,7 +366,7 @@ layout = html.Div([
         {'id': 'pressure-axis', 'position': 'left', ...},
         {'id': 'model-axis', 'position': 'right', ...},
     ],
-)""", style=code_style),
+)""", language="python"),
         ]),
     ], style=section_style),
 
@@ -502,7 +502,7 @@ layout = html.Div([
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""CompositeChart(
+            dmc.CodeHighlight(code="""CompositeChart(
     licenseKey=MUI_LICENSE_KEY,
     series=[
         {
@@ -527,7 +527,7 @@ layout = html.Div([
         },
     }],
     initialZoom=[{'axisId': 'time-axis', 'start': 0, 'end': 30}],
-)""", style=code_style),
+)""", language="python"),
         ]),
     ], style=section_style),
 ])

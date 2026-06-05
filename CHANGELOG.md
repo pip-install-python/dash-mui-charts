@@ -9,6 +9,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.3.0] - 2026-06-05
+
+### Added
+
+#### TimeClock — new component (13th)
+- **`TimeClock`** wraps the MUI X Date Pickers `TimeClock` (`@mui/x-date-pickers`, Community) — an inline clock-face time selector with no input, popper, or modal. First component in a new **Date & Time Pickers** family.
+- **String ↔ dayjs boundary**: dayjs objects can't cross the Dash boundary, so `value` / `defaultValue` / `minTime` / `maxTime` are exchanged as plain strings — full wall-time ISO (`"2022-04-17T15:30:00"`) or time-only (`"15:30"` / `"15:30:45"`). On change the component pushes back `value` (wall-time ISO), the current `view`, and a parsed `timeData` convenience object `{hours, minutes, seconds, formatted, event_timestamp}`.
+- **Props**: `views` (`hours`/`minutes`/`seconds`), `view` (controlled, in/out), `openTo`, `ampm` (force 12h/24h), `disabled`, `readOnly`, `autoFocus`, `minutesStep`, `minTime` / `maxTime`, `disableFuture` / `disablePast`, `disableIgnoringDatePartForTimeValidation`, `showViewSwitcher`, `sx`, `className`.
+- **Dark mode**: observes `<html data-mantine-color-scheme>` via a `MutationObserver` and wraps the clock in an MUI `ThemeProvider`, re-skinning automatically — same pattern as `TreeViewPro`.
+- **Dependencies**: adds `@mui/x-date-pickers` pinned to `8.24.0` (matches `@mui/x-charts@8.24.0` so they share a single `@mui/x-internals`) and the `dayjs` adapter (`1.11.13`). Compatible with the existing Material v6 stack — no migration.
+
+#### Demo page `/time-clock`
+- Mirrors the official MUI demo: basic usage, controlled vs. uncontrolled (with live readout + preset buttons), form props (disabled / read-only), views (hours-minutes-seconds, hours-only, minutes-seconds), and 12h/24h format. Theme-aware Mantine layout.
+
+#### Demo page `/time-clock-lab` (TimeClock Lab)
+- A deep-dive page showing TimeClock working hand-in-hand with **dash-mantine-components**:
+  - **Dynamic colours** — `dmc.ColorPicker` (rgba, with an **opacity** slider) for the face plus `dmc.ColorInput`s for the hand and digits, fed live into the TimeClock `sx` (targets `.MuiClock-clock`, `.MuiClockPointer-root/-thumb`, `.MuiClock-pin`, `.MuiClockNumber-root`).
+  - **Liquid glass clock** — a glassmorphic theme (`assets/liquid_glass_clock.css`): frosted face with an animated halo, a pointer thumb restyled into a **magnifying lens** recentred on the digit, and the selected digit bolded/enlarged as the hand passes. Fully light/dark-mode aware.
+  - **Stopwatch** — `dcc.Interval` driven start/stop/restart; the clock view climbs with magnitude (seconds → minutes → hours).
+  - **Two-way pairings** — fully synced with `dmc.TimeInput` (+ reset/preset buttons), `dmc.TimePicker`, `dmc.TimeGrid` (preset half-hour slots), and `dmc.DateTimePicker` (the clock drives the time portion). One `@callback` per pairing, branching on `ctx.triggered_id` and returning `no_update` for the source side to avoid loops.
+  - Each example carries a syntax-highlighted **"View code"** panel.
+- New **Date & Time Pickers** group added to the navigation tree in `app.py`.
+
+### Changed
+
+#### Professional "View code" across demo pages
+- Upgraded the legacy `html.Details` + `html.Pre` "View Code" blocks to **`dmc.CodeHighlight` / `dmc.CodeHighlightTabs`** — syntax highlighting, a copy button, file tabs, and theme awareness. 60 code blocks across 14 pages converted; dynamic output `html.Pre` targets (e.g. click-data readouts) were correctly left untouched.
+
+---
+
 ## [1.2.3] - 2026-05-15
 
 ### Fixed

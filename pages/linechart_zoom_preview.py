@@ -9,6 +9,7 @@ import random
 from datetime import datetime, timedelta
 
 import dash
+import dash_mantine_components as dmc
 from dash import html, callback, Input, Output
 
 dash.register_page(__name__, path='/linechart-zoom-preview', name='Zoom Preview (0.0.8)')
@@ -172,7 +173,7 @@ layout = html.Div([
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""LineChart(
+            dmc.CodeHighlight(code="""LineChart(
     height=450,
     series=[{
         'data': temperature, 'label': 'Temperature',
@@ -202,7 +203,7 @@ layout = html.Div([
         'domainLimit': 'nice',        # rounds to friendly values
     }],
     initialZoom=[{'axisId': 'time-axis', 'start': 0, 'end': 25}],
-)""", style=code_style),
+)""", language="python"),
         ]),
     ], style=section_style),
 
@@ -372,7 +373,7 @@ layout = html.Div([
         ]),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '15px'}),
-            html.Pre("""LineChart(
+            dmc.CodeHighlight(code="""LineChart(
     ...
     zoomInteractionConfig={
         'zoom': ['wheel', 'pinch', 'doubleTapReset'],
@@ -389,7 +390,7 @@ layout = html.Div([
     #         {'type': 'drag', 'pointerMode': 'touch'},
     #     ],
     # },
-)""", style=code_style),
+)""", language="python"),
         ]),
     ], style=section_style),
 

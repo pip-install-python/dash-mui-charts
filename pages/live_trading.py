@@ -165,7 +165,7 @@ layout = html.Div([
     # ── Code Example ──────────────────────────────────────────────────────
     html.Details([
         html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '15px'}),
-        html.Pre("""LiveTradingChart(
+        dmc.CodeHighlight(code="""LiveTradingChart(
     id='lt-chart',
     height=520,
     running=True,            # Start/stop simulation
@@ -191,7 +191,7 @@ layout = html.Div([
 
     # Outputs for callbacks:
     # currentPrice, tickCount, alertHistory
-)""", style=code_style),
+)""", language="python"),
     ]),
 ], style={'padding': '20px'})
 

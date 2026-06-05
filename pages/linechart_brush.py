@@ -5,6 +5,7 @@ LineChart Brush - Range selection with visual overlays
 import os
 import json
 import dash
+import dash_mantine_components as dmc
 from dash import html, callback, Input, Output
 
 dash.register_page(__name__, path='/linechart-brush', name='LineChart Brush')
@@ -103,7 +104,7 @@ layout = html.Div([
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""LineChart(
+            dmc.CodeHighlight(code="""LineChart(
     id='brush-values-chart',
     series=[{
         'id': 'market',  # Important: provide ID for brush overlay
@@ -114,7 +115,7 @@ layout = html.Div([
     brushConfig={'enabled': True},
     brushOverlay='values',  # Shows start/end values with % change
     brushSeriesId='market',  # Which series to use for value calculations
-)""", style=code_style),
+)""", language="python"),
         ]),
     ], style=section_style),
 
@@ -226,7 +227,7 @@ layout = html.Div([
         ]),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '20px'}),
-            html.Pre("""# Basic brush configuration
+            dmc.CodeHighlight(code="""# Basic brush configuration
 LineChart(
     brushConfig={
         'enabled': True,
@@ -235,7 +236,7 @@ LineChart(
     },
     brushOverlay='values',
     brushSeriesId='my-series',
-)""", style=code_style),
+)""", language="python"),
         ]),
     ], style=section_style),
 
@@ -293,7 +294,7 @@ LineChart(
         ]),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '20px'}),
-            html.Pre("""LineChart(
+            dmc.CodeHighlight(code="""LineChart(
     series=[...],
     xAxis=[...],
     # Configure axis highlighting
@@ -301,7 +302,7 @@ LineChart(
         'x': 'band',  # Shows a band highlight on x-axis
         'y': 'line',  # Shows a line highlight on y-axis
     },
-)""", style=code_style),
+)""", language="python"),
         ]),
     ], style=section_style),
 ])

@@ -144,14 +144,14 @@ layout = html.Div([
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""CompositeChart(
+            dmc.CodeHighlight(code="""CompositeChart(
     series=[
         {'type': 'line', 'id': 'temperature', 'label': 'Temperature', ...},
         {'type': 'scatter', 'id': 'alerts', 'label': 'Alerts', ...},
     ],
     tooltip={'trigger': 'axis'},   # <-- now works at any x-position
     axisHighlight={'x': 'line'},
-)""", style=code_style),
+)""", language="python"),
         ]),
     ], style=section_style),
 
@@ -296,7 +296,7 @@ layout = html.Div([
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""# Single callback avoids circular dependency.
+            dmc.CodeHighlight(code="""# Single callback avoids circular dependency.
 # highlightedAxis syncs crosshair; syncedTooltipIndex shows tooltip overlay.
 @callback(
     Output('chart-a', 'highlightedAxis'),
@@ -315,7 +315,7 @@ def sync_charts(axis_a, axis_b):
     if source == 'chart-a':
         return axis, axis, -1, idx
     else:
-        return axis, axis, idx, -1""", style=code_style),
+        return axis, axis, idx, -1""", language="python"),
         ]),
     ], style=section_style),
 
@@ -450,7 +450,7 @@ def sync_charts(axis_a, axis_b):
         ]),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""# Time-scale x-axis with dd/MM/YY formatting and angled labels.
+            dmc.CodeHighlight(code="""# Time-scale x-axis with dd/MM/YY formatting and angled labels.
 # Compact mode: top charts use position='none' to hide x-axis,
 # bottom chart shows the shared axis.
 xAxis=[{
@@ -462,7 +462,7 @@ xAxis=[{
     'tickMinStep': 86400 * 1000 * 7,    # min 7 days between ticks
     'position': 'none',                  # hide on top charts (compact)
     'tickLabelStyle': {'angle': 35, 'fontSize': 11, 'textAnchor': 'start'},
-}]""", style=code_style),
+}]""", language="python"),
         ]),
     ], style=section_style),
 ], style={'maxWidth': '1200px', 'margin': '0 auto', 'padding': '20px'})

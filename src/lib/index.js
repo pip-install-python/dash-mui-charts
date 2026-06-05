@@ -11,6 +11,7 @@ import CandlestickChart from './components/CandlestickChart.react';
 import TreeView from './components/TreeView.react';
 import SimpleTreeView from './components/SimpleTreeView.react';
 import TreeViewPro from './components/TreeViewPro.react';
+import TimeClock from './components/TimeClock.react';
 
 export {
     LineChart,
@@ -25,4 +26,5 @@ export {
     TreeView,
     SimpleTreeView,
     TreeViewPro,
+    TimeClock,
 };

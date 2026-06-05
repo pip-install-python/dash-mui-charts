@@ -5,6 +5,7 @@ LineChart Basics - Fundamental features and usage examples
 import os
 import json
 import dash
+import dash_mantine_components as dmc
 from dash import html, callback, Input, Output
 
 dash.register_page(__name__, path='/linechart-basic', name='LineChart Basics')
@@ -66,7 +67,7 @@ layout = html.Div([
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""LineChart(
+            dmc.CodeHighlight(code="""LineChart(
     height=350,
     series=[
         {'data': [2, 5.5, 2, 8.5, 1.5, 5], 'label': 'Series A', 'showMark': True},
@@ -74,7 +75,7 @@ layout = html.Div([
     ],
     xAxis=[{'data': [1, 2, 3, 4, 5, 6], 'scaleType': 'point'}],
     grid={'horizontal': True, 'vertical': True},
-)""", style=code_style),
+)""", language="python"),
         ]),
     ], style=section_style),
 
@@ -109,7 +110,7 @@ layout = html.Div([
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""LineChart(
+            dmc.CodeHighlight(code="""LineChart(
     height=300,
     series=[{
         'data': [2, 5.5, 2, 8.5, 1.5, 5],
@@ -118,7 +119,7 @@ layout = html.Div([
         'color': '#1976d2',
     }],
     xAxis=[{'data': ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], 'scaleType': 'band'}],
-)""", style=code_style),
+)""", language="python"),
         ]),
     ], style=section_style),
 
@@ -166,7 +167,7 @@ layout = html.Div([
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""LineChart(
+            dmc.CodeHighlight(code="""LineChart(
     height=300,
     series=[
         {'data': [4, 3, 5, 4, 6, 3, 5], 'label': 'Product A', 'area': True, 'stack': 'total'},
@@ -175,7 +176,7 @@ layout = html.Div([
     ],
     xAxis=[{'data': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], 'scaleType': 'point'}],
     colors=['#4e79a7', '#f28e2c', '#e15759'],
-)""", style=code_style),
+)""", language="python"),
         ]),
     ], style=section_style),
 
@@ -220,7 +221,7 @@ layout = html.Div([
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""LineChart(
+            dmc.CodeHighlight(code="""LineChart(
     height=300,
     series=[
         {'data': [1, 4, 2, 5, 7, 2, 4], 'label': 'Linear', 'curve': 'linear'},
@@ -229,7 +230,7 @@ layout = html.Div([
     ],
     xAxis=[{'data': [0, 1, 2, 3, 4, 5, 6]}],
     colors=['#ff6384', '#36a2eb', '#ffce56'],
-)""", style=code_style),
+)""", language="python"),
         ]),
     ], style=section_style),
 
@@ -290,7 +291,7 @@ layout = html.Div([
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""LineChart(
+            dmc.CodeHighlight(code="""LineChart(
     height=350,
     series=[
         {'data': [...], 'label': 'Unemployment Rate (%)', 'yAxisId': 'unemployment-axis'},
@@ -302,7 +303,7 @@ layout = html.Div([
         {'id': 'gdp-axis', 'label': 'GDP ($)', 'position': 'right'},
     ],
     margin={'left': 70, 'right': 90, 'top': 20, 'bottom': 30},
-)""", style=code_style),
+)""", language="python"),
         ]),
     ], style=section_style),
 
@@ -353,7 +354,7 @@ layout = html.Div([
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""LineChart(
+            dmc.CodeHighlight(code="""LineChart(
     id='interactive-linechart',
     height=350,
     series=[
@@ -367,7 +368,7 @@ layout = html.Div([
 @callback(Output('click-output', 'children'), Input('interactive-linechart', 'clickData'))
 def display_click(click_data):
     return json.dumps(click_data, indent=2) if click_data else "Click on the chart"
-""", style=code_style),
+""", language="python"),
         ]),
     ], style=section_style),
 ])

@@ -5,6 +5,7 @@ Highlighting Sync - Synchronized highlights across multiple charts
 import os
 import json
 import dash
+import dash_mantine_components as dmc
 from dash import html, callback, Input, Output, ctx
 
 dash.register_page(__name__, path='/highlighting-sync', name='Highlighting Sync')
@@ -171,7 +172,7 @@ layout = html.Div([
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""# Both charts use the same series IDs for categories
+            dmc.CodeHighlight(code="""# Both charts use the same series IDs for categories
 LineChart(
     id='sync-line-chart',
     series=[
@@ -204,7 +205,7 @@ def sync_highlights(line_highlight, pie_highlight):
     elif triggered == 'sync-pie-chart' and pie_highlight:
         return {'seriesId': categories[pie_highlight['dataIndex']]}, pie_highlight
     return None, None
-""", style=code_style),
+""", language="python"),
         ]),
     ], style=section_style),
 
@@ -330,7 +331,7 @@ def sync_highlights(line_highlight, pie_highlight):
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""# Charts with MUI tooltips disabled, using custom tooltip overlays
+            dmc.CodeHighlight(code="""# Charts with MUI tooltips disabled, using custom tooltip overlays
 LineChart(
     id='sync-line-a',
     series=[{
@@ -362,7 +363,7 @@ def sync_charts_with_custom_tooltips(highlight_a, highlight_b):
     # Get dataIndex from the triggered chart
     # Calculate x position based on chart margins and data index
     # Return highlight items for BOTH charts + visible tooltips for BOTH
-""", style=code_style),
+""", language="python"),
         ]),
     ], style=section_style),
 

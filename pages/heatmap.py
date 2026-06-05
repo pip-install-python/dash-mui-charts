@@ -9,6 +9,7 @@ This is a Pro feature - requires MUI X Pro license key.
 import os
 import json
 import dash
+import dash_mantine_components as dmc
 from dash import html, callback, Input, Output
 
 dash.register_page(__name__, path='/heatmap', name='Heatmap')
@@ -135,7 +136,7 @@ layout = html.Div([
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""Heatmap(
+            dmc.CodeHighlight(code="""Heatmap(
     licenseKey=MUI_LICENSE_KEY,
     data=[
         [0, 0, 8], [1, 0, 7], [2, 0, 9], ...  # [x, y, value]
@@ -149,7 +150,7 @@ layout = html.Div([
         'max': 10,
         'colors': ['#e3f2fd', '#1565c0'],  # Light blue to dark blue
     },
-)""", style=code_style),
+)""", language="python"),
         ]),
     ], style=section_style),
 
@@ -182,7 +183,7 @@ layout = html.Div([
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""# Correlation values range from -1 to 1
+            dmc.CodeHighlight(code="""# Correlation values range from -1 to 1
 Heatmap(
     data=correlation_data,  # [[0, 0, 1.00], [1, 0, 0.85], ...]
     xAxis={'data': ['Revenue', 'Users', 'Sessions', ...]},
@@ -194,7 +195,7 @@ Heatmap(
         'max': 1,
         'colors': ['#d32f2f', '#fff', '#1976d2'],  # Diverging: red-white-blue
     },
-)""", style=code_style),
+)""", language="python"),
         ]),
     ], style=section_style),
 
@@ -226,7 +227,7 @@ Heatmap(
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""Heatmap(
+            dmc.CodeHighlight(code="""Heatmap(
     data=temperature_data,
     xAxis={'data': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'], 'label': 'Day'},
     yAxis={'data': ['6am', '9am', '12pm', '3pm', '6pm', '9pm'], 'label': 'Time'},
@@ -237,7 +238,7 @@ Heatmap(
         'max': 90,
         'colors': ['#42a5f5', '#ffeb3b', '#f44336'],  # Blue-Yellow-Red
     },
-)""", style=code_style),
+)""", language="python"),
         ]),
     ], style=section_style),
 
@@ -271,7 +272,7 @@ Heatmap(
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""# Simple rounded cells with default settings
+            dmc.CodeHighlight(code="""# Simple rounded cells with default settings
 Heatmap(
     data=activity_data,
     xAxis={'data': days, 'label': 'Day of Week'},
@@ -285,7 +286,7 @@ Heatmap(
     },
     cellStyle='rounded',  # Enable rounded corners with gap
     highlightScope={'highlight': 'item'},  # Highlight on hover
-)""", style=code_style),
+)""", language="python"),
         ]),
     ], style=section_style),
 
@@ -325,7 +326,7 @@ Heatmap(
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""# Detailed cell customization
+            dmc.CodeHighlight(code="""# Detailed cell customization
 Heatmap(
     data=activity_data,
     xAxis={'data': days},
@@ -346,7 +347,7 @@ Heatmap(
         'textColor': '#ffffff', # Text color
     },
     highlightScope={'highlight': 'item'},
-)""", style=code_style),
+)""", language="python"),
         ]),
     ], style=section_style),
 
@@ -384,7 +385,7 @@ Heatmap(
         ], style={'marginTop': '15px'}),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""Heatmap(
+            dmc.CodeHighlight(code="""Heatmap(
     data=activity_data,
     xAxis={'data': days},
     yAxis={'data': weeks},
@@ -401,7 +402,7 @@ Heatmap(
 # - 3-4: color[1]
 # - 5-6: color[2]
 # - 7+:  color[3]
-""", style=code_style),
+""", language="python"),
         ]),
     ], style=section_style),
 
@@ -441,7 +442,7 @@ Heatmap(
         ]),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""Heatmap(
+            dmc.CodeHighlight(code="""Heatmap(
     id='interactive-heatmap',
     data=activity_data,
     xAxis={'data': days, 'label': 'Day'},
@@ -459,7 +460,7 @@ def display_click(click_data):
     if click_data:
         return json.dumps(click_data, indent=2)
     return "Click on a cell to see its data"
-""", style=code_style),
+""", language="python"),
         ]),
     ], style=section_style),
 

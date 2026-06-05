@@ -9,6 +9,7 @@ import random
 from datetime import datetime, timedelta
 
 import dash
+import dash_mantine_components as dmc
 from dash import html, callback, Input, Output
 
 dash.register_page(__name__, path='/linechart-tick-hover', name='LineChart Ticks & Hover')
@@ -154,7 +155,7 @@ layout = html.Div([
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""LineChart(
+            dmc.CodeHighlight(code="""LineChart(
     height=350,
     series=[{'data': temps, 'label': 'Temp (F)', 'showMark': True}],
     xAxis=[{'data': dates, 'scaleType': 'point', 'label': 'Date'}],
@@ -177,7 +178,7 @@ layout = html.Div([
             'labelAlign': 'start',
         },
     ],
-)""", style=code_style),
+)""", language="python"),
         ]),
     ], style=section_style),
 
@@ -247,7 +248,7 @@ layout = html.Div([
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""LineChart(
+            dmc.CodeHighlight(code="""LineChart(
     height=400,
     series=[{'data': temps, 'label': 'Equipment Temp (F)', 'showMark': False}],
     xAxis=[{
@@ -264,7 +265,7 @@ layout = html.Div([
         {'x': '2025-02-01', 'label': 'Feb', ...},  # Must match exact data value
         {'x': '2025-03-01', 'label': 'Mar', ...},
     ],
-)""", style=code_style),
+)""", language="python"),
         ]),
     ], style=section_style),
 
@@ -337,7 +338,7 @@ layout = html.Div([
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""# 365 daily points on a 'point' scale
+            dmc.CodeHighlight(code="""# 365 daily points on a 'point' scale
 LineChart(
     height=400,
     series=[{'data': year_temps, 'label': 'Equipment Temp (F)', 'showMark': False}],
@@ -358,7 +359,7 @@ LineChart(
             ...
         },
     ],
-)""", style=code_style),
+)""", language="python"),
         ]),
     ], style=section_style),
 
@@ -443,7 +444,7 @@ LineChart(
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""# Use integer indices with linear scale for large datasets
+            dmc.CodeHighlight(code="""# Use integer indices with linear scale for large datasets
 year_indices = list(range(365))
 
 LineChart(
@@ -469,7 +470,7 @@ LineChart(
         {'x': 90, 'label': 'Q1 End', ...},
         {'x': 273, 'label': 'Q3 End', ...},
     ],
-)""", style=code_style),
+)""", language="python"),
         ]),
     ], style=section_style),
 
@@ -532,7 +533,7 @@ LineChart(
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""# Convert dates to epoch-ms timestamps for time scale
+            dmc.CodeHighlight(code="""# Convert dates to epoch-ms timestamps for time scale
 timestamps = [int(datetime(2025, 1, 1).timestamp() + i * 86400) * 1000 for i in range(90)]
 
 LineChart(
@@ -560,7 +561,7 @@ LineChart(
     tooltip={'trigger': 'axis'},
     margin={'left': 65, 'right': 20, 'top': 20, 'bottom': 80},
 )
-""", style=code_style),
+""", language="python"),
         ]),
 
         # --- 5b. Zoom with Slider (Pro) ---
@@ -632,7 +633,7 @@ LineChart(
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""# Epoch-ms timestamps for time scale
+            dmc.CodeHighlight(code="""# Epoch-ms timestamps for time scale
 year_timestamps = [int(datetime(2025, 1, 1).timestamp() + i * 86400) * 1000 for i in range(365)]
 
 LineChart(
@@ -663,7 +664,7 @@ LineChart(
     margin={'left': 65, 'right': 20, 'top': 20, 'bottom': 80},
     initialZoom=[{'axisId': 'tick-zoom-x', 'start': 0, 'end': 30}],
     referenceLines=[{'y': 78, 'label': 'Warning (78F)', ...}],
-)""", style=code_style),
+)""", language="python"),
         ]),
 
         # --- 5c. Pro Zoom with Brush & Preview ---
@@ -759,7 +760,7 @@ LineChart(
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""# Epoch-ms timestamps for time scale
+            dmc.CodeHighlight(code="""# Epoch-ms timestamps for time scale
 year_timestamps = [int(datetime(2025, 1, 1).timestamp() + i * 86400) * 1000 for i in range(365)]
 
 LineChart(
@@ -802,7 +803,7 @@ LineChart(
 
 # In assets/muiChartsFunctions.js, define the formatDate function:
 # window.dashMuiChartsFunctions.formatDate = function(value, context, options) { ... };
-""", style=code_style),
+""", language="python"),
         ]),
 
         # --- Key Tick Props Table ---
@@ -911,7 +912,7 @@ LineChart(
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""LineChart(
+            dmc.CodeHighlight(code="""LineChart(
     id='tick-hover-interactive',
     height=400,
     series=[
@@ -934,7 +935,7 @@ LineChart(
 )
 def display_click(click_data):
     return json.dumps(click_data, indent=2) if click_data else "Click on the chart"
-""", style=code_style),
+""", language="python"),
         ]),
     ], style=section_style),
 

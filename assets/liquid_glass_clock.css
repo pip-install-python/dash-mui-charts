@@ -1,0 +1,219 @@
+/* ============================================================================
+   LIQUID GLASS TIME CLOCK
+   Apple-inspired glassmorphism for the dash-mui-charts TimeClock.
+   - .liquid-glass-stage : colourful backdrop so the frosted glass has something
+                           to blur (light + dark variants).
+   - .liquid-glass-clock : applied to the TimeClock wrapper. Glassifies the face,
+                           turns the pointer thumb into a magnifying lens, and
+                           enlarges the digit under the lens.
+   Targets internal MUI clock classes (verified from @mui/x-date-pickers source):
+     .MuiClock-clock        — circular face (220px)
+     .MuiClock-pin          — centre pin
+     .MuiClockPointer-root  — the hand (2px line, rotated)
+     .MuiClockPointer-thumb — ring at the tip; centred at (50%, -19px) on the hand
+     .MuiClockNumber-root   — each digit (36px flex-centred box, inline transform)
+     .MuiClockNumber-selected — the digit under the thumb
+   ============================================================================ */
+
+/* ---- Stage: a soft gradient panel behind the clock ------------------------ */
+.liquid-glass-stage {
+    position: relative;
+    border-radius: 24px;
+    padding: 30px 40px;
+    background: linear-gradient(135deg, #e6ecff 0%, #d7e3fb 45%, #f3e3ff 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7),
+                0 12px 40px rgba(31, 38, 135, 0.12);
+    overflow: hidden;
+}
+
+[data-mantine-color-scheme="dark"] .liquid-glass-stage {
+    background: linear-gradient(135deg, #0b1326 0%, #1a2138 45%, #2a1a3d 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06),
+                0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* ---- The glass face ------------------------------------------------------- */
+.liquid-glass-clock .MuiClock-clock {
+    position: relative;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.55) 0%,
+                                        rgba(255, 255, 255, 0.20) 100%) !important;
+    backdrop-filter: blur(14px) saturate(180%);
+    -webkit-backdrop-filter: blur(14px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 10px 36px rgba(31, 38, 135, 0.18),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9),
+                inset 0 -2px 12px rgba(255, 255, 255, 0.4);
+}
+
+[data-mantine-color-scheme="dark"] .liquid-glass-clock .MuiClock-clock {
+    background: linear-gradient(135deg, rgba(42, 50, 72, 0.60) 0%,
+                                        rgba(20, 25, 38, 0.42) 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 10px 36px rgba(0, 0, 0, 0.55),
+                inset 0 1px 0 rgba(255, 255, 255, 0.12),
+                inset 0 -2px 12px rgba(255, 255, 255, 0.05);
+}
+
+/* Animated liquid-gradient halo behind the face */
+.liquid-glass-clock .MuiClock-clock::before {
+    content: '';
+    position: absolute;
+    inset: -5px;
+    border-radius: 50%;
+    background: linear-gradient(45deg,
+        rgba(79, 195, 247, 0.55),
+        rgba(156, 39, 176, 0.50),
+        rgba(255, 193, 7, 0.50),
+        rgba(33, 150, 243, 0.55));
+    background-size: 400% 400%;
+    filter: blur(9px);
+    z-index: -1;
+    opacity: 0.7;
+    animation: lgClockHalo 8s ease infinite;
+}
+
+@keyframes lgClockHalo {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* ---- Centre pin (a small glass bead) -------------------------------------- */
+.liquid-glass-clock .MuiClock-pin {
+    background: radial-gradient(circle at 35% 30%,
+        rgba(255, 255, 255, 0.95), rgba(180, 205, 255, 0.7)) !important;
+    box-shadow: 0 0 10px rgba(120, 170, 255, 0.6),
+                inset 0 0 2px rgba(255, 255, 255, 0.9);
+}
+
+[data-mantine-color-scheme="dark"] .liquid-glass-clock .MuiClock-pin {
+    background: radial-gradient(circle at 35% 30%,
+        rgba(255, 255, 255, 0.9), rgba(150, 185, 255, 0.6)) !important;
+    box-shadow: 0 0 12px rgba(130, 175, 255, 0.65),
+                inset 0 0 2px rgba(255, 255, 255, 0.8);
+}
+
+/* ---- The hand — a liquid-glass blade --------------------------------------
+   Default is a 2px line at left:calc(50% - 1px). We widen it to 5px (recentre
+   to calc(50% - 2.5px)) and fade it from fully transparent at the pin to a
+   bright glassy tip, with a soft glow + inner sheen so it reads as glass. */
+.liquid-glass-clock .MuiClockPointer-root {
+    width: 5px !important;
+    left: calc(50% - 2.5px) !important;
+    border-radius: 100px !important;
+    background: linear-gradient(to top,
+        rgba(180, 205, 255, 0.0) 0%,
+        rgba(150, 190, 255, 0.35) 28%,
+        rgba(180, 210, 255, 0.66) 72%,
+        rgba(228, 241, 255, 0.96) 100%) !important;
+    box-shadow: 0 0 14px rgba(120, 170, 255, 0.55),
+                inset 0 0 2px rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(1px) saturate(160%);
+    -webkit-backdrop-filter: blur(1px) saturate(160%);
+}
+
+[data-mantine-color-scheme="dark"] .liquid-glass-clock .MuiClockPointer-root {
+    background: linear-gradient(to top,
+        rgba(150, 190, 255, 0.0) 0%,
+        rgba(130, 175, 255, 0.42) 28%,
+        rgba(165, 200, 255, 0.72) 72%,
+        rgba(222, 238, 255, 0.96) 100%) !important;
+    box-shadow: 0 0 16px rgba(130, 175, 255, 0.6),
+                inset 0 0 2px rgba(255, 255, 255, 0.8);
+}
+
+/* ---- Magnifying-glass lens (the thumb) -----------------------------------
+   MUI's top/left position the thumb's BORDER-box edge, so the default 36px
+   thumb centres at (x: 50%, y: -3px) relative to the hand tip. We keep a 40px
+   clear-glass lens centred on that exact point:
+     left = calc(50% - 20px)        top = -3 - 20 = -23px
+   The lens stays mostly transparent so the (separately rendered, enlarged)
+   selected digit reads through it like a real magnifier.
+   --------------------------------------------------------------------------- */
+.liquid-glass-clock .MuiClockPointer-thumb {
+    box-sizing: border-box !important;
+    width: 40px !important;
+    height: 40px !important;
+    left: calc(50% - 20px) !important;
+    top: -23px !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.92) !important;
+    background: radial-gradient(circle at 50% 50%,
+        rgba(255, 255, 255, 0.05) 0%,
+        rgba(255, 255, 255, 0.04) 58%,
+        rgba(200, 220, 255, 0.16) 82%,
+        rgba(255, 255, 255, 0.30) 100%) !important;
+    backdrop-filter: blur(0.5px) saturate(190%) brightness(1.07);
+    -webkit-backdrop-filter: blur(0.5px) saturate(190%) brightness(1.07);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28),
+                inset 0 1px 2px rgba(255, 255, 255, 0.95),
+                inset 0 0 10px rgba(255, 255, 255, 0.35),
+                inset 0 -4px 9px rgba(120, 160, 255, 0.28);
+    overflow: visible;
+}
+
+/* upper-left glare highlight on the lens */
+.liquid-glass-clock .MuiClockPointer-thumb::after {
+    content: '';
+    position: absolute;
+    top: 13%;
+    left: 17%;
+    width: 36%;
+    height: 26%;
+    border-radius: 50%;
+    background: radial-gradient(circle,
+        rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0) 70%);
+    pointer-events: none;
+}
+
+[data-mantine-color-scheme="dark"] .liquid-glass-clock .MuiClockPointer-thumb {
+    border: 1.5px solid rgba(255, 255, 255, 0.6) !important;
+    background: radial-gradient(circle at 50% 50%,
+        rgba(255, 255, 255, 0.03) 0%,
+        rgba(255, 255, 255, 0.03) 58%,
+        rgba(150, 180, 255, 0.14) 82%,
+        rgba(255, 255, 255, 0.18) 100%) !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5),
+                inset 0 1px 2px rgba(255, 255, 255, 0.5),
+                inset 0 0 10px rgba(255, 255, 255, 0.12),
+                inset 0 -4px 9px rgba(120, 160, 255, 0.22);
+}
+
+/* ---- Digits --------------------------------------------------------------- */
+.liquid-glass-clock .MuiClockNumber-root {
+    font-weight: 500;
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.4);
+}
+
+[data-mantine-color-scheme="dark"] .liquid-glass-clock .MuiClockNumber-root {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* The digit under the lens — magnified (font-size, NOT transform, to keep the
+   inline positioning transform intact). It renders above the thumb, so it reads
+   as the enlarged content "seen through" the lens. */
+.liquid-glass-clock .MuiClockNumber-selected {
+    font-size: 1.5rem !important;
+    font-weight: 900 !important;
+    letter-spacing: -0.5px;
+    color: #163e6e !important;
+    text-shadow: 0 0 3px rgba(255, 255, 255, 0.95),
+                 0 1px 2px rgba(255, 255, 255, 0.9);
+    transition: font-size 0.18s cubic-bezier(0.4, 0, 0.2, 1),
+                color 0.18s ease;
+}
+
+[data-mantine-color-scheme="dark"] .liquid-glass-clock .MuiClockNumber-selected {
+    color: #f0f6ff !important;
+    text-shadow: 0 0 4px rgba(80, 130, 220, 0.7),
+                 0 1px 3px rgba(0, 0, 0, 0.65);
+}
+
+/* ---- Accessibility -------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+    .liquid-glass-clock .MuiClock-clock::before {
+        animation: none !important;
+    }
+    .liquid-glass-clock .MuiClockPointer-thumb {
+        transition: none !important;
+    }
+}

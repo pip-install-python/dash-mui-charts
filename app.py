@@ -116,6 +116,10 @@ NAV_ITEMS = [
         {"itemId": "/tree-disabled", "label": "Disabled", "icon": "Block"},
         {"itemId": "/tree-pro", "label": "Pro", "icon": "Diamond"},
     ]},
+    {"itemId": "group-pickers", "label": "Date & Time Pickers", "icon": "Schedule", "children": [
+        {"itemId": "/time-clock", "label": "Time Clock", "icon": "AccessTime"},
+        {"itemId": "/time-clock-lab", "label": "TimeClock Lab", "icon": "Science"},
+    ]},
 ]
 
 ALL_GROUP_IDS = [item["itemId"] for item in NAV_ITEMS if item["itemId"].startswith("group-")]
@@ -142,7 +146,7 @@ header = dmc.AppShellHeader(
                         radius="sm",
                     ),
                     dmc.Text("Dash MUI Charts", fw=700, size="lg"),
-                    dmc.Badge("v1.2.3", variant="light", size="sm", color="blue",
+                    dmc.Badge("v1.3.0", variant="light", size="sm", color="blue",
                               visibleFrom="xs"),
                 ],
                 gap="xs",

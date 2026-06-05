@@ -5,6 +5,7 @@ LineChart Pro - Advanced Pro license features
 import os
 import json
 import dash
+import dash_mantine_components as dmc
 from dash import html, callback, Input, Output, State
 
 dash.register_page(__name__, path='/linechart-pro', name='LineChart Pro')
@@ -126,7 +127,7 @@ layout = html.Div([
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""LineChart(
+            dmc.CodeHighlight(code="""LineChart(
     id='zoom-slider-chart',
     height=400,
     series=[{'data': unemployment_rate, 'label': 'Unemployment Rate (%)'}],
@@ -142,7 +143,7 @@ layout = html.Div([
     }],
     showSlider=True,  # Enable zoom slider
     initialZoom=[{'axisId': 'x-axis', 'start': 0, 'end': 50}],  # Start zoomed to first half
-)""", style=code_style),
+)""", language="python"),
         ]),
     ], style=section_style),
 
@@ -366,7 +367,7 @@ layout = html.Div([
         ),
         html.Details([
             html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '10px'}),
-            html.Pre("""# Controlled zoom with buttons
+            dmc.CodeHighlight(code="""# Controlled zoom with buttons
 LineChart(
     id='controlled-zoom-chart',
     zoom=[{'axisId': 'controlled-x-axis', 'start': 0, 'end': 100}],
@@ -388,7 +389,7 @@ def control_zoom(reset_clicks, decade_clicks, zoom_data):
         # Calculate positions for 2010-2020 (indices 10-20 out of 24)
         return [{'axisId': 'controlled-x-axis', 'start': 41.67, 'end': 83.33}]
     return zoom_data or [{'axisId': 'controlled-x-axis', 'start': 0, 'end': 100}]
-""", style=code_style),
+""", language="python"),
         ]),
     ], style=section_style),
 ])
