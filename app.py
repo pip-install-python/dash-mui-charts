@@ -12,6 +12,8 @@ from dash_iconify import DashIconify
 
 from dash_mui_charts import SimpleTreeView
 
+from lib.ad_client import create_ad_component, register_shell_ad
+
 # Load .env if available
 try:
     from dotenv import load_dotenv
@@ -249,12 +251,31 @@ app.layout = dmc.MantineProvider(
         ),
         dcc.Location(id="url", refresh="callback-nav"),
         dcc.Store(id="license-key-store", data=MUI_LICENSE_KEY),
+        # 2plot.dev ad network: floating card anchored top-right, below the
+        # 60px header. Desktop only — a fixed card would cover content on
+        # small screens.
+        dmc.Box(
+            create_ad_component("__floating__", compact=True),
+            visibleFrom="md",
+            style={
+                "position": "fixed",
+                "top": "72px",
+                "right": "16px",
+                "width": "230px",
+                "zIndex": 150,
+            },
+        ),
     ],
 )
 
 # ---------------------------------------------------------------------------
 # Callbacks
 # ---------------------------------------------------------------------------
+
+# Ad network: the floating slot is static shell, so serve it per navigation
+# with the real pathname for attribution — except the home and changelog
+# pages, which stay ad-free.
+register_shell_ad("url", exclude_paths=("/", "/changelog"))
 
 # 1. Tree selection → SPA navigate via dcc.Location
 clientside_callback(

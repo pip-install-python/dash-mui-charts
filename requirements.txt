@@ -3,4 +3,5 @@ python-dotenv>=1.0.0
 dash-mantine-components>=2.6.0
 dash-iconify>=0.1.2
 dash-widgetbot>=0.1.0
+requests>=2.27.1              # 2plot.dev ad-network client (lib/ad_client.py)
 gunicorn>=21.2.0,<23.0.0
