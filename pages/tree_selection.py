@@ -9,7 +9,16 @@ import json
 import dash
 from dash import html, callback, Input, Output, State
 
-dash.register_page(__name__, path='/tree-selection', name='Tree Selection')
+from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
+
+dash.register_page(
+    __name__,
+    path='/tree-selection',
+    name='Tree Selection',
+    title=PAGE_TITLE_PREFIX + 'TreeView Selection',
+    description='TreeView selection modes: single, multi-select, checkbox selection, parent/descendant propagation, disabled selection, and controlled selectedItems.',
+    image_url=OG_IMAGE_URL,
+)
 
 from dash_mui_charts import TreeView
 

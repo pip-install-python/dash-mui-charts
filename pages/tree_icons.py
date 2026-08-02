@@ -7,7 +7,16 @@ Demonstrates custom icons, indentation, height, and sx styling.
 import dash
 from dash import html
 
-dash.register_page(__name__, path='/tree-icons', name='Tree Icons')
+from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
+
+dash.register_page(
+    __name__,
+    path='/tree-icons',
+    name='Tree Icons',
+    title=PAGE_TITLE_PREFIX + 'TreeView Icons & Appearance',
+    description='TreeView appearance: custom expand/collapse/end icons, itemChildrenIndentation, fixed height with scrolling, and sx styling.',
+    image_url=OG_IMAGE_URL,
+)
 
 from dash_mui_charts import TreeView
 

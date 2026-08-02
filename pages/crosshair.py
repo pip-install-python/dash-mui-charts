@@ -14,7 +14,18 @@ import dash_mantine_components as dmc
 from dash import html, dcc, callback, Input, Output, State, ctx, no_update, ALL
 from dash_iconify import DashIconify
 
-dash.register_page(__name__, path='/crosshair', name='Crosshair Explorer')
+from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
+
+dash.register_page(
+    __name__,
+    path='/crosshair',
+    name='Crosshair Explorer',
+    title=PAGE_TITLE_PREFIX + 'Crosshair Explorer',
+    description='CompositeChart crosshair tracking with live coordinate '
+                'readout, right-click alert placement, and a synced '
+                'three-chart dashboard with HoverCard-managed alerts.',
+    image_url=OG_IMAGE_URL,
+)
 
 from dash_mui_charts import CompositeChart
 

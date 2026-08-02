@@ -9,7 +9,16 @@ import json
 import dash
 from dash import html, callback, Input, Output
 
-dash.register_page(__name__, path='/tree-editing', name='Tree Editing')
+from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
+
+dash.register_page(
+    __name__,
+    path='/tree-editing',
+    name='Tree Editing',
+    title=PAGE_TITLE_PREFIX + 'TreeView Label Editing',
+    description='Inline TreeView label editing: isItemEditable for all items, editableItems for a subset, and editedItemLabel callbacks with an edit history log.',
+    image_url=OG_IMAGE_URL,
+)
 
 from dash_mui_charts import TreeView
 

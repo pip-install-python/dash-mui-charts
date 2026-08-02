@@ -8,7 +8,18 @@ import random
 import dash
 from dash import html
 
-dash.register_page(__name__, path='/barchart-reference', name='Bar Chart - Reference Lines')
+from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
+
+dash.register_page(
+    __name__,
+    path='/barchart-reference',
+    name='Bar Chart - Reference Lines',
+    title=PAGE_TITLE_PREFIX + 'BarChart Reference Lines',
+    description='BarChart reference lines and styling: target and threshold '
+                'markers, vertical reference lines, skip animation, hidden '
+                'legend and custom color palettes.',
+    image_url=OG_IMAGE_URL,
+)
 
 from dash_mui_charts import BarChart
 

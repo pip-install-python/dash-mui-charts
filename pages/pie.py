@@ -10,7 +10,96 @@ import json
 import dash
 from dash import html, callback, Input, Output
 
-dash.register_page(__name__, path='/pie', name='Pie Chart')
+from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
+
+dash.register_page(
+    __name__,
+    path='/pie',
+    name='Pie Chart',
+    title=PAGE_TITLE_PREFIX + 'PieChart',
+    description='PieChart demos: basic pie, donut, arc labels, styled slices, '
+                'half-pie gauge, and an interactive example with clickData and '
+                'highlightedItem callbacks.',
+    image_url=OG_IMAGE_URL,
+)
+
+LLMS_DOC = """# PieChart
+
+`PieChart` renders pie, donut, and nested/concentric pie charts, wrapping the
+MUI X Charts pie chart for Plotly Dash. It is a **Community (free)** component —
+no MUI X Pro license required.
+
+Slices come from a flat `data` list (single series) or a `series` list (nested
+pies). Interaction flows back to Dash through `clickData` and `highlightedItem`;
+`highlightedItem` also works as an input for synchronized highlighting across
+charts.
+
+## Single series (pie / donut)
+
+```python
+from dash_mui_charts import PieChart
+
+PieChart(
+    data=[
+        {'id': 'a', 'value': 35, 'label': 'Marketing', 'color': '#1976d2'},
+        {'id': 'b', 'value': 25, 'label': 'Engineering'},
+    ],
+    innerRadius=50,   # >0 creates donut
+    outerRadius=100,
+    cornerRadius=5,
+    paddingAngle=2,
+)
+```
+
+## Nested pies (multi-series)
+
+```python
+PieChart(
+    series=[
+        {'data': inner_data, 'innerRadius': 0, 'outerRadius': 80,
+         'highlightScope': {'fade': 'global', 'highlight': 'item'}},
+        {'data': outer_data, 'innerRadius': 90, 'outerRadius': 120,
+         'highlightScope': {'fade': 'global', 'highlight': 'item'}},
+    ],
+)
+```
+
+## Half-pie / gauge
+
+```python
+PieChart(
+    data=data,
+    startAngle=-90,   # 12 o'clock position
+    endAngle=90,      # Half circle
+    innerRadius=50,
+)
+```
+
+## Arc labels
+
+`arcLabel='value'` (or `'label'` / `'formattedValue'`) draws values on the
+slices; `arcLabelMinAngle=30` hides labels on slices smaller than 30 degrees.
+
+## Controlled highlighting
+
+```python
+PieChart(
+    id='my-pie',
+    data=[{'id': 0, 'value': 35, 'label': 'A'},
+          {'id': 1, 'value': 25, 'label': 'B'}],
+    highlightScope={'highlight': 'item', 'fade': 'global'},
+    highlightedItem={'seriesId': 'auto-generated-id-0', 'dataIndex': 0},
+)
+```
+
+Note: MUI X Charts uses `seriesId` (a string such as `"auto-generated-id-0"`),
+not `seriesIndex`, in event payloads.
+
+## Related pages
+
+- `/pie` — this demo (basic, donut, arc labels, styling, gauge, interactivity)
+- `/pie-props` — interactive props playground with nested two-ring pies
+"""
 
 from dash_mui_charts import PieChart
 

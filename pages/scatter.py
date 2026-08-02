@@ -12,7 +12,99 @@ import dash
 import dash_mantine_components as dmc
 from dash import html, callback, Input, Output
 
-dash.register_page(__name__, path='/scatter', name='Scatter Chart (0.0.8)')
+from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
+
+dash.register_page(
+    __name__,
+    path='/scatter',
+    name='Scatter Chart (0.0.8)',
+    title=PAGE_TITLE_PREFIX + 'ScatterChart',
+    description='ScatterChart demos: two-series scatter, custom marker sizes, '
+                'z-axis color mapping, log-scale axes, click events, '
+                'dataset-driven series and axis styling.',
+    image_url=OG_IMAGE_URL,
+)
+
+LLMS_DOC = """# ScatterChart
+
+`ScatterChart` renders scatter/point charts with optional z-axis color mapping,
+voronoi-based proximity interaction, and dataset-driven data, wrapping the
+MUI X Charts scatter chart for Plotly Dash. It is a **Community (free)**
+component — no MUI X Pro license required.
+
+## Multi-series scatter
+
+```python
+from dash_mui_charts import ScatterChart
+
+ScatterChart(
+    series=[
+        {
+            'id': 'group-a',
+            'label': 'Group A',
+            'data': [{'x': 1, 'y': 5, 'id': 0}, {'x': 2, 'y': 8, 'id': 1}],
+            'color': '#1976d2',
+            'markerSize': 6,
+        },
+        {
+            'id': 'group-b',
+            'label': 'Group B',
+            'data': [{'x': 1.5, 'y': 3, 'id': 0}, {'x': 3, 'y': 7, 'id': 1}],
+            'color': '#e53935',
+        },
+    ],
+    voronoiMaxRadius=30,   # proximity-based hover/click
+    height=400,
+)
+```
+
+## Z-axis color mapping
+
+Color points by a third variable — continuous, piecewise, or ordinal:
+
+```python
+ScatterChart(
+    series=[{'id': 'points',
+             'data': [{'x': 1, 'y': 5, 'z': 100, 'id': 0}]}],
+    zAxis=[{
+        'data': z_values,
+        'colorMap': {
+            'type': 'continuous',
+            'min': 0, 'max': 100,
+            'color': ['#e3f2fd', '#1565c0'],
+        },
+    }],
+)
+```
+
+## Dataset-driven
+
+```python
+ScatterChart(
+    dataset=[{'temp': 20, 'humidity': 65}],
+    series=[{'id': 'weather',
+             'datasetKeys': {'x': 'temp', 'y': 'humidity'}}],
+)
+```
+
+## Click events
+
+`clickData` reports the clicked point:
+
+```python
+{'type': 'scatter', 'seriesId': 'group-a', 'dataIndex': 2,
+ 'x': 3.5, 'y': 7.2, 'timestamp': '2025-01-10T...'}
+```
+
+Axes support `scaleType` including log and sqrt scales; `renderer='svg-batch'`
+speeds up large datasets. Note MUI X Charts uses `seriesId`, not `seriesIndex`.
+
+## Related pages
+
+- `/scatter` — this demo (multi-series, marker sizes, z-axis colors, log
+  scales, click events, dataset mode, axis styling)
+- `/composite` — layer scatter and line series on one surface
+"""
 
 from dash_mui_charts import ScatterChart
 

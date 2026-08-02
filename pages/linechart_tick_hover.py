@@ -12,7 +12,18 @@ import dash
 import dash_mantine_components as dmc
 from dash import html, callback, Input, Output
 
-dash.register_page(__name__, path='/linechart-tick-hover', name='LineChart Ticks & Hover')
+from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
+
+dash.register_page(
+    __name__,
+    path='/linechart-tick-hover',
+    name='LineChart Ticks & Hover',
+    title=PAGE_TITLE_PREFIX + 'LineChart Ticks & Hover',
+    description='Best practices for LineChart tooltips, reference lines, '
+                'ticks and grid across week, quarter and year date ranges, '
+                'with fixes for alignment at large ranges.',
+    image_url=OG_IMAGE_URL,
+)
 
 from dash_mui_charts import LineChart
 

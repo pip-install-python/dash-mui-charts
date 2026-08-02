@@ -13,11 +13,17 @@ import dash
 from dash import html, callback, Input, Output, State
 
 from dash_mui_charts import SparklineChart
+from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
 
 dash.register_page(
     __name__,
     path='/sparkline-style-advanced',
-    name='Sparkline Advanced'
+    name='Sparkline Advanced',
+    title=PAGE_TITLE_PREFIX + 'Sparkline Advanced Styling',
+    description='Advanced SparklineChart demo: a liquid glass (glassmorphism) '
+                'stock card with reveal animation, hover opacity effects and '
+                'real-time value display.',
+    image_url=OG_IMAGE_URL,
 )
 
 # Stock-like data with realistic movement

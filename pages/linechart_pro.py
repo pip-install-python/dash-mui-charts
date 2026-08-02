@@ -8,7 +8,18 @@ import dash
 import dash_mantine_components as dmc
 from dash import html, callback, Input, Output, State
 
-dash.register_page(__name__, path='/linechart-pro', name='LineChart Pro')
+from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
+
+dash.register_page(
+    __name__,
+    path='/linechart-pro',
+    name='LineChart Pro',
+    title=PAGE_TITLE_PREFIX + 'LineChart Pro',
+    description='MUI X Pro features on LineChart: zoom and pan with a slider, '
+                'zoom configuration options, biaxial zoom, and controlled zoom '
+                'state via Dash callbacks.',
+    image_url=OG_IMAGE_URL,
+)
 
 from dash_mui_charts import LineChart
 

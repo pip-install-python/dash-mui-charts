@@ -17,7 +17,18 @@ import dash
 import dash_mantine_components as dmc
 from dash import html, dcc, callback, Input, Output, State, ctx, no_update
 
-dash.register_page(__name__, path='/composite-render-bp', name='Composite Render BP')
+from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
+
+dash.register_page(
+    __name__,
+    path='/composite-render-bp',
+    name='Composite Render BP',
+    title=PAGE_TITLE_PREFIX + 'Composite Render Best Practices',
+    description='Best-practice CompositeChart rendering for stacked discharge/'
+                'temperature/pressure dashboards across 7d-live to 1yr+ date '
+                'ranges (~2k to 150k+ points).',
+    image_url=OG_IMAGE_URL,
+)
 
 from dash_mui_charts import CompositeChart
 

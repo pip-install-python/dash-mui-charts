@@ -6,7 +6,18 @@ Using the dataset prop with dataKey references for clean data management.
 import dash
 from dash import html
 
-dash.register_page(__name__, path='/barchart-dataset', name='Bar Chart - Dataset')
+from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
+
+dash.register_page(
+    __name__,
+    path='/barchart-dataset',
+    name='Bar Chart - Dataset',
+    title=PAGE_TITLE_PREFIX + 'BarChart Dataset Mode',
+    description='BarChart dataset mode: pass table-format data once and '
+                'reference columns by dataKey, with stacked series and '
+                'bar/category gap control.',
+    image_url=OG_IMAGE_URL,
+)
 
 from dash_mui_charts import BarChart
 

@@ -4,4 +4,5 @@ dash-mantine-components>=2.6.0
 dash-iconify>=0.1.2
 dash-widgetbot>=0.1.0
 requests>=2.27.1              # 2plot.dev ad-network client (lib/ad_client.py)
+dash-improve-my-llms>=2.3.4   # llms.txt/robots/sitemap/prerender (network standard)
 gunicorn>=21.2.0,<23.0.0

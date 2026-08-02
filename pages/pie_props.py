@@ -12,10 +12,17 @@ from dash import html, callback, Input, Output, dcc, ctx
 import dash_mantine_components as dmc
 from dash_mui_charts import PieChart
 
+from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
+
 dash.register_page(
     __name__,
     path='/pie-props',
-    name='Pie Chart Props'
+    name='Pie Chart Props',
+    title=PAGE_TITLE_PREFIX + 'PieChart Props Playground',
+    description='Interactive playground for nested two-ring PieCharts on '
+                'Titanic survival data with live controls for dimensions, '
+                'radii, ring gap, labels and highlighting.',
+    image_url=OG_IMAGE_URL,
 )
 
 # =============================================================================

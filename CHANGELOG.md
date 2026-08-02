@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Network-standard pass — Phase 1 (identity + llms surfaces)
+
+- **One brand, every surface** — `lib/constants.py` (SITE_BRAND
+  "dash-mui-charts — MUI X charts for Dash", SITE_DESCRIPTION, BASE_URL
+  defaulting to https://muicharts.2plot.dev, OG card block, INTERNAL_UA).
+  The header version badge, the JSON-LD version and the template origin are
+  now substituted from single sources of truth at boot — this repo carried
+  five conflicting version strings and three "9 components" claims (it has
+  13; README and .claude/CLAUDE.md corrected).
+- **dash-improve-my-llms ≥2.3.4 wired** — /llms.txt (site prose from
+  pages/home.py's LLMS_DOC), per-page /<page>/llms.txt, /robots.txt with
+  per-vendor bot policy, /sitemap.xml (40 URLs on the canonical origin),
+  per-route canonical/og prerender, cross-host network directory
+  (`lib/network_directory.py`). The analytics before_request stays
+  registered ahead of the bot middleware so crawler hits keep being
+  counted.
+- **Every register_page carries title/description/image_url** — one
+  missing and Dash emits an empty tag that wins with scrapers; all 40
+  routes verified to serve zero empty meta tags. 14 pages (home + one per
+  component family) carry LLMS_DOC prose sourced from SKILLS.md.
+- **templates/index.html rebuilt on the dedup rule** — declares only what
+  Dash does not emit (og:site_name/locale/url, og:image auxiliaries,
+  twitter:image:alt); the duplicate hardcoded title, static og/twitter
+  block, stale JSON-LD and hardcoded canonical are gone. GA4 kept; favicon
+  randomizer kept but its header-avatar sync now retries bounded instead
+  of forever; SPA canonical/og:url sync script added.
+
 ### Network-standard pass — Phase 0 (stabilize)
 
 - **Satellite analytics committed** — `lib/analytics.py` (SPA-aware hit

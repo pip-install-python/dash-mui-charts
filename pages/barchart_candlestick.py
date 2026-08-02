@@ -9,7 +9,92 @@ import random
 import dash
 from dash import html, callback, Input, Output
 
-dash.register_page(__name__, path='/candlestick', name='Candlestick Chart')
+from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
+
+dash.register_page(
+    __name__,
+    path='/candlestick',
+    name='Candlestick Chart',
+    title=PAGE_TITLE_PREFIX + 'CandlestickChart',
+    description='CandlestickChart OHLC demos: array and dataset formats, '
+                'volume overlay, candle styling, support/resistance reference '
+                'lines and click events.',
+    image_url=OG_IMAGE_URL,
+)
+
+LLMS_DOC = """# CandlestickChart
+
+Static OHLC candlestick charts for financial data in Plotly Dash. Built on
+the MUI X Charts Pro composition API (`ChartDataProviderPro` plus a custom
+SVG `CandlePlot` for candle bodies and wicks), so it does not need
+`@mui/x-charts-premium`. Basic charts work without a license; zoom, slider
+and toolbar are Pro features that require a MUI X Pro `licenseKey`. Not the
+same as LiveTradingChart, which is a real-time streaming chart.
+
+## Data formats
+
+Array format — OHLC tuples:
+
+```python
+from dash_mui_charts import CandlestickChart
+
+CandlestickChart(
+    id='my-candles',
+    series=[{
+        'data': [
+            [100, 110, 95, 105],   # [open, high, low, close]
+            [105, 115, 100, 112],
+        ],
+        'upColor': '#4caf50',      # close >= open
+        'downColor': '#f44336',    # close < open
+    }],
+    xAxis=[{'data': ['Mon', 'Tue']}],
+)
+```
+
+Dataset format — row objects mapped with `datasetKeys`:
+
+```python
+CandlestickChart(
+    dataset=[
+        {'date': '2025-01-02', 'open': 100, 'high': 110,
+         'low': 95, 'close': 105, 'volume': 1200},
+    ],
+    series=[{
+        'datasetKeys': {'open': 'open', 'high': 'high',
+                        'low': 'low', 'close': 'close'},
+        'volumeKey': 'volume',
+    }],
+    xAxis=[{'dataKey': 'date'}],
+)
+```
+
+## Key props
+
+- `showVolume=True` + `volumeHeightRatio` — semi-transparent volume bars;
+  volume comes from `volumeKey` (dataset mode) or a `volume` array (series)
+- `bodyWidthRatio` — candle body width, 0-1 (default 0.6)
+- `wickWidth` — wick thickness in px (default 2)
+- `referenceLines` — support/resistance markers: `{'y': 110, 'label':
+  'Resistance', 'lineStyle': {'stroke': '#f44336', 'strokeDasharray': '6 4'}}`
+- Built-in OHLC hover tooltip with vertical crosshair (can be disabled)
+- Y-axis domain is computed automatically from the data
+
+## Click events
+
+```python
+@callback(Output('display', 'children'), Input('my-candles', 'clickData'))
+def show_click(data):
+    # data: {dataIndex, label, open, high, low, close, timestamp}
+    return json.dumps(data) if data else 'Click a candle...'
+```
+
+## Related pages
+
+- /candlestick — this page: array/dataset modes, volume, styling, clicks
+- /live-trading — real-time streaming charts (LiveTradingChart)
+- /barchart-basic — the BarChart component family
+"""
 
 from dash_mui_charts import CandlestickChart
 

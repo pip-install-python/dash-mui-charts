@@ -8,7 +8,18 @@ import dash
 import dash_mantine_components as dmc
 from dash import html, callback, Input, Output, ctx
 
-dash.register_page(__name__, path='/highlighting-sync', name='Highlighting Sync')
+from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
+
+dash.register_page(
+    __name__,
+    path='/highlighting-sync',
+    name='Highlighting Sync',
+    title=PAGE_TITLE_PREFIX + 'Synchronized Highlighting',
+    description='Synchronized highlighting across charts: hover one to '
+                'highlight matching data in others — LineChart + PieChart '
+                'and two LineCharts sharing highlightedItem state.',
+    image_url=OG_IMAGE_URL,
+)
 
 from dash_mui_charts import LineChart, PieChart
 

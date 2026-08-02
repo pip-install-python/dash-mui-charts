@@ -9,7 +9,16 @@ import json
 import dash
 from dash import html, callback, Input, Output
 
-dash.register_page(__name__, path='/tree-expansion', name='Tree Expansion')
+from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
+
+dash.register_page(
+    __name__,
+    path='/tree-expansion',
+    name='Tree Expansion',
+    title=PAGE_TITLE_PREFIX + 'TreeView Expansion',
+    description='TreeView expansion control: content vs iconContainer triggers, controlled expandedItems with expand/collapse-all buttons, and expansion tracking.',
+    image_url=OG_IMAGE_URL,
+)
 
 from dash_mui_charts import TreeView
 

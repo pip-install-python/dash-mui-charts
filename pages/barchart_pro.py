@@ -9,7 +9,18 @@ import random
 import dash
 from dash import html
 
-dash.register_page(__name__, path='/barchart-pro', name='Bar Chart - Pro')
+from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
+
+dash.register_page(
+    __name__,
+    path='/barchart-pro',
+    name='Bar Chart - Pro',
+    title=PAGE_TITLE_PREFIX + 'BarChart Pro Features',
+    description='BarChart Pro features with a MUI X license key: zoom with '
+                'slider, zoom plus toolbar, and stacked bars with zoom on 52 '
+                'weeks of data.',
+    image_url=OG_IMAGE_URL,
+)
 
 from dash_mui_charts import BarChart
 

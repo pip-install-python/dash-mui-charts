@@ -13,7 +13,18 @@ import dash
 import dash_mantine_components as dmc
 from dash import html, callback, Input, Output, State, ctx, no_update
 
-dash.register_page(__name__, path='/composite-v120', name='CompositeChart v1.2.0')
+from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
+
+dash.register_page(
+    __name__,
+    path='/composite-v120',
+    name='CompositeChart v1.2.0',
+    title=PAGE_TITLE_PREFIX + 'CompositeChart v1.2.0',
+    description='CompositeChart v1.2.0 demos: the axis tooltip fix, the '
+                'highlightedAxis output, and cross-chart crosshair sync up to '
+                'a 3-chart stacked dashboard.',
+    image_url=OG_IMAGE_URL,
+)
 
 from dash_mui_charts import CompositeChart
 

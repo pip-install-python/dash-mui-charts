@@ -12,7 +12,94 @@ import dash
 import dash_mantine_components as dmc
 from dash import html, callback, Input, Output
 
-dash.register_page(__name__, path='/heatmap', name='Heatmap')
+from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
+
+dash.register_page(
+    __name__,
+    path='/heatmap',
+    name='Heatmap',
+    title=PAGE_TITLE_PREFIX + 'Heatmap',
+    description='Heatmap (MUI X Pro) demos: activity grids, a correlation '
+                'matrix, continuous and piecewise color scales, custom cell '
+                'styling and click interaction.',
+    image_url=OG_IMAGE_URL,
+)
+
+LLMS_DOC = """# Heatmap
+
+`Heatmap` renders matrix/grid visualizations with color-coded cells, wrapping
+the MUI X Charts Pro heatmap for Plotly Dash. It is a **Pro** component — a
+MUI X Pro license key is **required**, passed via the `licenseKey` prop.
+
+Cells are addressed by x/y index against categorical axis labels, and each
+cell's color is derived from its value through a color scale (continuous or
+piecewise). Cell clicks flow back to Dash as `clickData` with x, y, and value.
+
+## Data format
+
+```python
+# Array of [x_index, y_index, value] triples
+data = [
+    [0, 0, 10], [0, 1, 20], [0, 2, 30],
+    [1, 0, 40], [1, 1, 50], [1, 2, 60],
+]
+```
+
+## Basic usage
+
+```python
+from dash_mui_charts import Heatmap
+
+Heatmap(
+    id='my-heatmap',
+    licenseKey=MUI_LICENSE_KEY,       # Pro license required
+    data=data,
+    xAxis={'data': ['Mon', 'Tue', 'Wed'], 'label': 'Day'},
+    yAxis={'data': ['Week 1', 'Week 2', 'Week 3'], 'label': 'Week'},
+    height=300,
+    colorScale={
+        'type': 'continuous',
+        'min': 0,
+        'max': 100,
+        'colors': ['#e3f2fd', '#1976d2'],
+    },
+)
+```
+
+## Color scales
+
+```python
+# Continuous — interpolate between colors across [min, max]
+colorScale = {
+    'type': 'continuous',
+    'min': 0,
+    'max': 100,
+    'colors': ['#e3f2fd', '#1976d2'],
+}
+
+# Piecewise — discrete buckets split at thresholds
+colorScale = {
+    'type': 'piecewise',
+    'thresholds': [25, 50, 75],
+    'colors': ['#green', '#yellow', '#orange', '#red'],
+}
+```
+
+## Click events
+
+```python
+@callback(Output('out', 'children'), Input('my-heatmap', 'clickData'))
+def show(click_data):
+    # click_data carries the cell's x, y coordinates and value
+    ...
+```
+
+## Related pages
+
+- `/heatmap` — this demo (activity grid, correlation matrix, temperature
+  matrix, rounded cells, piecewise scales, click interaction)
+- `/heatmap-props` — interactive props playground with live controls
+"""
 
 from dash_mui_charts import Heatmap
 

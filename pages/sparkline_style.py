@@ -7,7 +7,18 @@ from dash import html, callback, Input, Output, State, dcc, no_update
 import dash_mantine_components as dmc
 from dash_mui_charts import SparklineChart
 
-dash.register_page(__name__, path='/sparkline-style', name='Sparkline Style')
+from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
+
+dash.register_page(
+    __name__,
+    path='/sparkline-style',
+    name='Sparkline Style',
+    title=PAGE_TITLE_PREFIX + 'Sparkline Styling Playground',
+    description='Interactive SparklineChart styling playground: tweak color, '
+                'plot type, curve, area, size and highlights with a live '
+                'preview and generated code.',
+    image_url=OG_IMAGE_URL,
+)
 
 # Sample data for preview
 PREVIEW_DATA = [

@@ -8,7 +8,18 @@ import random
 import dash
 from dash import html
 
-dash.register_page(__name__, path='/barchart-stacking', name='Bar Chart - Stacking')
+from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
+
+dash.register_page(
+    __name__,
+    path='/barchart-stacking',
+    name='Bar Chart - Stacking',
+    title=PAGE_TITLE_PREFIX + 'BarChart Stacking',
+    description='BarChart stacking options: standard, normalized (expand) and '
+                'diverging stack offsets, multiple stack groups, and '
+                'horizontal stacked bars.',
+    image_url=OG_IMAGE_URL,
+)
 
 from dash_mui_charts import BarChart
 

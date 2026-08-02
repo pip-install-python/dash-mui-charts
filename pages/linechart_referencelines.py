@@ -7,7 +7,18 @@ import dash
 import dash_mantine_components as dmc
 from dash import html, dcc, callback, Input, Output, State
 
-dash.register_page(__name__, path='/linechart-referencelines', name='LineChart Reference Lines')
+from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
+
+dash.register_page(
+    __name__,
+    path='/linechart-referencelines',
+    name='LineChart Reference Lines',
+    title=PAGE_TITLE_PREFIX + 'LineChart Reference Lines',
+    description='Horizontal and vertical reference lines on LineChart: '
+                'targets, thresholds, label alignment, dash styles, '
+                'multi-axis axisId, and dynamic updates via callbacks.',
+    image_url=OG_IMAGE_URL,
+)
 
 from dash_mui_charts import LineChart
 

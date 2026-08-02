@@ -8,7 +8,18 @@ import dash
 import dash_mantine_components as dmc
 from dash import html, callback, Input, Output
 
-dash.register_page(__name__, path='/linechart-brush', name='LineChart Brush')
+from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
+
+dash.register_page(
+    __name__,
+    path='/linechart-brush',
+    name='LineChart Brush',
+    title=PAGE_TITLE_PREFIX + 'LineChart Brush Selection',
+    description='Pro brush range selection on LineChart: drag to select a '
+                'region, overlay types (none, default, values with % change), '
+                'brushConfig and axis highlight options.',
+    image_url=OG_IMAGE_URL,
+)
 
 from dash_mui_charts import LineChart
 

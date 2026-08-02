@@ -11,7 +11,77 @@ import dash
 import dash_mantine_components as dmc
 from dash import html, callback, Input, Output, State, dcc
 
-dash.register_page(__name__, path='/sparkline', name='Sparkline')
+from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
+
+dash.register_page(
+    __name__,
+    path='/sparkline',
+    name='Sparkline',
+    title=PAGE_TITLE_PREFIX + 'SparklineChart',
+    description='SparklineChart demos: line, area and bar sparklines for KPI '
+                'cards and tables, synced multi-metric hover, custom curves '
+                'and callback-driven data.',
+    image_url=OG_IMAGE_URL,
+)
+
+LLMS_DOC = """# SparklineChart
+
+Compact inline charts (default 36px height) that show a data trend without
+axes or labels — ideal for dashboards, KPI cards and table cells. This is a
+Community component: no MUI X license key required.
+
+## Basic usage
+
+```python
+from dash_mui_charts import SparklineChart
+
+SparklineChart(
+    data=[1, 4, 2, 5, 7, 2, 4, 6],
+    plotType='line',  # or 'bar'
+    color='#1976d2',
+    area=True,
+    height=40,
+    width=150,
+)
+```
+
+## Key props
+
+- `data` — list of numbers to plot
+- `plotType` — `'line'` (default) or `'bar'`
+- `area` — fill the region under the line
+- `color`, `height`, `width` — appearance and sizing
+- `curve` — line interpolation: `'linear'`, `'natural'`, `'monotoneX'`,
+  `'step'`, and more
+- `showTooltip` / `showHighlight` — hover value display and point marker
+- `baseline` and `margin` — area baseline and plot margins
+
+## Controlled highlight
+
+Sync the highlighted point with an external component (table row, slider,
+another chart):
+
+```python
+SparklineChart(
+    data=data,
+    highlightedIndex=selected_index,
+)
+```
+
+## Usage patterns on this page
+
+- KPI cards — sparkline beside a headline metric
+- NPM-style downloads card — area sparkline with hover tooltip
+- Synchronized multi-metric dashboard — one hover highlights all sparklines
+- Sparklines in a table — one per row for at-a-glance trends
+- Callback-triggered data changes — swap `data` from a Dash callback
+
+## Related pages
+
+- /sparkline-style — interactive styling playground with live preview and
+  generated code
+- /sparkline-style-advanced — liquid glass (glassmorphism) sparkline card
+"""
 
 from dash_mui_charts import SparklineChart
 

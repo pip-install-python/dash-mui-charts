@@ -7,7 +7,16 @@ import dash
 import dash_mantine_components as dmc
 from dash import html, dcc
 
-dash.register_page(__name__, path='/changelog', name='Changelog')
+from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
+
+dash.register_page(
+    __name__,
+    path='/changelog',
+    name='Changelog',
+    title=PAGE_TITLE_PREFIX + 'Changelog',
+    description='Release history for dash-mui-charts: all notable changes by version, rendered from the project CHANGELOG.',
+    image_url=OG_IMAGE_URL,
+)
 
 # Read the changelog file
 _changelog_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'CHANGELOG.md')

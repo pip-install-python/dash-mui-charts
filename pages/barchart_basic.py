@@ -9,7 +9,103 @@ import random
 import dash
 from dash import html, callback, Input, Output
 
-dash.register_page(__name__, path='/barchart-basic', name='Bar Chart - Basic')
+from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
+
+dash.register_page(
+    __name__,
+    path='/barchart-basic',
+    name='Bar Chart - Basic',
+    title=PAGE_TITLE_PREFIX + 'BarChart Basics',
+    description='BarChart basics for Dash: multi-series vertical, stacked and '
+                'horizontal bars, bar labels, rounded corners, custom colors '
+                'and negative values.',
+    image_url=OG_IMAGE_URL,
+)
+
+LLMS_DOC = """# BarChart
+
+Vertical and horizontal bar charts for Plotly Dash, wrapping MUI X Charts'
+`BarChart`. Community features — bars, stacking, bar labels, dataset mode,
+reference lines, click events — need no license. Pro features (zoom, slider,
+toolbar, brush) require a MUI X Pro `licenseKey`; the component automatically
+switches to `BarChartPro` from `@mui/x-charts-pro` when Pro features are used.
+
+## Basic usage
+
+```python
+from dash_mui_charts import BarChart
+
+BarChart(
+    id='my-bar',
+    series=[{'data': [4, 3, 5], 'label': 'Sales', 'color': '#1976d2'}],
+    xAxis=[{'data': ['Q1', 'Q2', 'Q3'], 'scaleType': 'band'}],
+    height=350,
+)
+```
+
+`scaleType: 'band'` is required on the category axis. For horizontal bars,
+put the band axis on `yAxis` and set `layout='horizontal'`; use
+`borderRadius=6` for rounded corners.
+
+## Key props
+
+- `series` — list of `{data | dataKey, label, color, stack, stackOffset,
+  stackOrder, barLabel, barLabelPlacement, highlightScope, yAxisId}`
+- `dataset` + per-series `dataKey` — table-format data, passed once
+- `layout` — `'vertical'` (default) or `'horizontal'`
+- `borderRadius` — rounded bar corners (px)
+- `referenceLines` — horizontal (`y`) and vertical (`x`) markers
+- `categoryGapRatio` (0-1) / `barGapRatio` — bar spacing, set on the band axis
+- `clickData` / `axisClickData` — callback outputs for bar and axis clicks
+- Pro: `licenseKey`, `showSlider`, `showToolbar`, `initialZoom`, axis `zoom`
+
+## Stacking
+
+```python
+series=[
+    {'data': [40, 35], 'stack': 'g', 'stackOffset': 'expand'},
+    {'data': [30, 25], 'stack': 'g', 'stackOffset': 'expand'},
+]
+```
+
+`stackOffset`: `'none'` (default), `'expand'` (normalized to 100%), or
+`'diverging'` (positives above zero, negatives below). Different `stack`
+ids render as side-by-side stack groups.
+
+## Dataset mode
+
+```python
+BarChart(
+    dataset=[
+        {'month': 'Jan', 'london': 18, 'paris': 15},
+        {'month': 'Feb', 'london': 22, 'paris': 18},
+    ],
+    xAxis=[{'dataKey': 'month', 'scaleType': 'band'}],
+    series=[
+        {'dataKey': 'london', 'label': 'London'},
+        {'dataKey': 'paris', 'label': 'Paris'},
+    ],
+)
+```
+
+## Click events
+
+```python
+@callback(Output('display', 'children'), Input('my-bar', 'clickData'))
+def show_click(data):
+    # data: {seriesId, dataIndex, timestamp}
+    return json.dumps(data) if data else 'Click a bar...'
+```
+
+## Related pages
+
+- /barchart-basic — vertical, horizontal, stacked bars, labels, colors
+- /barchart-dataset — dataset + dataKey mode, bar spacing
+- /barchart-stacking — stack offsets, ordering, diverging stacks
+- /barchart-interaction — click events, highlighting, tooltip triggers
+- /barchart-reference — reference lines and styling
+- /barchart-pro — zoom, slider, toolbar (Pro license)
+"""
 
 from dash_mui_charts import BarChart
 

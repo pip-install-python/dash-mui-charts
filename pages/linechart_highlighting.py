@@ -8,7 +8,18 @@ import dash
 import dash_mantine_components as dmc
 from dash import html, callback, Input, Output, State, ctx
 
-dash.register_page(__name__, path='/linechart-highlighting', name='LineChart Highlighting')
+from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
+
+dash.register_page(
+    __name__,
+    path='/linechart-highlighting',
+    name='LineChart Highlighting',
+    title=PAGE_TITLE_PREFIX + 'LineChart Highlighting',
+    description='Controlled highlighting on LineChart: set highlightedItem '
+                'and highlightedAxis from Dash callbacks, plus per-series '
+                'highlightScope highlight/fade behavior.',
+    image_url=OG_IMAGE_URL,
+)
 
 from dash_mui_charts import LineChart
 

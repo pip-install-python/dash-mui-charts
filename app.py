@@ -12,17 +12,29 @@ from dash import (Dash, html, dcc, callback, Input, Output, State, no_update,
 from dash_iconify import DashIconify
 
 from dash_mui_charts import SimpleTreeView
+from dash_mui_charts import __version__ as _COMPONENT_VERSION
 
-from lib import analytics
-from lib.ad_client import create_ad_component, register_shell_ad
-from lib.traffic_report import register_healthz, start_traffic_reporter
-
-# Load .env if available
+# Load .env if available — MUST run before the first-party imports below:
+# lib/constants.py reads APP_BASE_URL at import time.
 try:
     from dotenv import load_dotenv
     load_dotenv()
 except ImportError:
     pass
+
+from lib import analytics, network_directory
+from lib.ad_client import create_ad_component, register_shell_ad
+from lib.constants import (BASE_URL, ORIGIN_PLACEHOLDER, SITE_BRAND,
+                           SITE_DESCRIPTION, require_owned_base_url)
+from lib.traffic_report import register_healthz, start_traffic_reporter
+
+from dash_improve_my_llms import (LLMSConfig, RobotsConfig, add_llms_routes,
+                                  register_page_metadata)
+
+# Refuses to boot in production if the canonical origin is a
+# platform-generated hostname (*.onrender.com keeps resolving after the
+# custom domain is attached, splitting link equity across two hosts).
+require_owned_base_url()
 
 MUI_LICENSE_KEY = os.environ.get('MUI_PRO_API_KEY', '')
 
@@ -43,16 +55,27 @@ if WIDGETBOT_SERVER and WIDGETBOT_CHANNEL:
         defer=True,
     )
 
-# Load custom index template with SEO meta tags, favicon randomizer, and analytics
+# Custom index template: GA4, favicon randomizer, and the site-level tags
+# Dash does not emit. Its __CANONICAL_ORIGIN__ tokens become BASE_URL and
+# __APP_VERSION__ becomes the package version here, so the canonical origin
+# and every version string come from single sources of truth — a static file
+# cannot import lib/constants, and hand-maintained copies are exactly how
+# this template ended up with five conflicting version strings.
 _template_path = os.path.join(os.path.dirname(__file__), 'templates', 'index.html')
 with open(_template_path, encoding='utf-8') as _f:
-    _index_string = _f.read()
+    _index_string = (_f.read()
+                     .replace(ORIGIN_PLACEHOLDER, BASE_URL)
+                     .replace('__APP_VERSION__', _COMPONENT_VERSION))
 
 app = Dash(
     __name__,
     use_pages=True,
     suppress_callback_exceptions=True,
     index_string=_index_string,
+    # <title> fallback for paths outside the page registry, and
+    # resolve_site_title's second candidate (dimll 2.3.4) — one string,
+    # every surface.
+    title=SITE_BRAND,
 )
 server = app.server  # WSGI entry point for gunicorn: gunicorn app:server
 
@@ -90,6 +113,47 @@ def _track_document_request():
 
 
 start_traffic_reporter()
+
+# ---------------------------------------------------------------------------
+# AI/LLM & SEO surfaces (dash-improve-my-llms) — /llms.txt, /<page>/llms.txt,
+# /robots.txt, /sitemap.xml, per-route canonical/og prerender, bot middleware.
+#
+# ORDER MATTERS TWICE HERE:
+#   - the analytics before_request above is registered BEFORE add_llms_routes,
+#     so crawler hits are recorded before the bot middleware answers them
+#     with prerendered HTML (a hook added after it never sees bot traffic);
+#   - register_page_metadata / network_directory.apply come BEFORE
+#     add_llms_routes so the routes are built with them in place.
+# ---------------------------------------------------------------------------
+
+app._base_url = BASE_URL
+
+network_directory.apply(BASE_URL)
+
+# Training crawlers (GPTBot, ClaudeBot, CCBot, …) are disallowed; the
+# user-triggered and search fetchers (Claude-User/-SearchBot, ChatGPT-User,
+# OAI-SearchBot, PerplexityBot) and traditional engines stay allowed —
+# dimll ≥2.3.3 buckets per vendor, so this split is exact.
+app._robots_config = RobotsConfig(
+    block_ai_training=True,
+    allow_ai_search=True,
+    allow_traditional=True,
+    crawl_delay=10,
+    disallowed_paths=[],
+)
+
+# `name` here is NOT a nav label — pages/home.py owns that ("Home"). This is
+# what resolve_site_title reads first, so it is the /llms.txt H1 and the
+# llms viewer's brand chip. resolve_site_title SKIPS generic candidates
+# ("Home", "Index", "Dash"), so a page display name here would silently
+# fall through to app.title instead of erroring.
+register_page_metadata(
+    path="/",
+    name=SITE_BRAND,
+    description=SITE_DESCRIPTION,
+)
+
+add_llms_routes(app, LLMSConfig(warn_missing_llms_doc=True))
 
 # ---------------------------------------------------------------------------
 # Navigation tree items — groups use "group-*" ids, leaves use page paths
@@ -183,8 +247,12 @@ header = dmc.AppShellHeader(
                         radius="sm",
                     ),
                     dmc.Text("Dash MUI Charts", fw=700, size="lg"),
-                    dmc.Badge("v1.3.0", variant="light", size="sm", color="blue",
-                              visibleFrom="xs"),
+                    # Version comes from the package (package-info.json), the
+                    # same source setup.py builds from — never hardcode it
+                    # here; a stale badge shipped as "v1.3.0" for a full
+                    # release cycle.
+                    dmc.Badge(f"v{_COMPONENT_VERSION}", variant="light",
+                              size="sm", color="blue", visibleFrom="xs"),
                 ],
                 gap="xs",
             ),

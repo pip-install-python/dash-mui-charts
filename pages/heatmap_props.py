@@ -12,10 +12,17 @@ from dash import html, callback, Input, Output, State, dcc
 import dash_mantine_components as dmc
 from dash_mui_charts import Heatmap
 
+from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
+
 dash.register_page(
     __name__,
     path='/heatmap-props',
-    name='Heatmap Props'
+    name='Heatmap Props',
+    title=PAGE_TITLE_PREFIX + 'Heatmap Props Playground',
+    description='Interactive Heatmap props playground (MUI X Pro): live '
+                'controls for color scale, dimensions, cell style, '
+                'interactions and margins on a 5x5 grid.',
+    image_url=OG_IMAGE_URL,
 )
 
 # Get license key from environment

@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-**dash_mui_charts** is a Dash component library that wraps [MUI X Charts](https://mui.com/x/react-charts/) for use in Plotly Dash applications. It provides 9 chart components with full Python type hints and interactive callbacks.
+**dash_mui_charts** is a Dash component library that wraps [MUI X Charts](https://mui.com/x/react-charts/) (plus MUI X Tree View and Date & Time Pickers) for use in Plotly Dash applications. It provides 13 components with full Python type hints and interactive callbacks.
 
 ---
 
@@ -19,6 +19,10 @@
 | **Heatmap** | Matrix/grid visualization | Pro |
 | **SparklineChart** | Compact inline charts | Community |
 | **LiveTradingChart** | Real-time streaming charts | Community / Pro |
+| **TreeView** | Data-driven RichTreeView: selection, expansion, editing | Community |
+| **SimpleTreeView** | JSX-driven tree for navigation sidebars | Community |
+| **TreeViewPro** | Drag-reorder, lazy loading, per-item slider/kebab controls | Pro |
+| **TimeClock** | Inline clock-face time picker (Date & Time Pickers) | Community |
 
 ### BarChart Features (v1.2.0)
 - **Vertical & Horizontal**: `layout='vertical'` (default) or `layout='horizontal'`

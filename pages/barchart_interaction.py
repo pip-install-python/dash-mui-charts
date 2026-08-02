@@ -9,7 +9,18 @@ import random
 import dash
 from dash import html, callback, Input, Output
 
-dash.register_page(__name__, path='/barchart-interaction', name='Bar Chart - Interaction')
+from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
+
+dash.register_page(
+    __name__,
+    path='/barchart-interaction',
+    name='Bar Chart - Interaction',
+    title=PAGE_TITLE_PREFIX + 'BarChart Interaction',
+    description='BarChart interaction in Dash: bar and axis click callbacks, '
+                'series highlighting, axis highlight modes, and axis vs item '
+                'tooltip triggers.',
+    image_url=OG_IMAGE_URL,
+)
 
 from dash_mui_charts import BarChart
 

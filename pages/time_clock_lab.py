@@ -20,7 +20,18 @@ import dash_mantine_components as dmc
 from dash import html, dcc, callback, Input, Output, State, ctx, no_update
 from dash_iconify import DashIconify
 
-dash.register_page(__name__, path='/time-clock-lab', name='TimeClock Lab')
+from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
+
+dash.register_page(
+    __name__,
+    path='/time-clock-lab',
+    name='TimeClock Lab',
+    title=PAGE_TITLE_PREFIX + 'TimeClock Lab',
+    description='TimeClock experiments: live recoloring, a liquid-glass '
+                'theme, a stopwatch, and two-way pairings with DMC TimeInput, '
+                'TimePicker, TimeGrid and DateTimePicker.',
+    image_url=OG_IMAGE_URL,
+)
 
 from dash_mui_charts import TimeClock
 

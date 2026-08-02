@@ -9,7 +9,16 @@ import json
 import dash
 from dash import html, callback, Input, Output
 
-dash.register_page(__name__, path='/tree-disabled', name='Tree Disabled')
+from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
+
+dash.register_page(
+    __name__,
+    path='/tree-disabled',
+    name='Tree Disabled',
+    title=PAGE_TITLE_PREFIX + 'TreeView Disabled Items',
+    description='TreeView disabled items: disabledItems blocking selection, checkbox propagation that skips them, disabledItemsFocusable, and disabled parent nodes.',
+    image_url=OG_IMAGE_URL,
+)
 
 from dash_mui_charts import TreeView
 
