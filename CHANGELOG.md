@@ -9,6 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.4.0] - 2026-07-19
+
+### Added
+
+- **TreeViewPro kebab submenus + dividers.** `kebabMenuItems` entries may now be
+  a leaf `{label, value, icon?}`, a `{divider: true}` rule, or a submenu
+  `{label, icon?, children: [entries]}` that opens on hover/click (recursive
+  nesting; a leaf anywhere in the chain closes the whole menu and fires
+  `kebabAction`).
+- **`kebabMenuItemsById`** — per-node kebab menus: `{itemId: [entries]}`
+  overrides the global `kebabMenuItems` for that node (same entry shape,
+  submenus/dividers included). Lets one tree carry different action sets for
+  different node types (channel nodes vs media nodes vs viewport nodes — the
+  2plot.media /360-broadcast use case that motivated this).
+
+---
+
 ## [1.3.0] - 2026-06-05
 
 ### Added
