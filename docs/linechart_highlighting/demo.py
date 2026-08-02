@@ -1,25 +1,12 @@
-"""
-LineChart Highlighting - Controlled axis/item highlights and per-series highlightScope
-"""
+"""LineChart Highlighting demo — rendered on /linechart-highlighting via `.. exec::`.
 
+Ported verbatim from the pre-migration pages/linechart_highlighting.py (same ids, same callbacks).
+"""
 import os
 import json
-import dash
 import dash_mantine_components as dmc
-from dash import html, callback, Input, Output, State, ctx
-
-from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
-
-dash.register_page(
-    __name__,
-    path='/linechart-highlighting',
-    name='LineChart Highlighting',
-    title=PAGE_TITLE_PREFIX + 'LineChart Highlighting',
-    description='Controlled highlighting on LineChart: set highlightedItem '
-                'and highlightedAxis from Dash callbacks, plus per-series '
-                'highlightScope highlight/fade behavior.',
-    image_url=OG_IMAGE_URL,
-)
+import dash
+from dash import html, callback, Input, Output, ctx
 
 from dash_mui_charts import LineChart
 
@@ -43,14 +30,7 @@ PRE_STYLE = {
     'overflow': 'auto',
 }
 
-layout = html.Div([
-    html.H2("LineChart Highlighting"),
-    html.P(
-        "Controlled highlighting features: axis highlights, item highlights, "
-        "and per-series highlight scopes.",
-        style={'color': 'var(--mantine-color-dimmed)', 'marginBottom': '24px'}
-    ),
-
+component = html.Div([
     # ==========================================================================
     # Controlled Item Highlight
     # ==========================================================================

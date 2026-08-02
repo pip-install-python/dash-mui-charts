@@ -1,34 +1,13 @@
-"""
-Composite Render Best Practices
-Optimal rendering of stacked Discharge Time / Temperature / Pressure dashboards
-across different date ranges: 7d (LIVE), 30d, 3mo, 6mo, 1yr, 1yr+.
+"""Composite Render BP demo — rendered on /composite-render-bp via `.. exec::`.
 
-Each range uses tuned tick spacing, date formatting, marker visibility, and
-chart heights to produce the best visual density for that data volume.
-Equipment pings every ~5 minutes; data scales from ~2k to ~150k+ points.
+Ported verbatim from the pre-migration pages/composit_render_bp.py (same ids, same callbacks).
 """
-
 import os
 import math
 import random
 from datetime import datetime, timedelta
-
-import dash
 import dash_mantine_components as dmc
 from dash import html, dcc, callback, Input, Output, State, ctx, no_update
-
-from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
-
-dash.register_page(
-    __name__,
-    path='/composite-render-bp',
-    name='Composite Render BP',
-    title=PAGE_TITLE_PREFIX + 'Composite Render Best Practices',
-    description='Best-practice CompositeChart rendering for stacked discharge/'
-                'temperature/pressure dashboards across 7d-live to 1yr+ date '
-                'ranges (~2k to 150k+ points).',
-    image_url=OG_IMAGE_URL,
-)
 
 from dash_mui_charts import CompositeChart
 
@@ -488,7 +467,7 @@ def build_live_7d_section():
 # ---------------------------------------------------------------------------
 # Layout — lightweight shell; heavy chart sections loaded via callback
 # ---------------------------------------------------------------------------
-layout = dmc.Box(
+component = dmc.Box(
     pos="relative",
     children=[
         dmc.LoadingOverlay(

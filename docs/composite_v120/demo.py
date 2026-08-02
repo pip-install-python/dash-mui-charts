@@ -1,30 +1,14 @@
-"""
-CompositeChart v1.2.0 Changes Demo
-Demonstrates: axis tooltip fix, highlightedAxis, syncedTooltipIndex cross-chart sync.
-"""
+"""CompositeChart v1.2.0 demo — rendered on /composite-v120 via `.. exec::`.
 
+Ported verbatim from the pre-migration pages/composite_v120.py (same ids, same callbacks).
+"""
 import os
 import json
 import math
 import random
 from datetime import datetime, timedelta
-
-import dash
 import dash_mantine_components as dmc
-from dash import html, callback, Input, Output, State, ctx, no_update
-
-from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
-
-dash.register_page(
-    __name__,
-    path='/composite-v120',
-    name='CompositeChart v1.2.0',
-    title=PAGE_TITLE_PREFIX + 'CompositeChart v1.2.0',
-    description='CompositeChart v1.2.0 demos: the axis tooltip fix, the '
-                'highlightedAxis output, and cross-chart crosshair sync up to '
-                'a 3-chart stacked dashboard.',
-    image_url=OG_IMAGE_URL,
-)
+from dash import html, callback, Input, Output, State, ctx
 
 from dash_mui_charts import CompositeChart
 
@@ -95,17 +79,7 @@ badge_style = {
     'verticalAlign': 'middle',
 }
 
-layout = html.Div([
-    html.Div([
-        html.H1("CompositeChart v1.2.0", style={'display': 'inline'}),
-        html.Span("1.2.0", style=badge_style),
-    ]),
-    html.P(
-        "v1.2.0 fixes axis tooltip behavior for mixed series (line + scatter) and adds "
-        "highlightedAxis / syncedTooltipIndex controlled props for cross-chart synchronization.",
-        style={'fontSize': '16px', 'color': 'var(--mantine-color-dimmed)', 'marginBottom': '30px'},
-    ),
-
+component = html.Div([
     # ======================================================================
     # 1. Axis Tooltip Fix (the core bug fix)
     # ======================================================================

@@ -1,29 +1,14 @@
-"""
-LineChart Ticks & Hover - Tooltips, reference lines, ticks, and grid at various date ranges
-"""
+"""LineChart Ticks & Hover demo — rendered on /linechart-tick-hover via `.. exec::`.
 
+Ported verbatim from the pre-migration pages/linechart_tick_hover.py (same ids, same callbacks).
+"""
 import os
 import json
 import math
 import random
 from datetime import datetime, timedelta
-
-import dash
 import dash_mantine_components as dmc
 from dash import html, callback, Input, Output
-
-from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
-
-dash.register_page(
-    __name__,
-    path='/linechart-tick-hover',
-    name='LineChart Ticks & Hover',
-    title=PAGE_TITLE_PREFIX + 'LineChart Ticks & Hover',
-    description='Best practices for LineChart tooltips, reference lines, '
-                'ticks and grid across week, quarter and year date ranges, '
-                'with fixes for alignment at large ranges.',
-    image_url=OG_IMAGE_URL,
-)
 
 from dash_mui_charts import LineChart
 
@@ -65,6 +50,7 @@ tip_style = {
 # ---------------------------------------------------------------------------
 random.seed(42)
 
+
 def generate_sensor_data(start_date, num_days, base=72, noise=5, trend=0.01):
     """Generate fake equipment sensor readings with slight upward trend."""
     dates = []
@@ -75,6 +61,7 @@ def generate_sensor_data(start_date, num_days, base=72, noise=5, trend=0.01):
         val = base + trend * i + noise * math.sin(i * 0.3) + random.gauss(0, noise * 0.3)
         values.append(round(val, 1))
     return dates, values
+
 
 # 1-week data
 week_start = datetime(2025, 3, 1)
@@ -105,15 +92,7 @@ critical_threshold = 85
 # ---------------------------------------------------------------------------
 # Layout
 # ---------------------------------------------------------------------------
-layout = html.Div([
-    html.H1("LineChart Ticks & Hover"),
-    html.P(
-        "This page demonstrates best practices for configuring tooltips, reference lines, "
-        "ticks, and grid on LineCharts across different date ranges. It addresses common "
-        "alignment issues that appear when rendering large date ranges (year+).",
-        style={'fontSize': '16px', 'color': '#666', 'marginBottom': '30px'}
-    ),
-
+component = html.Div([
     # ======================================================================
     # 1. Short Date Range (1 Week) - Baseline
     # ======================================================================

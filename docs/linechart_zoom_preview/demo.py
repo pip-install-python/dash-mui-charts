@@ -1,29 +1,14 @@
-"""
-LineChart 0.0.8 - Zoom Slider Preview & Enhanced Axis Configuration
-"""
+"""Zoom Preview (0.0.8) demo — rendered on /linechart-zoom-preview via `.. exec::`.
 
+Ported verbatim from the pre-migration pages/linechart_zoom_preview.py (same ids, same callbacks).
+"""
 import os
 import json
 import math
 import random
 from datetime import datetime, timedelta
-
-import dash
 import dash_mantine_components as dmc
 from dash import html, callback, Input, Output
-
-from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
-
-dash.register_page(
-    __name__,
-    path='/linechart-zoom-preview',
-    name='Zoom Preview (0.0.8)',
-    title=PAGE_TITLE_PREFIX + 'LineChart Zoom Slider Preview',
-    description='LineChart Pro zoom slider with a miniature full-dataset '
-                'preview, zoomInteractionConfig for fine-grained zoom/pan '
-                'control, and enhanced axis tick styling.',
-    image_url=OG_IMAGE_URL,
-)
 
 from dash_mui_charts import LineChart
 
@@ -99,19 +84,7 @@ new_badge = html.Span(
     }
 )
 
-layout = html.Div([
-    html.Div([
-        html.H1("Zoom Slider Preview", style={'display': 'inline'}),
-        pro_badge,
-        new_badge,
-    ]),
-    html.P(
-        "New in 0.0.8: zoom.slider.preview shows a miniature of the full dataset "
-        "inside the slider, enhanced axis configuration with tick styling, and "
-        "zoomInteractionConfig for fine-grained zoom/pan control.",
-        style={'fontSize': '16px', 'color': '#666', 'marginBottom': '30px'}
-    ),
-
+component = html.Div([
     # ==========================================================================
     # Zoom Slider with Preview - Time Series
     # ==========================================================================

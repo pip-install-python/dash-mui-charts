@@ -1,31 +1,14 @@
-"""
-Crosshair Explorer
-Demonstrates crosshair tracking, right-click alert placement with inline
-HoverCard management anchored to reference lines on the chart edge.
-"""
+"""Crosshair Explorer demo — rendered on /crosshair via `.. exec::`.
 
+Ported verbatim from the pre-migration pages/crosshair.py (same ids, same callbacks).
+"""
 import os
 import math
 import random
 from datetime import datetime, timedelta
-
-import dash
 import dash_mantine_components as dmc
 from dash import html, dcc, callback, Input, Output, State, ctx, no_update, ALL
 from dash_iconify import DashIconify
-
-from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
-
-dash.register_page(
-    __name__,
-    path='/crosshair',
-    name='Crosshair Explorer',
-    title=PAGE_TITLE_PREFIX + 'Crosshair Explorer',
-    description='CompositeChart crosshair tracking with live coordinate '
-                'readout, right-click alert placement, and a synced '
-                'three-chart dashboard with HoverCard-managed alerts.',
-    image_url=OG_IMAGE_URL,
-)
 
 from dash_mui_charts import CompositeChart
 
@@ -223,15 +206,7 @@ def _build_ref_lines(alerts):
 # ---------------------------------------------------------------------------
 # Layout
 # ---------------------------------------------------------------------------
-layout = html.Div([
-    html.H1("Crosshair Explorer"),
-    html.P(
-        "Crosshair tracking reports pointer position in data coordinates. "
-        "Right-click to place alerts as reference lines — hover the tag on the "
-        "chart edge to manage trigger conditions or remove the alert.",
-        style={'fontSize': '15px', 'color': 'var(--mantine-color-dimmed)', 'marginBottom': '25px'},
-    ),
-
+component = html.Div([
     # ==================================================================
     # 1. Position tracking
     # ==================================================================
@@ -456,6 +431,8 @@ SEC3_IDS = ['sec3-temp', 'sec3-pressure', 'sec3-humidity']
 SEC3_KEYS = ['temp', 'pressure', 'humidity']
 
 # Crosshair sync
+
+
 @callback(
     *[Output(cid, 'highlightedAxis') for cid in SEC3_IDS],
     *[Output(cid, 'syncedTooltipIndex') for cid in SEC3_IDS],

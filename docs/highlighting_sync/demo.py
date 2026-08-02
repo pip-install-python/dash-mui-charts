@@ -1,25 +1,12 @@
-"""
-Highlighting Sync - Synchronized highlights across multiple charts
-"""
+"""Highlighting Sync demo — rendered on /highlighting-sync via `.. exec::`.
 
+Ported verbatim from the pre-migration pages/highlighting_sync.py (same ids, same callbacks).
+"""
 import os
 import json
-import dash
 import dash_mantine_components as dmc
+import dash
 from dash import html, callback, Input, Output, ctx
-
-from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
-
-dash.register_page(
-    __name__,
-    path='/highlighting-sync',
-    name='Highlighting Sync',
-    title=PAGE_TITLE_PREFIX + 'Synchronized Highlighting',
-    description='Synchronized highlighting across charts: hover one to '
-                'highlight matching data in others — LineChart + PieChart '
-                'and two LineCharts sharing highlightedItem state.',
-    image_url=OG_IMAGE_URL,
-)
 
 from dash_mui_charts import LineChart, PieChart
 
@@ -86,14 +73,7 @@ custom_tooltip_style = {
     'color': 'var(--mantine-color-text)',
 }
 
-layout = html.Div([
-    html.H1("Synchronized Highlighting"),
-    html.P(
-        "This page demonstrates synchronized highlights across multiple charts. "
-        "Hovering over one chart highlights the corresponding data in other charts.",
-        style={'fontSize': '16px', 'color': 'var(--mantine-color-dimmed)', 'marginBottom': '20px'}
-    ),
-
+component = html.Div([
     # ==========================================================================
     # LineChart + PieChart Sync
     # ==========================================================================
@@ -422,6 +402,7 @@ def sync_charts_with_custom_tooltips(highlight_a, highlight_b):
 # Map category names to indices for pie chart
 CATEGORY_TO_INDEX = {cat.lower(): i for i, cat in enumerate(categories)}
 
+
 @callback(
     Output('sync-line-chart', 'highlightedItem'),
     Output('sync-pie-chart', 'highlightedItem'),
@@ -547,7 +528,7 @@ def sync_dual_line_with_custom_tooltips(highlight_a, highlight_b):
         """Generate profit display for a given data index."""
         if data_index is None or data_index < 0 or data_index >= len(months):
             return html.P("Hover over either chart to see monthly profit calculation",
-                         style={'color': 'var(--mantine-color-dimmed)', 'margin': 0})
+                          style={'color': 'var(--mantine-color-dimmed)', 'margin': 0})
 
         month = months[data_index]
         revenue = revenue_data[data_index]

@@ -1,24 +1,10 @@
-"""
-LineChart Reference Lines - Horizontal and vertical reference markers
-"""
+"""LineChart Reference Lines demo — rendered on /linechart-referencelines via `.. exec::`.
 
+Ported verbatim from the pre-migration pages/linechart_referencelines.py (same ids, same callbacks).
+"""
 import os
-import dash
 import dash_mantine_components as dmc
-from dash import html, dcc, callback, Input, Output, State
-
-from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
-
-dash.register_page(
-    __name__,
-    path='/linechart-referencelines',
-    name='LineChart Reference Lines',
-    title=PAGE_TITLE_PREFIX + 'LineChart Reference Lines',
-    description='Horizontal and vertical reference lines on LineChart: '
-                'targets, thresholds, label alignment, dash styles, '
-                'multi-axis axisId, and dynamic updates via callbacks.',
-    image_url=OG_IMAGE_URL,
-)
+from dash import html, dcc, callback, Input, Output
 
 from dash_mui_charts import LineChart
 
@@ -52,15 +38,7 @@ code_style = {
     'overflow': 'auto',
 }
 
-layout = html.Div([
-    html.H1("LineChart Reference Lines"),
-    html.P(
-        "Reference lines are horizontal or vertical markers that help highlight specific values, "
-        "thresholds, targets, or important dates on a chart. They provide visual context for "
-        "interpreting data.",
-        style={'fontSize': '16px', 'color': '#666', 'marginBottom': '30px'}
-    ),
-
+component = html.Div([
     # ==========================================================================
     # Basic Horizontal Reference Lines
     # ==========================================================================

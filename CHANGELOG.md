@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Boilerplate migration — M3 (the LineChart batch)
+
+- **Twelve more pages markdown-driven (38 of 40)** — the seven LineChart
+  pages (basics, Pro, brush, reference lines, highlighting, ticks & hover,
+  zoom preview), `/highlighting-sync`, `/crosshair`, and the three
+  CompositeChart pages. The batch's 7,550 lines ported as whole-page
+  transforms — one `demo.py` exec module per page, every id and all ~50
+  callbacks verbatim (the sync-tooltip overlays, the crosshair alert
+  system and the render-BP LoadingOverlay dashboard included) — with md
+  wrappers carrying frontmatter, overview prose, and the two existing
+  LLMS_DOC bodies folded in. Per-section md granularity for this family is
+  deliberately deferred to a content pass; the format, metadata, TOC/ad
+  asides and real llms.txt documents are all in place now.
+- **Every Pro route now explains the key requirement in-page**
+  (BANNER_ROUTES == PRO_ROUTES): the twelve md files carry the Pro
+  admonition naming MUI_PRO_API_KEY, so silent degradation to a
+  watermarked chart with no explanation is no longer an allowed posture —
+  the test asserts it stays that way.
+- Transform bugs the gates caught before runtime: the module cut point
+  matched `from dash_mui_charts import` inside LLMS_DOC code fences
+  (syntax error), prose lines starting with "from " were harvested as
+  imports, the banner-block strip went one line too deep on the two
+  banner pages, and two pages lost the `import dash` their callbacks use
+  (F821). All fixed; flake8 and chart parity green.
+
 ### Boilerplate migration — M2 (BarChart + Candlestick + LiveTrading)
 
 - **Eight more pages markdown-driven** (26 of 40): the six BarChart pages

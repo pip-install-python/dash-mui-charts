@@ -1,25 +1,11 @@
-"""
-LineChart Pro - Advanced Pro license features
-"""
+"""LineChart Pro demo — rendered on /linechart-pro via `.. exec::`.
 
+Ported verbatim from the pre-migration pages/linechart_pro.py (same ids, same callbacks).
+"""
 import os
 import json
-import dash
 import dash_mantine_components as dmc
-from dash import html, callback, Input, Output, State
-
-from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
-
-dash.register_page(
-    __name__,
-    path='/linechart-pro',
-    name='LineChart Pro',
-    title=PAGE_TITLE_PREFIX + 'LineChart Pro',
-    description='MUI X Pro features on LineChart: zoom and pan with a slider, '
-                'zoom configuration options, biaxial zoom, and controlled zoom '
-                'state via Dash callbacks.',
-    image_url=OG_IMAGE_URL,
-)
+from dash import html, callback, Input, Output
 
 from dash_mui_charts import LineChart
 
@@ -64,16 +50,7 @@ pro_badge = html.Span(
     }
 )
 
-layout = html.Div([
-    html.Div([
-        html.H1("LineChart Pro", style={'display': 'inline'}),
-        pro_badge,
-    ]),
-    html.P(
-        "This page demonstrates the advanced Pro features of LineChart including "
-        "zoom, pan, zoom slider, and zoom state callbacks.",
-        style={'fontSize': '16px', 'color': '#666', 'marginBottom': '20px'}
-    ),
+component = html.Div([
     html.Div([
         html.P(
             "These features require an MUI X Pro license key. "

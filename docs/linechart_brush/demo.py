@@ -1,25 +1,10 @@
-"""
-LineChart Brush - Range selection with visual overlays
-"""
+"""LineChart Brush demo — rendered on /linechart-brush via `.. exec::`.
 
+Ported verbatim from the pre-migration pages/linechart_brush.py (same ids, same callbacks).
+"""
 import os
-import json
-import dash
 import dash_mantine_components as dmc
 from dash import html, callback, Input, Output
-
-from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
-
-dash.register_page(
-    __name__,
-    path='/linechart-brush',
-    name='LineChart Brush',
-    title=PAGE_TITLE_PREFIX + 'LineChart Brush Selection',
-    description='Pro brush range selection on LineChart: drag to select a '
-                'region, overlay types (none, default, values with % change), '
-                'brushConfig and axis highlight options.',
-    image_url=OG_IMAGE_URL,
-)
 
 from dash_mui_charts import LineChart
 
@@ -58,17 +43,7 @@ pro_badge = html.Span(
     }
 )
 
-layout = html.Div([
-    html.Div([
-        html.H1("LineChart Brush", style={'display': 'inline'}),
-        pro_badge,
-    ]),
-    html.P(
-        "The brush interaction enables users to select chart regions by clicking and dragging. "
-        "It captures start and current positions of the selection for highlighting trends, "
-        "selecting data points, or triggering callbacks based on the selection area.",
-        style={'fontSize': '16px', 'color': '#666', 'marginBottom': '20px'}
-    ),
+component = html.Div([
     html.Div([
         html.P(
             "These features require an MUI X Pro license key. "
@@ -146,11 +121,11 @@ layout = html.Div([
         html.Div([
             html.Label("Overlay Type: ", style={'fontWeight': 'bold', 'marginRight': '10px'}),
             html.Button("None", id='overlay-none-btn', n_clicks=0,
-                       style={'marginRight': '5px', 'padding': '8px 16px'}),
+                        style={'marginRight': '5px', 'padding': '8px 16px'}),
             html.Button("Default", id='overlay-default-btn', n_clicks=0,
-                       style={'marginRight': '5px', 'padding': '8px 16px'}),
+                        style={'marginRight': '5px', 'padding': '8px 16px'}),
             html.Button("Values", id='overlay-values-btn', n_clicks=0,
-                       style={'padding': '8px 16px', 'backgroundColor': '#1976d2', 'color': 'white', 'border': 'none'}),
+                        style={'padding': '8px 16px', 'backgroundColor': '#1976d2', 'color': 'white', 'border': 'none'}),
         ], style={'marginBottom': '20px'}),
 
         LineChart(

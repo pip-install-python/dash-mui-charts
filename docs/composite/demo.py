@@ -1,114 +1,13 @@
-"""
-CompositeChart Demo - 0.0.8
-Showcases layering scatter and line charts together using the composition API.
-"""
+"""Composite Chart demo — rendered on /composite via `.. exec::`.
 
+Ported verbatim from the pre-migration pages/composite.py (same ids, same callbacks).
+"""
 import os
 import json
 import math
 import random
-
-import dash
 import dash_mantine_components as dmc
 from dash import html, callback, Input, Output
-
-from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
-
-dash.register_page(
-    __name__,
-    path='/composite',
-    name='Composite Chart (0.0.8)',
-    title=PAGE_TITLE_PREFIX + 'CompositeChart',
-    description='CompositeChart demos layering scatter and line series on one '
-                'surface: trend overlays, reference lines, multi-axis charts '
-                'and Pro zoom with slider preview.',
-    image_url=OG_IMAGE_URL,
-)
-
-LLMS_DOC = """# CompositeChart
-
-`CompositeChart` layers multiple chart types — `type: 'scatter'` and
-`type: 'line'` series — on a single surface using the MUI X Charts composition
-API (`ChartDataProviderPro` + `ChartsSurface` + individual plot components).
-Basic layering is **Community (free)**; zoom/pan, slider preview, and the
-toolbar are **Pro** features that require a `licenseKey`.
-
-It ships a custom axis tooltip that shows both line and scatter data at the
-hovered x-position (scatter matches by proximity, auto-computed from axis data
-spacing), and epoch-ms values are converted to Date objects automatically on
-`scaleType: 'time'` axes.
-
-## Basic scatter + line overlay
-
-```python
-from dash_mui_charts import CompositeChart
-
-CompositeChart(
-    series=[
-        {'type': 'scatter', 'id': 'readings', 'label': 'Sensor Readings',
-         'data': [{'x': 0, 'y': 18.5, 'id': 0}], 'markerSize': 4},
-        {'type': 'line', 'id': 'trend', 'label': 'Trend Line',
-         'data': [20.0, 22.1],  # positional values
-         'curve': 'natural', 'showMark': False},
-    ],
-    xAxis=[{'data': x_values, 'scaleType': 'linear'}],
-)
-```
-
-## Zoom with slider preview (Pro)
-
-```python
-CompositeChart(
-    licenseKey=MUI_PRO_LICENSE,
-    series=[
-        {'type': 'line', 'id': 'baseline', 'data': values, 'area': True},
-        {'type': 'scatter', 'id': 'anomalies', 'data': scatter_points,
-         'markerSize': 6,
-         'preview': {'markerSize': 2},  # marker size in the slider preview
-         'highlightScope': {'highlight': 'item'}},
-    ],
-    xAxis=[{
-        'data': timestamps,
-        'scaleType': 'time',  # epoch ms auto-converted to Date objects
-        'zoom': {'slider': {'enabled': True, 'preview': True}},
-    }],
-    initialZoom=[{'axisId': 'time-axis', 'start': 0, 'end': 30}],
-)
-```
-
-## Multi-axis
-
-```python
-CompositeChart(
-    series=[
-        {'type': 'scatter', 'yAxisId': 'left-axis'},
-        {'type': 'line', 'yAxisId': 'right-axis'},
-    ],
-    yAxis=[
-        {'id': 'left-axis', 'position': 'left'},
-        {'id': 'right-axis', 'position': 'right'},
-    ],
-)
-```
-
-## Reference lines
-
-```python
-CompositeChart(
-    referenceLines=[
-        {'y': 28, 'label': 'Upper Limit', 'lineStyle': {'stroke': 'red'}},
-        {'y': 16, 'label': 'Lower Limit', 'lineStyle': {'stroke': 'red'}},
-    ],
-)
-```
-
-## Related pages
-
-- `/composite` — this demo (overlays, reference lines, multi-axis, Pro zoom)
-- `/composite-v120` — v1.2.0 axis tooltip fix, highlightedAxis, cross-chart sync
-- `/composite-render-bp` — rendering best practices for large time ranges
-- `/scatter` — standalone ScatterChart
-"""
 
 from dash_mui_charts import CompositeChart
 
@@ -212,18 +111,7 @@ new_badge = html.Span(
     }
 )
 
-layout = html.Div([
-    html.Div([
-        html.H1("Composite Chart", style={'display': 'inline'}),
-        new_badge,
-    ]),
-    html.P(
-        "New in 0.0.8: CompositeChart layers scatter and line plots on a single surface. "
-        "Each series specifies its type ('scatter' or 'line'). Supports zoom, reference lines, "
-        "and multi-axis configurations.",
-        style={'fontSize': '16px', 'color': 'var(--mantine-color-dimmed)', 'marginBottom': '30px'}
-    ),
-
+component = html.Div([
     # ==========================================================================
     # 1. Scatter + Trend Line
     # ==========================================================================
