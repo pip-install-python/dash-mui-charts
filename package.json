@@ -14,7 +14,7 @@
   "scripts": {
     "start": "webpack serve --config webpack.serve.config.js --open",
     "build:js": "webpack --mode production",
-    "build:backends": "dash-generate-components ./src/lib/components dash_mui_charts -p dash_mui_charts --ignore \\.test\\.",
+    "build:backends": "dash-generate-components ./src/lib/components dash_mui_charts -p package-info.json --ignore \\.test\\.",
     "build": "npm run build:js && npm run build:backends",
     "validate-init": "python _validate_init.py"
   },

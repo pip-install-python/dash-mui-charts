@@ -1,0 +1,1247 @@
+{
+ "callback_count": 113,
+ "plumbing": {
+  "/_dash-dependencies": 200,
+  "/_dash-layout": 200,
+  "/healthz": [
+   200,
+   true
+  ]
+ },
+ "route_statuses": {
+  "/": 200,
+  "/barchart-basic": 200,
+  "/barchart-dataset": 200,
+  "/barchart-interaction": 200,
+  "/barchart-pro": 200,
+  "/barchart-reference": 200,
+  "/barchart-stacking": 200,
+  "/candlestick": 200,
+  "/changelog": 200,
+  "/composite": 200,
+  "/composite-render-bp": 200,
+  "/composite-v120": 200,
+  "/crosshair": 200,
+  "/heatmap": 200,
+  "/heatmap-props": 200,
+  "/highlighting-sync": 200,
+  "/linechart-basic": 200,
+  "/linechart-brush": 200,
+  "/linechart-highlighting": 200,
+  "/linechart-pro": 200,
+  "/linechart-referencelines": 200,
+  "/linechart-tick-hover": 200,
+  "/linechart-zoom-preview": 200,
+  "/live-trading": 200,
+  "/pie": 200,
+  "/pie-props": 200,
+  "/scatter": 200,
+  "/sparkline": 200,
+  "/sparkline-style": 200,
+  "/sparkline-style-advanced": 200,
+  "/time-clock": 200,
+  "/time-clock-lab": 200,
+  "/tree-basic": 200,
+  "/tree-disabled": 200,
+  "/tree-editing": 200,
+  "/tree-expansion": 200,
+  "/tree-icons": 200,
+  "/tree-pro": 200,
+  "/tree-selection": 200,
+  "/tree-simple": 200
+ },
+ "routes": {
+  "/": {
+   "components": {
+    "dash_core_components.Link": 9,
+    "dash_html_components.Div": 1,
+    "dash_mantine_components.Badge": 43,
+    "dash_mantine_components.CodeHighlight": 4,
+    "dash_mantine_components.Group": 19,
+    "dash_mantine_components.Paper": 12,
+    "dash_mantine_components.SimpleGrid": 2,
+    "dash_mantine_components.Stack": 1,
+    "dash_mantine_components.Text": 21,
+    "dash_mantine_components.Title": 8
+   },
+   "ids": [],
+   "mui_mounts": 0
+  },
+  "/barchart-basic": {
+   "components": {
+    "dash_html_components.Div": 7,
+    "dash_html_components.H2": 1,
+    "dash_html_components.H4": 6,
+    "dash_html_components.P": 7,
+    "dash_mui_charts.BarChart": 6
+   },
+   "ids": [
+    "bar-basic-horizontal",
+    "bar-basic-labels",
+    "bar-basic-multi",
+    "bar-basic-negative",
+    "bar-basic-rounded",
+    "bar-basic-stacked"
+   ],
+   "mui_mounts": 6
+  },
+  "/barchart-dataset": {
+   "components": {
+    "dash_html_components.Div": 4,
+    "dash_html_components.H2": 1,
+    "dash_html_components.H4": 3,
+    "dash_html_components.P": 4,
+    "dash_mui_charts.BarChart": 3
+   },
+   "ids": [
+    "bar-ds-gaps",
+    "bar-ds-stacked",
+    "bar-ds-temps"
+   ],
+   "mui_mounts": 3
+  },
+  "/barchart-interaction": {
+   "components": {
+    "dash_html_components.Div": 13,
+    "dash_html_components.H2": 1,
+    "dash_html_components.H4": 5,
+    "dash_html_components.P": 14,
+    "dash_html_components.Pre": 3,
+    "dash_mui_charts.BarChart": 8
+   },
+   "ids": [
+    "bar-int-ax-band",
+    "bar-int-ax-line",
+    "bar-int-ax-none",
+    "bar-int-axis-click",
+    "bar-int-axis-click-out",
+    "bar-int-click",
+    "bar-int-click-out",
+    "bar-int-highlight",
+    "bar-int-highlight-out",
+    "bar-int-tt-axis",
+    "bar-int-tt-item"
+   ],
+   "mui_mounts": 8
+  },
+  "/barchart-pro": {
+   "components": {
+    "dash_html_components.Div": 5,
+    "dash_html_components.H2": 1,
+    "dash_html_components.H4": 3,
+    "dash_html_components.P": 5,
+    "dash_mui_charts.BarChart": 3
+   },
+   "ids": [
+    "bar-pro-slider",
+    "bar-pro-stacked-zoom",
+    "bar-pro-toolbar"
+   ],
+   "mui_mounts": 3
+  },
+  "/barchart-reference": {
+   "components": {
+    "dash_html_components.Div": 7,
+    "dash_html_components.H2": 1,
+    "dash_html_components.H4": 6,
+    "dash_html_components.P": 7,
+    "dash_mui_charts.BarChart": 6
+   },
+   "ids": [
+    "bar-ref-colors",
+    "bar-ref-multi",
+    "bar-ref-noanim",
+    "bar-ref-nolegend",
+    "bar-ref-target",
+    "bar-ref-vertical"
+   ],
+   "mui_mounts": 6
+  },
+  "/barchart-stacking": {
+   "components": {
+    "dash_html_components.Div": 6,
+    "dash_html_components.H2": 1,
+    "dash_html_components.H4": 5,
+    "dash_html_components.P": 6,
+    "dash_mui_charts.BarChart": 5
+   },
+   "ids": [
+    "bar-stack-diverging",
+    "bar-stack-expand",
+    "bar-stack-groups",
+    "bar-stack-horizontal",
+    "bar-stack-normal"
+   ],
+   "mui_mounts": 5
+  },
+  "/candlestick": {
+   "components": {
+    "dash_html_components.Div": 8,
+    "dash_html_components.H2": 1,
+    "dash_html_components.H4": 7,
+    "dash_html_components.P": 9,
+    "dash_html_components.Pre": 1,
+    "dash_mui_charts.CandlestickChart": 7
+   },
+   "ids": [
+    "candle-basic",
+    "candle-click",
+    "candle-click-out",
+    "candle-dataset",
+    "candle-no-tooltip",
+    "candle-refs",
+    "candle-styled",
+    "candle-volume"
+   ],
+   "mui_mounts": 7
+  },
+  "/changelog": {
+   "components": {
+    "dash_core_components.Markdown": 1,
+    "dash_html_components.Div": 1,
+    "dash_mantine_components.Paper": 1,
+    "dash_mantine_components.Text": 1,
+    "dash_mantine_components.Title": 1
+   },
+   "ids": [],
+   "mui_mounts": 0
+  },
+  "/composite": {
+   "components": {
+    "dash_html_components.Details": 4,
+    "dash_html_components.Div": 9,
+    "dash_html_components.H1": 1,
+    "dash_html_components.H2": 4,
+    "dash_html_components.H4": 1,
+    "dash_html_components.Hr": 3,
+    "dash_html_components.Label": 2,
+    "dash_html_components.P": 5,
+    "dash_html_components.Pre": 1,
+    "dash_html_components.Span": 2,
+    "dash_html_components.Summary": 4,
+    "dash_mantine_components.CodeHighlight": 4,
+    "dash_mantine_components.Slider": 2,
+    "dash_mui_charts.CompositeChart": 4
+   },
+   "ids": [
+    "anomaly-marker-slider",
+    "composite-multiaxis",
+    "composite-reference",
+    "composite-trend",
+    "composite-zoom",
+    "composite-zoom-output",
+    "preview-marker-slider"
+   ],
+   "mui_mounts": 4
+  },
+  "/composite-render-bp": {
+   "components": {
+    "dash_core_components.Store": 1,
+    "dash_html_components.Div": 5,
+    "dash_html_components.H1": 1,
+    "dash_html_components.Hr": 1,
+    "dash_html_components.Img": 1,
+    "dash_html_components.Li": 4,
+    "dash_html_components.P": 1,
+    "dash_html_components.Span": 1,
+    "dash_html_components.Ul": 1,
+    "dash_mantine_components.Box": 1,
+    "dash_mantine_components.LoadingOverlay": 1,
+    "dash_mantine_components.Stack": 1,
+    "dash_mantine_components.Text": 1
+   },
+   "ids": [
+    "bp-deferred-content",
+    "bp-loading-overlay",
+    "bp-page-loaded"
+   ],
+   "mui_mounts": 0
+  },
+  "/composite-v120": {
+   "components": {
+    "dash_html_components.Details": 3,
+    "dash_html_components.Div": 14,
+    "dash_html_components.H1": 1,
+    "dash_html_components.H2": 4,
+    "dash_html_components.H4": 5,
+    "dash_html_components.Hr": 3,
+    "dash_html_components.P": 5,
+    "dash_html_components.Pre": 2,
+    "dash_html_components.Span": 1,
+    "dash_html_components.Summary": 3,
+    "dash_mantine_components.CodeHighlight": 3,
+    "dash_mantine_components.Switch": 2,
+    "dash_mui_charts.CompositeChart": 7
+   },
+   "ids": [
+    "v120-axis-output",
+    "v120-axis-tooltip",
+    "v120-compact-switch",
+    "v120-highlighted-axis",
+    "v120-stack-container",
+    "v120-stack-humidity",
+    "v120-stack-pressure",
+    "v120-stack-temp",
+    "v120-sync-humidity",
+    "v120-sync-output",
+    "v120-sync-switch",
+    "v120-sync-temp"
+   ],
+   "mui_mounts": 7
+  },
+  "/crosshair": {
+   "components": {
+    "dash_core_components.Store": 2,
+    "dash_html_components.Details": 1,
+    "dash_html_components.Div": 24,
+    "dash_html_components.H1": 1,
+    "dash_html_components.H2": 3,
+    "dash_html_components.Hr": 2,
+    "dash_html_components.P": 4,
+    "dash_html_components.Span": 8,
+    "dash_html_components.Summary": 1,
+    "dash_iconify.DashIconify": 2,
+    "dash_mantine_components.Button": 2,
+    "dash_mantine_components.CodeHighlight": 1,
+    "dash_mui_charts.CompositeChart": 5
+   },
+   "ids": [
+    "cross-basic",
+    "cross-coord-display",
+    "sec2-alert-status",
+    "sec2-chart",
+    "sec2-clear",
+    "sec2-count",
+    "sec2-store",
+    "sec2-tags",
+    "sec3-clear",
+    "sec3-coord",
+    "sec3-count",
+    "sec3-humidity",
+    "sec3-pressure",
+    "sec3-store",
+    "sec3-tags-humidity",
+    "sec3-tags-pressure",
+    "sec3-tags-temp",
+    "sec3-temp"
+   ],
+   "mui_mounts": 5
+  },
+  "/heatmap": {
+   "components": {
+    "dash_html_components.Details": 7,
+    "dash_html_components.Div": 12,
+    "dash_html_components.H1": 1,
+    "dash_html_components.H2": 8,
+    "dash_html_components.H4": 1,
+    "dash_html_components.Hr": 7,
+    "dash_html_components.P": 9,
+    "dash_html_components.Pre": 4,
+    "dash_html_components.Span": 6,
+    "dash_html_components.Summary": 7,
+    "dash_html_components.Table": 1,
+    "dash_html_components.Tbody": 1,
+    "dash_html_components.Td": 9,
+    "dash_html_components.Th": 3,
+    "dash_html_components.Thead": 1,
+    "dash_html_components.Tr": 4,
+    "dash_mantine_components.CodeHighlight": 7,
+    "dash_mui_charts.Heatmap": 7
+   },
+   "ids": [
+    "basic-heatmap",
+    "correlation-heatmap",
+    "custom-cell-heatmap",
+    "heatmap-click-output",
+    "interactive-heatmap",
+    "piecewise-heatmap",
+    "rounded-heatmap",
+    "temperature-heatmap"
+   ],
+   "mui_mounts": 7
+  },
+  "/heatmap-props": {
+   "components": {
+    "dash_core_components.Clipboard": 1,
+    "dash_html_components.Div": 6,
+    "dash_html_components.H1": 1,
+    "dash_html_components.P": 1,
+    "dash_html_components.Pre": 1,
+    "dash_mantine_components.Button": 1,
+    "dash_mantine_components.ColorInput": 3,
+    "dash_mantine_components.Group": 2,
+    "dash_mantine_components.NumberInput": 6,
+    "dash_mantine_components.Paper": 9,
+    "dash_mantine_components.SegmentedControl": 2,
+    "dash_mantine_components.SimpleGrid": 3,
+    "dash_mantine_components.Slider": 5,
+    "dash_mantine_components.Stack": 5,
+    "dash_mantine_components.Switch": 3,
+    "dash_mantine_components.Text": 16
+   },
+   "ids": [
+    "ctrl-border-radius",
+    "ctrl-cell-style",
+    "ctrl-font-size",
+    "ctrl-gap",
+    "ctrl-height",
+    "ctrl-hide-legend",
+    "ctrl-highlight",
+    "ctrl-margin-bottom",
+    "ctrl-margin-left",
+    "ctrl-margin-right",
+    "ctrl-margin-top",
+    "ctrl-max-color",
+    "ctrl-max-value",
+    "ctrl-min-color",
+    "ctrl-min-value",
+    "ctrl-scale-type",
+    "ctrl-show-values",
+    "ctrl-text-color",
+    "ctrl-width",
+    "generated-heatmap-code",
+    "heatmap-click-info",
+    "heatmap-hover-info",
+    "heatmap-preview",
+    "heatmap-preview-container",
+    "reset-heatmap-btn"
+   ],
+   "mui_mounts": 0
+  },
+  "/highlighting-sync": {
+   "components": {
+    "dash_html_components.Details": 2,
+    "dash_html_components.Div": 21,
+    "dash_html_components.H1": 1,
+    "dash_html_components.H2": 3,
+    "dash_html_components.H4": 10,
+    "dash_html_components.Hr": 2,
+    "dash_html_components.P": 7,
+    "dash_html_components.Pre": 2,
+    "dash_html_components.Summary": 2,
+    "dash_mantine_components.CodeHighlight": 2,
+    "dash_mui_charts.LineChart": 3,
+    "dash_mui_charts.PieChart": 1
+   },
+   "ids": [
+    "chart-wrapper-a",
+    "chart-wrapper-b",
+    "custom-tooltip-a",
+    "custom-tooltip-b",
+    "profit-display",
+    "sync-axis-output",
+    "sync-highlight-output",
+    "sync-line-a",
+    "sync-line-b",
+    "sync-line-chart",
+    "sync-pie-chart"
+   ],
+   "mui_mounts": 4
+  },
+  "/linechart-basic": {
+   "components": {
+    "dash_html_components.Details": 6,
+    "dash_html_components.Div": 7,
+    "dash_html_components.H1": 1,
+    "dash_html_components.H2": 6,
+    "dash_html_components.H4": 1,
+    "dash_html_components.Hr": 5,
+    "dash_html_components.P": 7,
+    "dash_html_components.Pre": 1,
+    "dash_html_components.Summary": 6,
+    "dash_mantine_components.CodeHighlight": 6,
+    "dash_mui_charts.LineChart": 6
+   },
+   "ids": [
+    "area-linechart",
+    "basic-linechart",
+    "biaxial-linechart",
+    "click-output",
+    "custom-linechart",
+    "interactive-linechart",
+    "stacked-area-linechart"
+   ],
+   "mui_mounts": 6
+  },
+  "/linechart-brush": {
+   "components": {
+    "dash_html_components.Button": 3,
+    "dash_html_components.Details": 3,
+    "dash_html_components.Div": 10,
+    "dash_html_components.H1": 1,
+    "dash_html_components.H2": 4,
+    "dash_html_components.H4": 3,
+    "dash_html_components.Hr": 3,
+    "dash_html_components.Label": 1,
+    "dash_html_components.P": 5,
+    "dash_html_components.Span": 1,
+    "dash_html_components.Summary": 3,
+    "dash_html_components.Table": 3,
+    "dash_html_components.Tbody": 3,
+    "dash_html_components.Td": 24,
+    "dash_html_components.Th": 9,
+    "dash_html_components.Thead": 3,
+    "dash_html_components.Tr": 11,
+    "dash_mantine_components.CodeHighlight": 3,
+    "dash_mui_charts.LineChart": 3
+   },
+   "ids": [
+    "axis-highlight-chart",
+    "brush-toggle-chart",
+    "brush-values-chart",
+    "overlay-default-btn",
+    "overlay-none-btn",
+    "overlay-values-btn"
+   ],
+   "mui_mounts": 3
+  },
+  "/linechart-highlighting": {
+   "components": {
+    "dash_html_components.Button": 6,
+    "dash_html_components.Div": 7,
+    "dash_html_components.H2": 1,
+    "dash_html_components.H4": 4,
+    "dash_html_components.P": 8,
+    "dash_html_components.Pre": 2,
+    "dash_mantine_components.CodeHighlight": 3,
+    "dash_mantine_components.Paper": 5,
+    "dash_mantine_components.SimpleGrid": 2,
+    "dash_mantine_components.Text": 17,
+    "dash_mui_charts.LineChart": 3
+   },
+   "ids": [
+    "axis-highlight-chart",
+    "axis-highlight-output",
+    "clear-axis-btn",
+    "clear-highlight-btn",
+    "highlight-jan-btn",
+    "highlight-jun-btn",
+    "highlight-mar-axis-btn",
+    "highlight-scope-chart",
+    "highlight-sep-axis-btn",
+    "item-highlight-chart",
+    "item-highlight-output"
+   ],
+   "mui_mounts": 3
+  },
+  "/linechart-pro": {
+   "components": {
+    "dash_html_components.Button": 2,
+    "dash_html_components.Details": 2,
+    "dash_html_components.Div": 8,
+    "dash_html_components.H1": 1,
+    "dash_html_components.H2": 4,
+    "dash_html_components.H4": 3,
+    "dash_html_components.Hr": 3,
+    "dash_html_components.Li": 3,
+    "dash_html_components.P": 6,
+    "dash_html_components.Pre": 2,
+    "dash_html_components.Span": 1,
+    "dash_html_components.Strong": 3,
+    "dash_html_components.Summary": 2,
+    "dash_html_components.Table": 1,
+    "dash_html_components.Tbody": 1,
+    "dash_html_components.Td": 18,
+    "dash_html_components.Th": 3,
+    "dash_html_components.Thead": 1,
+    "dash_html_components.Tr": 7,
+    "dash_html_components.Ul": 1,
+    "dash_mantine_components.CodeHighlight": 2,
+    "dash_mui_charts.LineChart": 4
+   },
+   "ids": [
+    "biaxial-zoom-chart",
+    "controlled-zoom-chart",
+    "controlled-zoom-output",
+    "reset-zoom-btn",
+    "zoom-config-chart",
+    "zoom-decade-btn",
+    "zoom-slider-chart",
+    "zoom-slider-output"
+   ],
+   "mui_mounts": 4
+  },
+  "/linechart-referencelines": {
+   "components": {
+    "dash_core_components.Input": 1,
+    "dash_html_components.Button": 2,
+    "dash_html_components.Details": 7,
+    "dash_html_components.Div": 12,
+    "dash_html_components.H1": 1,
+    "dash_html_components.H2": 9,
+    "dash_html_components.H4": 1,
+    "dash_html_components.Hr": 8,
+    "dash_html_components.Label": 1,
+    "dash_html_components.P": 10,
+    "dash_html_components.Summary": 7,
+    "dash_html_components.Table": 2,
+    "dash_html_components.Tbody": 2,
+    "dash_html_components.Td": 41,
+    "dash_html_components.Th": 7,
+    "dash_html_components.Thead": 2,
+    "dash_html_components.Tr": 13,
+    "dash_mantine_components.CodeHighlight": 7,
+    "dash_mui_charts.LineChart": 8
+   },
+   "ids": [
+    "combined-ref-chart",
+    "dynamic-ref-chart",
+    "hide-avg-btn",
+    "horizontal-ref-chart",
+    "label-align-chart",
+    "line-style-chart",
+    "multiaxis-ref-chart",
+    "show-avg-btn",
+    "spacing-chart",
+    "threshold-input",
+    "vertical-ref-chart"
+   ],
+   "mui_mounts": 8
+  },
+  "/linechart-tick-hover": {
+   "components": {
+    "dash_html_components.Details": 8,
+    "dash_html_components.Div": 15,
+    "dash_html_components.H1": 1,
+    "dash_html_components.H2": 7,
+    "dash_html_components.H3": 3,
+    "dash_html_components.H4": 2,
+    "dash_html_components.Hr": 6,
+    "dash_html_components.P": 10,
+    "dash_html_components.Pre": 1,
+    "dash_html_components.Summary": 8,
+    "dash_html_components.Table": 2,
+    "dash_html_components.Tbody": 2,
+    "dash_html_components.Td": 55,
+    "dash_html_components.Th": 5,
+    "dash_html_components.Thead": 2,
+    "dash_html_components.Tr": 23,
+    "dash_mantine_components.CodeHighlight": 8,
+    "dash_mui_charts.LineChart": 8
+   },
+   "ids": [
+    "tick-hover-click-output",
+    "tick-hover-config",
+    "tick-hover-interactive",
+    "tick-hover-quarter",
+    "tick-hover-week",
+    "tick-hover-year-linear",
+    "tick-hover-year-point",
+    "tick-hover-zoom-pro",
+    "tick-hover-zoom-slider"
+   ],
+   "mui_mounts": 8
+  },
+  "/linechart-zoom-preview": {
+   "components": {
+    "dash_html_components.Details": 2,
+    "dash_html_components.Div": 8,
+    "dash_html_components.H1": 1,
+    "dash_html_components.H2": 4,
+    "dash_html_components.H4": 3,
+    "dash_html_components.Hr": 3,
+    "dash_html_components.P": 6,
+    "dash_html_components.Pre": 1,
+    "dash_html_components.Span": 2,
+    "dash_html_components.Summary": 2,
+    "dash_html_components.Table": 2,
+    "dash_html_components.Tbody": 2,
+    "dash_html_components.Td": 72,
+    "dash_html_components.Th": 6,
+    "dash_html_components.Thead": 2,
+    "dash_html_components.Tr": 26,
+    "dash_mantine_components.CodeHighlight": 2,
+    "dash_mui_charts.LineChart": 4
+   },
+   "ids": [
+    "axis-config-chart",
+    "zoom-interaction-chart",
+    "zoom-preview-biaxial",
+    "zoom-preview-chart",
+    "zoom-preview-output"
+   ],
+   "mui_mounts": 4
+  },
+  "/live-trading": {
+   "components": {
+    "dash_html_components.Details": 1,
+    "dash_html_components.Div": 22,
+    "dash_html_components.H1": 1,
+    "dash_html_components.H4": 1,
+    "dash_html_components.Label": 4,
+    "dash_html_components.P": 1,
+    "dash_html_components.Pre": 1,
+    "dash_html_components.Summary": 1,
+    "dash_mantine_components.Button": 3,
+    "dash_mantine_components.CodeHighlight": 1,
+    "dash_mantine_components.Slider": 4,
+    "dash_mantine_components.Switch": 3,
+    "dash_mui_charts.LiveTradingChart": 1
+   },
+   "ids": [
+    "lt-alert-count",
+    "lt-alert-log",
+    "lt-chart",
+    "lt-drift",
+    "lt-labels-toggle",
+    "lt-price-display",
+    "lt-reset-btn",
+    "lt-slider-toggle",
+    "lt-speed",
+    "lt-start-btn",
+    "lt-status",
+    "lt-stop-btn",
+    "lt-tick-display",
+    "lt-volatility",
+    "lt-volume-toggle",
+    "lt-window"
+   ],
+   "mui_mounts": 1
+  },
+  "/pie": {
+   "components": {
+    "dash_html_components.Div": 17,
+    "dash_html_components.H1": 1,
+    "dash_html_components.H2": 6,
+    "dash_html_components.H4": 2,
+    "dash_html_components.P": 7,
+    "dash_html_components.Pre": 8,
+    "dash_mui_charts.PieChart": 6
+   },
+   "ids": [
+    "basic-pie",
+    "donut-pie",
+    "gauge-pie",
+    "interactive-pie",
+    "labeled-pie",
+    "pie-click-data",
+    "pie-highlight-data",
+    "styled-pie"
+   ],
+   "mui_mounts": 6
+  },
+  "/pie-props": {
+   "components": {
+    "dash_core_components.Clipboard": 1,
+    "dash_html_components.Div": 6,
+    "dash_html_components.H1": 1,
+    "dash_html_components.P": 1,
+    "dash_html_components.Pre": 1,
+    "dash_mantine_components.Button": 1,
+    "dash_mantine_components.Group": 3,
+    "dash_mantine_components.NumberInput": 4,
+    "dash_mantine_components.Paper": 10,
+    "dash_mantine_components.SegmentedControl": 1,
+    "dash_mantine_components.Select": 1,
+    "dash_mantine_components.SimpleGrid": 3,
+    "dash_mantine_components.Slider": 12,
+    "dash_mantine_components.Stack": 6,
+    "dash_mantine_components.Switch": 5,
+    "dash_mantine_components.Text": 23
+   },
+   "ids": [
+    "pie-click-info",
+    "pie-ctrl-arc-label",
+    "pie-ctrl-arc-label-min-angle",
+    "pie-ctrl-fade-others",
+    "pie-ctrl-height",
+    "pie-ctrl-hide-legend",
+    "pie-ctrl-highlight",
+    "pie-ctrl-inner-corner-radius",
+    "pie-ctrl-inner-inner-radius",
+    "pie-ctrl-inner-outer-radius",
+    "pie-ctrl-inner-padding-angle",
+    "pie-ctrl-margin-bottom",
+    "pie-ctrl-margin-left",
+    "pie-ctrl-margin-right",
+    "pie-ctrl-margin-top",
+    "pie-ctrl-outer-corner-radius",
+    "pie-ctrl-outer-inner-radius",
+    "pie-ctrl-outer-outer-radius",
+    "pie-ctrl-outer-padding-angle",
+    "pie-ctrl-ring-gap",
+    "pie-ctrl-show-tooltip",
+    "pie-ctrl-skip-animation",
+    "pie-ctrl-width",
+    "pie-generated-code",
+    "pie-hover-info",
+    "pie-preview",
+    "pie-preview-container",
+    "pie-reset-btn",
+    "pie-view-toggle"
+   ],
+   "mui_mounts": 0
+  },
+  "/scatter": {
+   "components": {
+    "dash_html_components.Details": 6,
+    "dash_html_components.Div": 9,
+    "dash_html_components.H1": 1,
+    "dash_html_components.H2": 7,
+    "dash_html_components.H4": 1,
+    "dash_html_components.Hr": 6,
+    "dash_html_components.P": 8,
+    "dash_html_components.Pre": 1,
+    "dash_html_components.Span": 1,
+    "dash_html_components.Summary": 6,
+    "dash_mantine_components.CodeHighlight": 6,
+    "dash_mui_charts.ScatterChart": 7
+   },
+   "ids": [
+    "scatter-axis-styling",
+    "scatter-basic",
+    "scatter-click",
+    "scatter-click-output",
+    "scatter-colormap",
+    "scatter-dataset",
+    "scatter-log",
+    "scatter-sizes"
+   ],
+   "mui_mounts": 7
+  },
+  "/sparkline": {
+   "components": {
+    "dash_core_components.Dropdown": 1,
+    "dash_core_components.Store": 1,
+    "dash_html_components.Details": 8,
+    "dash_html_components.Div": 50,
+    "dash_html_components.H1": 1,
+    "dash_html_components.H2": 9,
+    "dash_html_components.Hr": 8,
+    "dash_html_components.Label": 1,
+    "dash_html_components.P": 10,
+    "dash_html_components.Pre": 1,
+    "dash_html_components.Span": 22,
+    "dash_html_components.Strong": 1,
+    "dash_html_components.Summary": 8,
+    "dash_html_components.Table": 1,
+    "dash_html_components.Tbody": 1,
+    "dash_html_components.Td": 16,
+    "dash_html_components.Th": 4,
+    "dash_html_components.Thead": 1,
+    "dash_html_components.Tr": 5,
+    "dash_mantine_components.CodeHighlight": 8,
+    "dash_mui_charts.SparklineChart": 20
+   },
+   "ids": [
+    "dynamic-metric-label",
+    "dynamic-metric-value",
+    "dynamic-sparkline-container",
+    "interactive-stock-sparkline",
+    "metric-selector",
+    "npm-download-count",
+    "npm-sparkline",
+    "npm-week-label",
+    "shared-hover-index",
+    "stock-hover-output",
+    "stock-price-display",
+    "sync-revenue-label",
+    "sync-revenue-spark",
+    "sync-revenue-value",
+    "sync-sessions-label",
+    "sync-sessions-spark",
+    "sync-sessions-value",
+    "sync-users-label",
+    "sync-users-spark",
+    "sync-users-value"
+   ],
+   "mui_mounts": 20
+  },
+  "/sparkline-style": {
+   "components": {
+    "dash_core_components.Clipboard": 1,
+    "dash_html_components.Div": 4,
+    "dash_html_components.H1": 1,
+    "dash_html_components.P": 1,
+    "dash_mantine_components.Button": 1,
+    "dash_mantine_components.Code": 1,
+    "dash_mantine_components.ColorInput": 2,
+    "dash_mantine_components.Group": 2,
+    "dash_mantine_components.NumberInput": 8,
+    "dash_mantine_components.Paper": 8,
+    "dash_mantine_components.SegmentedControl": 1,
+    "dash_mantine_components.Select": 3,
+    "dash_mantine_components.SimpleGrid": 3,
+    "dash_mantine_components.Slider": 4,
+    "dash_mantine_components.Stack": 6,
+    "dash_mantine_components.Switch": 4,
+    "dash_mantine_components.Text": 14
+   },
+   "ids": [
+    "axis-highlight-x",
+    "baseline",
+    "chart-height",
+    "chart-width",
+    "clip-bottom",
+    "clip-left",
+    "clip-right",
+    "clip-top",
+    "color-background",
+    "color-line",
+    "curve-type",
+    "disable-clipping",
+    "generated-code",
+    "highlight-dot-size",
+    "hover-info",
+    "margin-bottom",
+    "margin-left",
+    "margin-right",
+    "margin-top",
+    "plot-type",
+    "preview-container",
+    "reset-button",
+    "show-area",
+    "show-highlight",
+    "show-tooltip",
+    "sparkline-preview",
+    "stroke-width"
+   ],
+   "mui_mounts": 0
+  },
+  "/sparkline-style-advanced": {
+   "components": {
+    "dash_html_components.Div": 14,
+    "dash_html_components.H1": 1,
+    "dash_html_components.P": 2,
+    "dash_html_components.Span": 2,
+    "dash_mui_charts.SparklineChart": 1
+   },
+   "ids": [
+    "change-display",
+    "glass-sparkline",
+    "hover-index-display",
+    "hover-instruction",
+    "hover-value-display",
+    "sparkline-container"
+   ],
+   "mui_mounts": 1
+  },
+  "/time-clock": {
+   "components": {
+    "dash_mantine_components.Badge": 1,
+    "dash_mantine_components.Button": 3,
+    "dash_mantine_components.Code": 2,
+    "dash_mantine_components.Container": 1,
+    "dash_mantine_components.Group": 6,
+    "dash_mantine_components.Paper": 11,
+    "dash_mantine_components.Stack": 16,
+    "dash_mantine_components.Text": 16,
+    "dash_mantine_components.Title": 6,
+    "dash_mui_charts.TimeClock": 11
+   },
+   "ids": [
+    "tc-ampm-default",
+    "tc-ampm-off",
+    "tc-ampm-on",
+    "tc-basic",
+    "tc-controlled",
+    "tc-controlled-out",
+    "tc-disabled",
+    "tc-readonly",
+    "tc-set-0900",
+    "tc-set-1430",
+    "tc-set-1845",
+    "tc-uncontrolled",
+    "tc-views-h",
+    "tc-views-hms",
+    "tc-views-ms",
+    "tc-views-out"
+   ],
+   "mui_mounts": 11
+  },
+  "/time-clock-lab": {
+   "components": {
+    "dash_core_components.Interval": 1,
+    "dash_core_components.Store": 1,
+    "dash_html_components.Div": 1,
+    "dash_iconify.DashIconify": 34,
+    "dash_mantine_components.Accordion": 6,
+    "dash_mantine_components.AccordionControl": 6,
+    "dash_mantine_components.AccordionItem": 6,
+    "dash_mantine_components.AccordionPanel": 6,
+    "dash_mantine_components.Badge": 2,
+    "dash_mantine_components.Button": 8,
+    "dash_mantine_components.Card": 7,
+    "dash_mantine_components.Code": 4,
+    "dash_mantine_components.CodeHighlightTabs": 7,
+    "dash_mantine_components.ColorInput": 2,
+    "dash_mantine_components.ColorPicker": 1,
+    "dash_mantine_components.Container": 1,
+    "dash_mantine_components.DateTimePicker": 1,
+    "dash_mantine_components.Divider": 7,
+    "dash_mantine_components.Group": 19,
+    "dash_mantine_components.Paper": 6,
+    "dash_mantine_components.Stack": 8,
+    "dash_mantine_components.Text": 12,
+    "dash_mantine_components.ThemeIcon": 7,
+    "dash_mantine_components.TimeGrid": 1,
+    "dash_mantine_components.TimeInput": 1,
+    "dash_mantine_components.TimePicker": 1,
+    "dash_mantine_components.Title": 10,
+    "dash_mui_charts.TimeClock": 7
+   },
+   "ids": [
+    "lab-color-clock",
+    "lab-color-face",
+    "lab-color-hand",
+    "lab-color-num",
+    "lab-color-reset",
+    "lab-dtp",
+    "lab-dtp-clock",
+    "lab-dtp-out",
+    "lab-glass-clock",
+    "lab-glass-readout",
+    "lab-sw-clock",
+    "lab-sw-interval",
+    "lab-sw-readout",
+    "lab-sw-restart",
+    "lab-sw-start",
+    "lab-sw-stop",
+    "lab-sw-store",
+    "lab-sw-unit",
+    "lab-tg",
+    "lab-tg-clock",
+    "lab-tg-out",
+    "lab-ti-0900",
+    "lab-ti-1730",
+    "lab-ti-clock",
+    "lab-ti-input",
+    "lab-ti-now",
+    "lab-ti-out",
+    "lab-ti-reset",
+    "lab-tp-clock",
+    "lab-tp-input",
+    "lab-tp-out"
+   ],
+   "mui_mounts": 7
+  },
+  "/tree-basic": {
+   "components": {
+    "dash_html_components.Div": 6,
+    "dash_html_components.H2": 1,
+    "dash_html_components.H3": 5,
+    "dash_html_components.P": 8,
+    "dash_html_components.Pre": 2,
+    "dash_mui_charts.TreeView": 5
+   },
+   "ids": [
+    "tree-basic-click-out",
+    "tree-basic-clicks",
+    "tree-basic-custom-keys",
+    "tree-basic-expanded",
+    "tree-basic-focus",
+    "tree-basic-focus-out",
+    "tree-basic-minimal"
+   ],
+   "mui_mounts": 5
+  },
+  "/tree-disabled": {
+   "components": {
+    "dash_html_components.Div": 5,
+    "dash_html_components.H2": 1,
+    "dash_html_components.H3": 4,
+    "dash_html_components.P": 5,
+    "dash_html_components.Pre": 1,
+    "dash_mui_charts.TreeView": 4
+   },
+   "ids": [
+    "tree-dis-basic",
+    "tree-dis-checkbox",
+    "tree-dis-checkbox-out",
+    "tree-dis-focusable",
+    "tree-dis-parents"
+   ],
+   "mui_mounts": 4
+  },
+  "/tree-editing": {
+   "components": {
+    "dash_html_components.Div": 4,
+    "dash_html_components.H2": 1,
+    "dash_html_components.H3": 3,
+    "dash_html_components.P": 7,
+    "dash_html_components.Pre": 3,
+    "dash_mui_charts.TreeView": 3
+   },
+   "ids": [
+    "tree-edit-all",
+    "tree-edit-all-out",
+    "tree-edit-log",
+    "tree-edit-log-out",
+    "tree-edit-specific",
+    "tree-edit-specific-out"
+   ],
+   "mui_mounts": 3
+  },
+  "/tree-expansion": {
+   "components": {
+    "dash_html_components.Button": 3,
+    "dash_html_components.Div": 6,
+    "dash_html_components.H2": 1,
+    "dash_html_components.H3": 4,
+    "dash_html_components.P": 7,
+    "dash_html_components.Pre": 2,
+    "dash_mui_charts.TreeView": 4
+   },
+   "ids": [
+    "tree-exp-btn-all",
+    "tree-exp-btn-none",
+    "tree-exp-btn-root",
+    "tree-exp-content",
+    "tree-exp-controlled",
+    "tree-exp-controlled-out",
+    "tree-exp-icon",
+    "tree-exp-track",
+    "tree-exp-track-out"
+   ],
+   "mui_mounts": 4
+  },
+  "/tree-icons": {
+   "components": {
+    "dash_html_components.Div": 12,
+    "dash_html_components.H2": 1,
+    "dash_html_components.H3": 7,
+    "dash_html_components.P": 11,
+    "dash_mui_charts.TreeView": 9
+   },
+   "ids": [
+    "tree-icon-addremove",
+    "tree-icon-arrow",
+    "tree-icon-default",
+    "tree-icon-file",
+    "tree-icon-height",
+    "tree-icon-indent-24",
+    "tree-icon-indent-48",
+    "tree-icon-indent-8",
+    "tree-icon-sx"
+   ],
+   "mui_mounts": 9
+  },
+  "/tree-pro": {
+   "components": {
+    "dash_core_components.Store": 3,
+    "dash_html_components.Pre": 4,
+    "dash_iconify.DashIconify": 2,
+    "dash_mantine_components.Badge": 1,
+    "dash_mantine_components.Divider": 1,
+    "dash_mantine_components.Grid": 1,
+    "dash_mantine_components.GridCol": 2,
+    "dash_mantine_components.Group": 3,
+    "dash_mantine_components.Paper": 4,
+    "dash_mantine_components.Stack": 10,
+    "dash_mantine_components.Text": 16,
+    "dash_mantine_components.ThemeIcon": 2,
+    "dash_mantine_components.Title": 4,
+    "dash_mui_charts.TreeViewPro": 3
+   },
+   "ids": [
+    "tps-label-overrides",
+    "tps-last-kebab",
+    "tps-last-slider",
+    "tree-pro-combo",
+    "tree-pro-combo-action-log",
+    "tree-pro-combo-edit",
+    "tree-pro-combo-menu-label",
+    "tree-pro-combo-sel",
+    "tree-pro-combo-slider-label",
+    "tree-pro-combo-sliders",
+    "tree-pro-reorder",
+    "tree-pro-reorder-out",
+    "tree-pro-reorder-subset"
+   ],
+   "mui_mounts": 3
+  },
+  "/tree-selection": {
+   "components": {
+    "dash_html_components.Button": 3,
+    "dash_html_components.Div": 8,
+    "dash_html_components.H2": 1,
+    "dash_html_components.H3": 6,
+    "dash_html_components.P": 7,
+    "dash_html_components.Pre": 5,
+    "dash_mui_charts.TreeView": 6
+   },
+   "ids": [
+    "tree-sel-btn-clear",
+    "tree-sel-btn-grid",
+    "tree-sel-btn-pickers",
+    "tree-sel-checkbox",
+    "tree-sel-checkbox-out",
+    "tree-sel-controlled",
+    "tree-sel-controlled-out",
+    "tree-sel-disabled",
+    "tree-sel-multi",
+    "tree-sel-multi-out",
+    "tree-sel-propagation",
+    "tree-sel-propagation-out",
+    "tree-sel-single",
+    "tree-sel-single-out"
+   ],
+   "mui_mounts": 6
+  },
+  "/tree-simple": {
+   "components": {
+    "dash_html_components.Div": 7,
+    "dash_html_components.H2": 1,
+    "dash_html_components.H3": 6,
+    "dash_html_components.P": 7,
+    "dash_html_components.Pre": 2,
+    "dash_mui_charts.SimpleTreeView": 6
+   },
+   "ids": [
+    "tree-simple-basic",
+    "tree-simple-checkbox",
+    "tree-simple-checkbox-out",
+    "tree-simple-disabled",
+    "tree-simple-icon-trigger",
+    "tree-simple-icons",
+    "tree-simple-select",
+    "tree-simple-select-out"
+   ],
+   "mui_mounts": 6
+  }
+ },
+ "shell": {
+  "components": {
+   "dash_core_components.Location": 2,
+   "dash_core_components.Store": 4,
+   "dash_html_components.A": 3,
+   "dash_html_components.Div": 7,
+   "dash_html_components.Img": 1,
+   "dash_iconify.DashIconify": 5,
+   "dash_mantine_components.ActionIcon": 2,
+   "dash_mantine_components.AppShell": 1,
+   "dash_mantine_components.AppShellHeader": 1,
+   "dash_mantine_components.AppShellMain": 1,
+   "dash_mantine_components.AppShellNavbar": 1,
+   "dash_mantine_components.Avatar": 1,
+   "dash_mantine_components.Badge": 1,
+   "dash_mantine_components.Box": 1,
+   "dash_mantine_components.Burger": 1,
+   "dash_mantine_components.ColorSchemeToggle": 1,
+   "dash_mantine_components.Group": 3,
+   "dash_mantine_components.MantineProvider": 1,
+   "dash_mantine_components.Paper": 1,
+   "dash_mantine_components.Text": 3,
+   "dash_mui_charts.SimpleTreeView": 1
+  },
+  "ids": [
+   "_pages_content",
+   "_pages_dummy",
+   "_pages_location",
+   "_pages_store",
+   "analytics-sink",
+   "appshell",
+   "burger",
+   "header-avatar",
+   "license-key-store",
+   "nav-tree",
+   "url",
+   "{\"page\": \"__floating__\", \"type\": \"net-ad-container\"}",
+   "{\"page\": \"__floating__\", \"type\": \"net-ad-data\"}",
+   "{\"page\": \"__floating__\", \"type\": \"net-ad-img\"}",
+   "{\"page\": \"__floating__\", \"type\": \"net-ad-link\"}"
+  ],
+  "mui_mounts": 1
+ },
+ "total_mui_mounts": 194
+}

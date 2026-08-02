@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Network-standard pass — Phase 0 (stabilize)
+
+- **Satellite analytics committed** — `lib/analytics.py` (SPA-aware hit
+  recorder), `lib/traffic_report.py` (hourly signed rollup + `/healthz`),
+  `verify_traffic.py` (headless pipeline verification against the hub's own
+  ingest verifier). All checks green.
+- **Route-parity gate** — `scripts/route_parity.py` fingerprints all 40
+  routes (component tree, ids, chart-mount counts, callback census, HTTP
+  sweep) against a committed baseline; every migration phase must keep it
+  green.
+- **Requirements drift fixed** — `requirements-deploy.txt` deleted (it had
+  lost `requests`, so the Docker image could not import `app.py`);
+  `requirements.txt` is now the single dependency file for Render and the
+  Dockerfile alike. Dockerfile gains `PYTHONUNBUFFERED=1`.
+- **Stray build artifact removed** — `dash_mui_charts/dash_mui_charts` was a
+  full copy of `package.json`, created by `build:backends` passing the
+  package name to `-p/--package-info-filename`; the flag now correctly says
+  `package-info.json` and the artifact is deleted.
+
 ---
 
 ## [1.4.0] - 2026-07-19
