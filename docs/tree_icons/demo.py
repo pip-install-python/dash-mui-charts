@@ -151,7 +151,9 @@ component = html.Div([
                 "border": "1px solid #1976d2",
                 "borderRadius": "8px",
                 "padding": "12px",
-                "backgroundColor": "#f8f9ff",
+                # Theme-aware: a hardcoded light "#f8f9ff" made the box
+                # unreadable in dark mode (white card, light text).
+                "backgroundColor": "var(--mantine-color-default)",
                 "& .MuiTreeItem-label": {
                     "fontSize": "14px",
                 },

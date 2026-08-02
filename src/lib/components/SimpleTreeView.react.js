@@ -4,11 +4,39 @@
  * Converts a nested items array into TreeItem JSX children.
  * Lighter alternative to TreeView for static/simple trees.
  */
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import PropTypes from 'prop-types';
 import {SimpleTreeView as MuiSimpleTreeView} from '@mui/x-tree-view/SimpleTreeView';
+import {ThemeProvider, createTheme} from '@mui/material/styles';
 import {TreeItem} from '@mui/x-tree-view/TreeItem';
 import {resolveIcon} from '../fragments/iconResolver';
+
+// --- Color scheme: watch <html data-mantine-color-scheme="..."> ---------------
+const readMantineScheme = () => {
+    if (typeof document === 'undefined') return 'light';
+    const v = document.documentElement.getAttribute('data-mantine-color-scheme');
+    return v === 'dark' ? 'dark' : 'light';
+};
+
+const useMantineColorScheme = () => {
+    const [scheme, setScheme] = useState(readMantineScheme);
+    useEffect(() => {
+        if (typeof document === 'undefined') return undefined;
+        const html = document.documentElement;
+        const sync = () => setScheme(readMantineScheme());
+        const obs = new MutationObserver(sync);
+        obs.observe(html, {
+            attributes: true,
+            attributeFilter: ['data-mantine-color-scheme'],
+        });
+        sync();
+        return () => obs.disconnect();
+    }, []);
+    return scheme;
+};
+
+const lightTheme = createTheme({palette: {mode: 'light'}});
+const darkTheme = createTheme({palette: {mode: 'dark'}});
 
 /** Recursively render items as TreeItem children, with optional per-item icons */
 const renderItems = (items) => {
@@ -101,8 +129,11 @@ const SimpleTreeView = ({
         return s;
     }, [height]);
 
+    const scheme = useMantineColorScheme();
+
     return (
         <div id={id} style={containerStyle}>
+            <ThemeProvider theme={scheme === 'dark' ? darkTheme : lightTheme}>
             <MuiSimpleTreeView
                 selectedItems={selectedItems}
                 defaultSelectedItems={defaultSelectedItems}
@@ -124,6 +155,7 @@ const SimpleTreeView = ({
             >
                 {renderItems(items)}
             </MuiSimpleTreeView>
+            </ThemeProvider>
         </div>
     );
 };

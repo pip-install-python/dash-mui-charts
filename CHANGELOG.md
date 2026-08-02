@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed — tree rendering under the boilerplate shell (owner review)
+
+- **TreeView and SimpleTreeView now follow the theme toggle** — both
+  components gained the `data-mantine-color-scheme` watcher +
+  MUI ThemeProvider that TreeViewPro and TimeClock already had, so
+  checkboxes, icons and edit fields switch with light/dark mode instead
+  of rendering in the light palette everywhere (component fix in
+  src/lib/components, bundle + wrappers rebuilt; wrappers regenerated on
+  the current dash-generate-components, gaining its dash≤4.1 compat shim).
+- **Trees no longer overflow their fixed-height boxes** — the
+  boilerplate's global markdown list styling (`ul/ol` and `li` margins in
+  assets/main.css) leaked into MUI's nested ul/li tree DOM, inflating
+  every tree's height (a `height=200` tree bled into the next section on
+  /tree-icons). Neutralized inside tree roots via assets/dark-mode.css;
+  upstream, the boilerplate rule should arguably be prose-scoped.
+- The /tree-icons SX demo's hardcoded light `#f8f9ff` background became
+  `var(--mantine-color-default)` — it was unreadable in dark mode.
+
 ### Boilerplate migration — M4 (TreeView + Date & Time Pickers)
 
 - **Ten more pages markdown-driven** — the eight TreeView pages (basic,
