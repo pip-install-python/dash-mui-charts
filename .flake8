@@ -1,0 +1,34 @@
+[flake8]
+# Line length is not policed: this repo's comments carry a lot of explanation
+# and reflowing them to 79 columns would make them harder to read, not easier.
+max-line-length = 120
+extend-ignore = E203, W503, E501
+exclude =
+    .git,
+    .venv,
+    venv,
+    __pycache__,
+    node_modules,
+    build,
+    dist,
+    # Generated wrappers — dash-generate-components owns their style.
+    dash_mui_charts,
+    dash_mui_charts.egg-info,
+    src,
+    analytics,
+    .idea,
+per-file-ignores =
+    # app.py imports first-party modules AFTER load_dotenv() on purpose —
+    # lib/constants.py reads APP_BASE_URL at import time, so loading the
+    # .env afterwards would silently hand it the default.
+    app.py: E402
+    # BUDGETED FIRST-RUN DEBT (2026-08-02, ~75 findings): the demo pages are
+    # the product's living examples and the route-parity gate
+    # (scripts/route_parity.py) pins their layout trees — a style sweep
+    # through 40 of them belongs in its own change, verified against that
+    # gate, not in the commit that introduces CI. E402 is also the standing
+    # pages idiom (dash.register_page before the imports the layout needs).
+    # Tighten by deleting codes here as pages get touched for real reasons.
+    pages/*.py: E402, F401, F541, E302, E303, E305, E114, E116, E128, W292
+    # usage.py is a standalone example kept deliberately minimal.
+    usage.py: E402, F401

@@ -1,5 +1,17 @@
 # PyPI Publishing Plan for dash-mui-charts
 
+> **2026-08-02 — the mechanics below are now automated.**
+> `.github/workflows/release.yml` publishes on any `v*` tag push via PyPI
+> **trusted publishing (OIDC)** — no API token, no `~/.pypirc`. It gates on
+> the tag matching `package.json`, `scripts/check_release.py` passing, and a
+> smoke test, then builds, publishes, and opens a GitHub Release from the
+> CHANGELOG section. One-time PyPI setup: add a pending publisher (owner
+> `pip-install-python`, repo `dash-mui-charts`, workflow `release.yml`,
+> environment `pypi`). The manual twine flow below remains as reference and
+> as the fallback if Actions is unavailable. Note PyPI currently serves
+> 1.2.3 while the repo is at 1.4.0 — cutting 1.3.0/1.4.0 is a release
+> decision made by pushing the tag.
+
 This document outlines the steps to build and publish `dash-mui-charts` to PyPI using twine.
 
 ---

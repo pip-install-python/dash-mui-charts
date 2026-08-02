@@ -129,6 +129,22 @@ python app.py
 
 # Run standalone example
 python usage.py
+
+# Test suite (zero secrets by design — Pro pages must degrade to banners)
+pytest tests -q
+
+# Route-parity gate (needs MUI_PRO_API_KEY; run after any change to app.py
+# or pages/, keep green through every migration phase)
+python scripts/route_parity.py
+
+# Compatibility smoke (what ci.yml's Dash matrix runs)
+python scripts/smoke_test.py
+
+# Pre-release consistency (versions, bundle freshness, packaging)
+python scripts/check_release.py
+
+# Lint (config + budgeted pages/ debt ledger in .flake8)
+flake8 lib pages tests scripts app.py usage.py verify_traffic.py _validate_init.py
 ```
 
 ---
@@ -143,6 +159,9 @@ python usage.py
 | `pages/*.py` | Demo page examples |
 | `app.py` | Main Dash application |
 | `setup.py` | Python package configuration |
+| `tests/` | Secretless suite: identity, social card, version parity, route smoke, analytics counting rule |
+| `scripts/route_parity.py` | Exact-tree migration gate (needs MUI_PRO_API_KEY) |
+| `.github/workflows/` | ci.yml (lint/tests/docker/Dash matrix/wheel), cd.yml (deploy + live battery), release.yml (tag → PyPI via OIDC) |
 
 ---
 

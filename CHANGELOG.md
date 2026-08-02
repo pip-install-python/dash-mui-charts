@@ -7,6 +7,63 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Network-standard pass — Phase 3 (tests + CI/CD)
+
+- **tests/ populated (80 tests, ZERO secrets by design)** — the suite runs
+  exactly as CI's secretless container does, proving the degraded postures:
+  the 17 MUI Pro pages fall back to license banners instead of dying, the
+  traffic reporter stays dormant, the bulletin stays off. Files: site
+  identity (one brand, every surface), social card (per-page image_url +
+  description, template division rules, the placeholder-in-comment trap),
+  **version parity** (the fix for the five-way version drift: package.json ↔
+  package-info.json ↔ header badge ↔ JSON-LD ↔ noscript, and no surface may
+  claim "9 components" again), route smoke + preservation invariants (the
+  `url` Location contract, the SimpleTreeView nav with every leaf routed,
+  the ad-slot fork, asset contracts), internal-traffic contract (both
+  halves), and the SPA/doc **counting rule** as executable arithmetic.
+- **CI (`ci.yml`)** — lint (flake8 with a budgeted, documented pages/ debt
+  ledger in `.flake8`, plus actionlint first), secretless pytest + a real
+  gunicorn boot probed by the network battery, a **Docker job** that builds
+  the production image, asserts version fingerprints INSIDE it (dash ≥4.1,
+  dimll ≥2.3.4, gunicorn ≥23) and boots it against the same battery CD runs
+  (LESSONS §19), a Dash **matrix** (4.1.0/4.2.0/4.3.0/4.4.1 × py3.12 +
+  4.4.1 × 3.10/3.13) that rebuilds the components with Node 20 (`npm ci` +
+  build + validate-init) before smoke-testing, wheel build + clean-venv
+  verification (13 components, `top_level == dash_mui_charts`, version ==
+  package.json, and a **measured dash==3.3.0 floor install**), a package ×
+  Python 3.9–3.13 range, JS parse checks on the committed bundle and every
+  asset script, and advisory pip-audit.
+- **CD (`cd.yml`)** — main → full CI → Render deploy hook → 120s settle +
+  5 consecutive healthz 200s (Render swaps instances; one 200 proves
+  nothing) → `network_smoke.py` + `smoke_live.py` against the live domain,
+  including the social card's real pixels. Peer checks warn; own-host
+  checks fail.
+- **Release (`release.yml`)** — tag-gated PyPI publish via OIDC trusted
+  publishing (no stored token), gated on tag == package.json version and
+  `scripts/check_release.py`; GitHub Release cut from the CHANGELOG
+  section. Publishing 1.3.0/1.4.0 remains a decision, not a side effect.
+- **Scripts** — `network_smoke.py` (boilerplate battery, per-site block:
+  this brand's H1, `/sparkline/llms.txt`, hidden-page canaries),
+  `smoke_live.py` (canonical copy with the LESSONS §21 wake loop),
+  `check_release.py` (versions, bundle freshness via git timestamps, a
+  Python class per React component, packaging/SEO/network invariants),
+  `smoke_test.py` (the matrix's structural gate — 40 routes, 200s,
+  healthz, ≥150 chart mounts, node parse of every JS artifact).
+- **Two Dash floors made explicit and measured** — the DOCS SITE needs
+  dash ≥4.1 (dash-improve-my-llms pins `dash<5,>=4.1`; production already
+  resolves 4.4.x), while the PACKAGE needs only ≥3.3: `setup.py` now claims
+  `dash>=3.3.0` (raised from an unmeasured `>=3.0.0`) and
+  `python_requires>=3.9` (3.13 classifier added, untested 3.8 dropped) —
+  both now measured by CI rather than asserted. Verified locally: the full
+  route-parity gate is green under Dash 4.4.1, byte-identical to the 3.3.0
+  baseline.
+- **gunicorn floor raised to ≥23** in requirements.txt — closes
+  CVE-2024-6827 / CVE-2024-1135 (request smuggling); asserted inside the
+  Docker image by CI so it cannot silently regress.
+- Housekeeping: `import dash` (unused) dropped from app.py; flake8 config
+  added with per-file ignores documenting why app.py's late imports and the
+  pages idiom are deliberate.
+
 ### Network-standard pass — Phase 2 (card + traffic + app id + bulletin)
 
 - **Social card generated** — `scripts/make_social_card.py` (boilerplate

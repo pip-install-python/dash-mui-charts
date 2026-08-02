@@ -5,7 +5,6 @@ Professional AppShell layout with sidebar tree navigation and dark/light mode.
 
 import os
 
-import dash
 import dash_mantine_components as dmc
 from dash import (Dash, html, dcc, callback, Input, Output, State, no_update,
                   page_container, clientside_callback)
@@ -450,6 +449,7 @@ clientside_callback(
     Input("nav-tree", "expandedItems"),
 )
 
+
 # 3. Burger toggle for mobile navbar
 @callback(
     Output("appshell", "navbar"),
@@ -459,7 +459,6 @@ clientside_callback(
 def toggle_navbar(opened, navbar_config):
     navbar_config["collapsed"] = {"mobile": not opened}
     return navbar_config
-
 
 
 if __name__ == '__main__':

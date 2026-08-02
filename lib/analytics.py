@@ -63,8 +63,8 @@ _SKIP_FRAGMENTS = (
 _SKIP_SUFFIXES = ('.css', '.js', '.map', '.png', '.jpg', '.jpeg', '.gif', '.ico',
                   '.svg', '.webp', '.woff', '.woff2', '.ttf', '.eot', '.txt', '.xml')
 
-_write_lock = threading.Lock()   # orders writes within a process; across
-                                 # processes O_APPEND does the ordering
+# Orders writes within a process; across processes O_APPEND does the ordering.
+_write_lock = threading.Lock()
 
 
 def analytics_dir() -> Path:
