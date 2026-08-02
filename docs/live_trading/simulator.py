@@ -1,107 +1,12 @@
-"""
-LiveTradingChart Demo — Candlestick Trading Simulation
-Real-time OHLCV candlestick chart with volume bars, forecast, and alert labels.
-"""
+"""LiveTradingChart simulator — the whole control surface.
 
+Rendered on /live-trading via `.. exec::`; ported verbatim from the
+pre-migration pages/live_trading.py (same ids, same callbacks).
+"""
 import os
-import json
 
-import dash
 import dash_mantine_components as dmc
 from dash import html, callback, Input, Output, State, ctx
-
-from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
-
-dash.register_page(
-    __name__,
-    path='/live-trading',
-    name='Live Trading Chart',
-    title=PAGE_TITLE_PREFIX + 'Live Trading Chart',
-    description='LiveTradingChart real-time candlestick simulation with OHLCV '
-                'data, volume bars, forecast band, swing-point alert labels, '
-                'and slider-controlled parameters.',
-    image_url=OG_IMAGE_URL,
-)
-
-LLMS_DOC = """# LiveTradingChart
-
-`LiveTradingChart` is the real-time streaming chart component of
-dash-mui-charts, a Plotly Dash wrapper around MUI X Charts, built for live
-data visualization such as trading feeds and sensor streams. The demo renders
-a live OHLCV candlestick simulation with volume bars, a forecast line with
-uncertainty bands, and alert labels on significant moves; ticks are generated
-by the component itself from a seed, so no Dash interval is needed to stream.
-
-Basic streaming is Community tier. Pro features — zoom and the range slider
-(`showSlider`) — require an MUI X Pro license key passed as `licenseKey`.
-
-## Basic usage
-
-```python
-from dash_mui_charts import LiveTradingChart
-
-LiveTradingChart(
-    id='lt-chart',
-    height=520,
-    running=True,        # start/stop the simulation
-    intervalMs=200,      # tick speed (ms)
-    windowSize=80,       # visible candles
-    forecastSize=20,     # forecast horizon
-    initialPrice=100,
-    volatility=0.02,     # candle volatility
-    drift=0.001,         # price trend
-    showVolume=True,     # volume bars
-    showLabels=False,    # price labels on candles
-    showSlider=True,     # zoom preview slider (Pro)
-    volumeHeightPct=20,
-)
-```
-
-## Simulation control
-
-Simulation props are live-updatable from Dash callbacks: `running`,
-`intervalMs`, `volatility`, `drift`, `windowSize`, `seed`,
-`forecastVolatility`, and `resetTrigger` (change its value to restart).
-
-```python
-@callback(Output('lt-chart', 'running'),
-          Input('start-btn', 'n_clicks'), Input('stop-btn', 'n_clicks'),
-          prevent_initial_call=True)
-def toggle(start, stop):
-    return ctx.triggered_id == 'start-btn'
-```
-
-## Alerts
-
-Swing-point alert detection places labels at extreme highs and lows:
-
-- `alertLookback` — candles on each side needed to confirm a swing point
-- `alertMinDistance` — minimum ticks between alerts
-- `maxVisibleAlerts` — cap on visible labels in the window
-- `alertFormatter` / `alertFilter` — functions-as-props: pass
-  `{'function': 'name', 'options': {...}}`, resolved from the
-  `window.dashMuiChartsFunctions` registry defined in `assets/*.js`
-
-```python
-alertFormatter={'function': 'priceAlertFormatter', 'options': {'decimals': 2}}
-```
-
-## Outputs
-
-Output props updated as the simulation runs, for use as callback inputs:
-
-- `currentPrice` — latest price
-- `tickCount` — ticks elapsed
-- `alertHistory` — list of alerts with `tick`, `type` ('up' | 'down'),
-  `price`, and `message`
-
-## Related pages
-
-- /linechart-basic — LineChart fundamentals
-- /linechart-pro — zoom, pan and slider (Pro)
-- /crosshair — crosshair tracking dashboard (CompositeChart)
-- /highlighting-sync — synchronized highlights across multiple charts
-"""
 
 from dash_mui_charts import LiveTradingChart
 
@@ -125,15 +30,7 @@ code_style = {
     'maxHeight': '300px',
 }
 
-layout = html.Div([
-    html.H1("Live Trading Chart"),
-    html.P(
-        "Real-time candlestick trading simulation with OHLCV data, volume bars, "
-        "forecast line with uncertainty bands, and alert labels on significant moves. "
-        "All simulation parameters are controllable via the sliders below.",
-        style={'fontSize': '16px', 'color': 'var(--mantine-color-dimmed)', 'marginBottom': '20px'}
-    ),
-
+component = html.Div([
     # ── Controls Row 1: Buttons + Toggles ─────────────────────────────────
     html.Div([
         html.Div([
@@ -253,37 +150,6 @@ layout = html.Div([
     html.H4("Recent Alerts", style={'marginTop': '15px'}),
     html.Pre(id='lt-alert-log', children="Alerts will appear here...", style=code_style),
 
-    # ── Code Example ──────────────────────────────────────────────────────
-    html.Details([
-        html.Summary("View Code", style={'cursor': 'pointer', 'marginTop': '15px'}),
-        dmc.CodeHighlight(code="""LiveTradingChart(
-    id='lt-chart',
-    height=520,
-    running=True,            # Start/stop simulation
-    intervalMs=200,          # Tick speed
-    windowSize=80,           # Visible candles
-    forecastSize=20,         # Forecast horizon
-    initialPrice=100,
-    volatility=0.02,         # Candle volatility
-    drift=0.001,             # Price trend
-    showVolume=True,         # Volume bars
-    showLabels=False,        # Price labels on candles
-
-    # Swing-point alert detection
-    alertLookback=5,         # Candles on each side to confirm extreme
-    alertMinDistance=10,      # Min ticks between alerts
-    maxVisibleAlerts=6,       # Cap visible labels
-
-    # Functions-as-props: custom formatting via JS registry
-    alertFormatter={
-        'function': 'priceAlertFormatter',
-        'options': {'decimals': 2},
-    },
-
-    # Outputs for callbacks:
-    # currentPrice, tickCount, alertHistory
-)""", language="python"),
-    ]),
 ], style={'padding': '20px'})
 
 

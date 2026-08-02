@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Boilerplate migration — M2 (BarChart + Candlestick + LiveTrading)
+
+- **Eight more pages markdown-driven** (26 of 40): the six BarChart pages
+  (`/barchart-basic` 6 examples, `/barchart-dataset` 3, `/barchart-stacking`
+  5, `/barchart-interaction` 5 incl. the click/axis-click/highlight
+  callbacks, `/barchart-reference` 6, `/barchart-pro` 3 Pro zoom demos with
+  the license-posture line in the first), `/candlestick` (7 examples over a
+  shared OHLC generator; the never-rendered 60-candle dataset dropped as
+  dead code), and `/live-trading` (the whole simulator — 11 callbacks —
+  transformed as one exec module; the redundant View Code block replaced by
+  `.. source::`). Chart parity GREEN throughout.
+- **Directory naming rule learned**: families whose examples import shared
+  `_data.py` need UNDERSCORE directories (`docs/barchart_basic/`) — a
+  hyphenated package can be exec'd via importlib but cannot be
+  sibling-imported (`from docs.barchart-basic._data import x` is a syntax
+  error). Endpoints are unaffected (frontmatter owns them).
+- `/live-trading` joined BANNER_ROUTES: its markdown now documents the
+  MUI_PRO_API_KEY requirement permanently (Pro admonition +
+  functions-as-props note) rather than only when the key is missing.
+
 ### Boilerplate migration — M1 (Pie + Heatmap + Scatter)
 
 - **Five more pages markdown-driven** (18 of 40 routes' chart content now

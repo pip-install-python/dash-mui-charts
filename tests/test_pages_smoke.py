@@ -33,11 +33,13 @@ PRO_ROUTES = [
     "/linechart-zoom-preview", "/live-trading", "/tree-pro",
 ]
 
-# The subset that explains the missing key IN the page (a visible banner in
-# the keyless layout). The others degrade to unlicensed charts silently.
+# The subset that explains the key requirement IN the page — a keyless-only
+# banner, or (on markdown-driven pages) prose/admonitions that name
+# MUI_PRO_API_KEY permanently. The others degrade to unlicensed charts
+# silently. /live-trading joined when its md gained the Pro admonition.
 BANNER_ROUTES = {
     "/barchart-pro", "/heatmap", "/heatmap-props", "/linechart-brush",
-    "/linechart-pro", "/tree-pro",
+    "/linechart-pro", "/live-trading", "/tree-pro",
 }
 
 
