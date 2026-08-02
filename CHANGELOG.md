@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Network-standard pass — Phase 2 (card + traffic + app id + bulletin)
+
+- **Social card generated** — `scripts/make_social_card.py` (boilerplate
+  template, this site's MUI-blue palette and area-chart mark) renders
+  `build/social-cards/muicharts.2plot.dev.png`, 1200×630. HARD GATE
+  outstanding: hand-upload to cdn.2plot.ai/github_assets/ and verify
+  200 + IHDR before the og:image deploy.
+- **Internal-traffic contract, both halves** — `lib/analytics.record`
+  drops `2plot-internal` UAs at write time, before bot classification;
+  the hourly rollup POST and every ad-server fetch now send
+  `internal_ua(...)` so the hub stops counting this app as a
+  python-requests bot.
+- **One short app id: `muicharts`** — `traffic_report.APP_KEY`,
+  `ad_client.AD_APP_ID` default, bulletin app_id and /healthz all
+  converge on the directory key (legacy "dash-mui-charts" folds in at the
+  hub). NOTE: the 2plot.ai traffic sink still keys this app "charts" and
+  must gain a muicharts fold before deploy or its series forks.
+- **Bulletin wired opt-in** — `lib/bulletin.py`; boot log states wired/off.
+  `NETWORK_BULLETIN_URL` must be set on the Render SERVICE (blueprint
+  envVars only apply on Blueprint sync).
+
 ### Network-standard pass — Phase 1 (identity + llms surfaces)
 
 - **One brand, every surface** — `lib/constants.py` (SITE_BRAND

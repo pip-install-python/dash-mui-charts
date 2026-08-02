@@ -140,6 +140,14 @@ def record(path: str | None, user_agent: str | None, ip: str | None,
            source: str = "doc", country: str | None = None) -> None:
     """Append one hit. Never raises — analytics must not break a page view."""
     try:
+        # The network's internal-traffic contract, applied at WRITE time,
+        # before bot classification: a UA carrying the token is 2plot
+        # machinery talking to itself (hub health sweeps, CI batteries,
+        # smoke probes) and is counted NOWHERE — not as a bot, not ever.
+        from lib.constants import INTERNAL_UA_TOKEN
+
+        if INTERNAL_UA_TOKEN in (user_agent or "").lower():
+            return
         if not trackable_path(path):
             return
         row = {

@@ -53,6 +53,14 @@ for noisy in ("/healthz", "/assets/app.css", "/_dash-update-component",
 check("recorder skips probes, assets and Dash plumbing",
       analytics.load_day() == [], analytics.load_day())
 
+from lib.constants import INTERNAL_UA  # noqa: E402
+
+analytics.record("/scatter", INTERNAL_UA, "10.0.0.9", source="spa")
+analytics.record("/scatter", f"{INTERNAL_UA} smoke-battery", "10.0.0.9",
+                 source="doc")
+check("internal-UA traffic is dropped at write time (network contract)",
+      analytics.load_day() == [], analytics.load_day())
+
 check("bot UAs classified like the hub",
       all(analytics.is_bot(ua) for ua in
           ("Googlebot/2.1", "ClaudeBot/1.0", "python-requests/2.31", "curl/8"))
@@ -125,8 +133,8 @@ check("pages lists the real doc pages, not just /",
 check("bot page views stay out of pages",
       all(p["path"] != "/scatter" or p["hits"] == 1 for p in r["pages"]),
       r["pages"])
-check("payload carries app=charts and a YYYY-MM-DD date",
-      r["app"] == "charts" and len(r["date"]) == 10, r)
+check("payload carries app=muicharts and a YYYY-MM-DD date",
+      r["app"] == "muicharts" and len(r["date"]) == 10, r)
 
 empty = tr.build_rollup("1999-01-01", geo=False)
 check("a day with no traffic is a valid zero rollup",
@@ -146,7 +154,8 @@ client = demo_app.server.test_client()
 
 hz = client.get("/healthz")
 check("GET /healthz answers the hub's sweep without a Dash render",
-      hz.status_code == 200 and hz.get_json() == {"ok": True, "app": "charts"},
+      hz.status_code == 200
+      and hz.get_json() == {"ok": True, "app": "muicharts"},
       hz.data[:80])
 
 before = len(analytics.load_day())
@@ -220,7 +229,7 @@ if hub_ingest.exists():
     check("the hub's verifier accepts our signed rollup",
           status == 200 and reply.get("ok"), (status, reply))
     check("every v2 field survives the hub's validation and caps",
-          stored.get("app") == "charts"
+          stored.get("app") == "muicharts"
           and stored.get("human_hits") == r["human_hits"]
           and stored.get("visitors") == r["visitors"]
           and stored.get("sessions") == r["sessions"]

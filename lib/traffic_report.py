@@ -64,7 +64,11 @@ from lib import analytics
 
 logger = logging.getLogger(__name__)
 
-APP_KEY = "charts"                # our key in the hub's network directory
+# Our key on every hub surface — the subdomain slug, per STANDARD §5. The
+# pip-docs+ hub already keys this app "muicharts" (legacy "dash-mui-charts"
+# folds in at ingest); the 2plot.ai traffic sink must gain the same fold
+# before this ships, or its /traffic series forks from the old "charts" row.
+APP_KEY = "muicharts"
 SESSION_GAP_S = 30 * 60           # the hub's session-split rule — keep in sync
 REPORT_INTERVAL_S = 60 * 60
 _STARTUP_DELAY_S = 90             # let the app settle before the first POST
@@ -274,9 +278,14 @@ def report_traffic(rollup: dict, *, secret: str | None = None,
         raise RuntimeError("CROSS_APP_WEBHOOK_SECRET unset")
     body = json.dumps(rollup).encode()
     ts = str(int(time.time()))
+    from lib.constants import internal_ua
+
     req = urllib.request.Request(
         f"{hub or hub_url()}/api/satellite/traffic", data=body,
         headers={"Content-Type": "application/json",
+                 # Internal-traffic contract: the hub drops this from its
+                 # own analytics instead of counting us as a bot.
+                 "User-Agent": internal_ua("traffic-report"),
                  "X-AI-Canvas-Timestamp": ts,
                  "X-AI-Canvas-Signature": sign(body, ts, secret)})
     with urllib.request.urlopen(req, timeout=timeout) as r:

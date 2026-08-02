@@ -41,11 +41,20 @@ from dash_iconify import DashIconify
 logger = logging.getLogger(__name__)
 
 AD_SERVER_URL = os.environ.get("AD_SERVER_URL", "https://2plot.dev").rstrip("/")
-APP_ID = os.environ.get("AD_APP_ID", "dash-mui-charts")
+# The short directory key (STANDARD §5). The hub folds the legacy
+# "dash-mui-charts" spelling at ingest, so old deployments keep working.
+APP_ID = os.environ.get("AD_APP_ID", "muicharts")
 
 _TIMEOUT = 2          # seconds per fetch — never stall a page view longer
 _COOLDOWN = 60        # seconds to skip fetches after a failure
 _session = requests.Session()
+# Internal-traffic contract: without this the hub's own tracker counts every
+# page view here as a "python-requests" bot hit on 2plot.dev.
+try:
+    from lib.constants import internal_ua
+    _session.headers["User-Agent"] = internal_ua("ad-client")
+except Exception:  # pragma: no cover — ad serving must survive a bad import
+    pass
 _breaker_lock = threading.Lock()
 _last_failure = 0.0
 

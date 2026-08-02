@@ -155,6 +155,16 @@ register_page_metadata(
 
 add_llms_routes(app, LLMSConfig(warn_missing_llms_doc=True))
 
+# The hub's announcement feed, rendered in this site's llms.txt viewer
+# header. Opt-in: with NETWORK_BULLETIN_URL unset it wires nothing and the
+# viewer renders the package's built-in tips. The boot line says which of
+# the two states this process is in — an announcement that never appears
+# is not a symptom anyone notices.
+from lib import bulletin  # noqa: E402
+
+print(f"[muicharts] network bulletin: "
+      f"{'wired -> ' + (bulletin.url() or '') if bulletin.configure() else 'off (NETWORK_BULLETIN_URL unset)'}")
+
 # ---------------------------------------------------------------------------
 # Navigation tree items — groups use "group-*" ids, leaves use page paths
 # ---------------------------------------------------------------------------
