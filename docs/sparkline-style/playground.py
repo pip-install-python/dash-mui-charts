@@ -1,24 +1,12 @@
+"""SparklineChart styling playground — the whole control board.
+
+Rendered on /sparkline-style via `.. exec::`; ported verbatim from the
+pre-migration pages/sparkline_style.py (same ids, same callbacks).
 """
-SparklineChart Styling Playground
-Interactive control board for customizing sparkline appearance using dash-mantine-components.
-"""
-import dash
-from dash import html, callback, Input, Output, State, dcc, no_update
+from dash import html, callback, Input, Output, dcc
 import dash_mantine_components as dmc
+
 from dash_mui_charts import SparklineChart
-
-from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
-
-dash.register_page(
-    __name__,
-    path='/sparkline-style',
-    name='Sparkline Style',
-    title=PAGE_TITLE_PREFIX + 'Sparkline Styling Playground',
-    description='Interactive SparklineChart styling playground: tweak color, '
-                'plot type, curve, area, size and highlights with a live '
-                'preview and generated code.',
-    image_url=OG_IMAGE_URL,
-)
 
 # Sample data for preview
 PREVIEW_DATA = [
@@ -83,17 +71,9 @@ def create_control_card(title, children):
     )
 
 
-layout = html.Div(
+component = html.Div(
             style={'maxWidth': '1200px', 'margin': '0 auto', 'padding': '20px'},
             children=[
-                # Header
-                html.H1('SparklineChart Styling Playground', style={'marginBottom': '10px'}),
-                html.P(
-                    'Interactive control board for customizing sparkline appearance. '
-                    'Adjust the controls below to see real-time changes.',
-                    style={'color': 'var(--mantine-color-dimmed)', 'marginBottom': '30px'}
-                ),
-
                 # Live Preview Section
                 dmc.Paper(
                     shadow='md',

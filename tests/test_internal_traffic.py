@@ -133,13 +133,22 @@ def test_the_traffic_rollup_post_sends_the_token(monkeypatch):
     assert INTERNAL_UA_TOKEN in seen["ua"]
 
 
-def test_the_ad_client_session_carries_the_token():
+def test_the_ad_fetch_sends_the_token(monkeypatch):
     """One fetch per docs page view — the loudest outbound call this app
-    makes. The UA is set on the session at import, so asserting the header
-    covers every request the session will ever send."""
+    makes. The canonical ad_client sends the UA per request (headers= in
+    fetch_ad), so the capture happens at the session.get seam."""
     from lib import ad_client
 
-    assert INTERNAL_UA_TOKEN in ad_client._session.headers.get("User-Agent", "")
+    seen = {}
+
+    def fake_get(url, params=None, timeout=None, headers=None):
+        seen.update(headers or {})
+        raise _Captured
+
+    monkeypatch.setattr(ad_client._session, "get", fake_get)
+    monkeypatch.setattr(ad_client, "_last_failure", 0.0)
+    assert ad_client.fetch_ad("/sparkline") is None
+    assert INTERNAL_UA_TOKEN in seen.get("User-Agent", "")
 
 
 @pytest.mark.parametrize("script", ["network_smoke", "smoke_live"])

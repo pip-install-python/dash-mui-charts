@@ -1,6 +1,6 @@
 """Shared fixtures — boot the real app once, with ZERO secrets, and interrogate it.
 
-The suite deliberately exercises `app.py` itself rather than a stripped-down
+The suite deliberately exercises `run.py` itself rather than a stripped-down
 app assembled for testing: nearly everything worth catching lives in the
 wiring — registration order, which before_request runs first, whether a page's
 metadata survived to the response. A test app that re-implements that wiring
@@ -14,8 +14,8 @@ starts a thread), no NETWORK_BULLETIN_URL (the llms viewer falls back to
 built-in tips), and the analytics hit log in a temp dir so a test run never
 lands in the real ledger or the next hourly rollup.
 
-The env block below has to run BEFORE anything imports `app.py`, because
-app.py calls `load_dotenv()` during import and the developer's local `.env`
+The env block below has to run BEFORE anything imports `run.py`, because
+run.py calls `load_dotenv()` during import and the developer's local `.env`
 (which holds a real MUI_PRO_API_KEY) would otherwise flip the app into a
 configured posture. `load_dotenv()` never overrides an existing key, so
 pinning each secret to `""` here (falsy to every `os.environ.get(...)`
@@ -36,7 +36,7 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
-# --- 1. Neutralise every secret (must precede any import of app.py) ---------
+# --- 1. Neutralise every secret (must precede any import of run.py) ---------
 SECRET_ENV_KEYS = (
     "MUI_PRO_API_KEY",
     "CROSS_APP_WEBHOOK_SECRET",
@@ -74,14 +74,14 @@ STUB_MARKER = "This page contains interactive content that requires JavaScript"
 
 @pytest.fixture(scope="session")
 def app_module():
-    """Import app.py as a module, from the repo root.
+    """Import run.py as a module, from the repo root.
 
-    app.py opens templates/index.html relative to its own file, but
+    run.py opens templates/index.html relative to its own file, but
     pages/changelog.py reads CHANGELOG.md from disk, so the process CWD has
     to be the repo root regardless of where pytest was invoked from.
     """
     os.chdir(REPO_ROOT)
-    spec = importlib.util.spec_from_file_location("appmod", REPO_ROOT / "app.py")
+    spec = importlib.util.spec_from_file_location("appmod", REPO_ROOT / "run.py")
     module = importlib.util.module_from_spec(spec)
     sys.modules["appmod"] = module
     spec.loader.exec_module(module)

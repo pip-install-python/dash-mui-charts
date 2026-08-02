@@ -1,30 +1,12 @@
-"""
-Advanced Sparkline with Liquid Glass Theme
-Apple-inspired glassmorphism design with interactive hover effects.
+"""Liquid glass sparkline card — glassmorphism via assets/liquid_glass.css.
 
-Features:
-- Liquid glass (glassmorphism) card design
-- Left-to-right reveal animation on page load
-- Hover effect: left side 100% opacity, right side 40% opacity
-- X-axis highlight line follows cursor
-- Real-time value display
+Rendered on /sparkline-style-advanced via `.. exec::`; ported verbatim from
+the pre-migration pages/sparkline_style_advanced.py (same ids, same
+callback).
 """
-import dash
-from dash import html, callback, Input, Output, State
+from dash import html, callback, Input, Output
 
 from dash_mui_charts import SparklineChart
-from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
-
-dash.register_page(
-    __name__,
-    path='/sparkline-style-advanced',
-    name='Sparkline Advanced',
-    title=PAGE_TITLE_PREFIX + 'Sparkline Advanced Styling',
-    description='Advanced SparklineChart demo: a liquid glass (glassmorphism) '
-                'stock card with reveal animation, hover opacity effects and '
-                'real-time value display.',
-    image_url=OG_IMAGE_URL,
-)
 
 # Stock-like data with realistic movement
 STOCK_DATA = [
@@ -39,7 +21,7 @@ END_VALUE = STOCK_DATA[-1]
 CHANGE = END_VALUE - START_VALUE
 CHANGE_PERCENT = (CHANGE / START_VALUE) * 100
 
-layout = html.Div(
+component = html.Div(
     className='liquid-glass-background',
     children=[
         html.Div(

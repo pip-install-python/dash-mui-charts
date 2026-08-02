@@ -20,6 +20,10 @@ import os
 
 SITE_BRAND = "dash-mui-charts — MUI X charts for Dash"
 
+# What Dash(title=...) receives. Kept equal to the brand — resolve_site_title
+# treats it as the second candidate after the home page's registered name.
+APP_TITLE = SITE_BRAND
+
 # The brand without its tagline, for surfaces that prefix something else and
 # would otherwise run past platform truncation points.
 SITE_SHORT_NAME = "dash-mui-charts"
@@ -126,3 +130,15 @@ def require_owned_base_url(base_url: str = BASE_URL) -> None:
                 "link equity across two hosts. Set APP_BASE_URL to the "
                 "public domain (https://muicharts.2plot.dev)."
             )
+
+
+# ---------------------------------------------------------------------------
+# Boilerplate shell constants (components/appshell.py, header.py, navbar.py)
+# ---------------------------------------------------------------------------
+# Mantine primary — MUI's blue, matching the template's theme-color #1976d2.
+PRIMARY_COLOR = "blue"
+HEADER_HEIGHT = 70
+
+# Raw markdown per page name, filled by pages/markdown.py at import — the
+# llms_copy directive's copy-for-LLM button reads from it.
+NAME_CONTENT_MAP = {}

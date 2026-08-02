@@ -18,10 +18,10 @@ exclude =
     analytics,
     .idea,
 per-file-ignores =
-    # app.py imports first-party modules AFTER load_dotenv() on purpose —
+    # run.py imports first-party modules AFTER load_dotenv() on purpose —
     # lib/constants.py reads APP_BASE_URL at import time, so loading the
     # .env afterwards would silently hand it the default.
-    app.py: E402
+    run.py: E402
     # BUDGETED FIRST-RUN DEBT (2026-08-02, ~75 findings): the demo pages are
     # the product's living examples and the route-parity gate
     # (scripts/route_parity.py) pins their layout trees — a style sweep

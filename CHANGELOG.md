@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Boilerplate migration — M0 (shell + chart-parity gate + Sparkline pilot)
+
+- **The docs app now runs on the dash-documentation-boilerplate structure**
+  (model: dash_pannellum): `run.py` entry point (gunicorn `run:server`),
+  `components/` appshell/header/navbar, pluggable-backend plumbing (Flask
+  enforced until the analytics hooks grow async twins), dependency floors
+  at boot, optional Clerk (vendored 0.9.1, dormant without keys), proxy
+  scheme fix, optional Dash MCP, and `pages/markdown.py` serving
+  `docs/**/*.md` with frontmatter, TOC asides, `.. exec::` live examples
+  and per-page llms.txt built from the markdown body.
+- **Chart parity replaces exact-tree parity as the migration gate**
+  (`scripts/route_parity.py --charts-only`): route set, per-route
+  dash_mui_charts census, chart component ids, and the 78 chart-touching
+  callbacks — recorded from the pre-migration app and GREEN after M0: all
+  40 routes, 194 chart mounts identical.
+- **SparklineChart family ported to markdown** (`docs/sparkline*/`): 3 md
+  pages + 11 exec example modules, callbacks verbatim, same endpoints. The
+  three placeholder llms.txt stubs became real documents for free.
+- **The docs stack moves to Dash 4.4 / dmc 2.7** (requirements.txt;
+  markdown2dash installs `--no-deps` against its gunicorn<22 pin, mistune
+  listed explicitly — LESSONS §8). The dash_mui_charts PACKAGE floor is
+  unchanged (dash>=3.3).
+- **Ad client returns to the canonical boilerplate copy** — per-page aside
+  slots served by the mount-fired MATCH callback, `AD_APP_ID=muicharts`.
+  The floating-slot fork (and the double-impression bug it dodged) retired
+  with the static shell that caused it.
+- **Old shell retired**: SimpleTreeView sidebar (nav is now the grouped
+  boilerplate navbar; the dogfooding story moves into the TreeView docs in
+  M4), `00-loading-theme.js` + `01-nav-restore.js` (they fought the new
+  color-scheme system / targeted the removed tree), the dead
+  license-key-store. `dcc.Location(id="url")` and the SPA analytics
+  counting rule carry over unchanged; the header keeps the
+  `header-avatar` favicon-swapper contract and the package-version badge.
+- Tests updated for the new shell (80 passing, zero secrets): navbar
+  family map ↔ registry parity, per-page aside ad slots, old-shell assets
+  stay deleted; identity/card/version/traffic suites unchanged.
+
 ### Network-standard pass — Phase 4 (deploy cutover, repo side)
 
 - **render.yaml declares the cutover**: `domains: [muicharts.2plot.dev]`

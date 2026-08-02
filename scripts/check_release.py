@@ -261,7 +261,7 @@ def main() -> int:
         print(f"  NOTE  {'render.yaml serves the canonical host':<52} pending Phase 4")
 
     print("\n[docs site]")
-    for f in ("Dockerfile", "render.yaml", "requirements.txt", "app.py",
+    for f in ("Dockerfile", "render.yaml", "requirements.txt", "run.py",
               "scripts/route_parity.py", "scripts/network_smoke.py",
               "scripts/smoke_live.py"):
         check(f"{f} present", (ROOT / f).exists())

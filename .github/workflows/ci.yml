@@ -60,7 +60,7 @@ jobs:
       - name: flake8
         # Config in .flake8 — including the BUDGETED first-run debt ledger
         # for pages/*.py. Tighten there, not here.
-        run: flake8 lib pages tests scripts app.py usage.py verify_traffic.py _validate_init.py
+        run: flake8 lib pages components docs tests scripts run.py usage.py verify_traffic.py _validate_init.py
 
       # The workflows lint themselves. Not belt-and-braces: an invalid
       # workflow file is the one defect CI structurally cannot report,
@@ -88,6 +88,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          # markdown2dash pins gunicorn<22 against the CVE-driven gunicorn>=23
+          # floor. Same two-command install as the Dockerfile and render.yaml.
+          pip install --no-deps markdown2dash==0.1.2
           pip install -e .
           pip install pytest
 
@@ -122,7 +125,7 @@ jobs:
 
       - name: Boot under a production server
         run: |
-          gunicorn app:server -b 127.0.0.1:8550 --daemon --access-logfile - --error-logfile -
+          gunicorn run:server -b 127.0.0.1:8550 --daemon --access-logfile - --error-logfile -
           for _ in $(seq 1 30); do
             curl -sf http://127.0.0.1:8550/healthz && break
             sleep 1
@@ -177,6 +180,11 @@ jobs:
           v = version('gunicorn')
           print('gunicorn', v)
           assert parts(v)[:2] >= (23, 0), f'expected gunicorn>=23 (CVE-2024-6827/-1135), image has {v}'
+
+          # markdown2dash installs with --no-deps to dodge its gunicorn<22
+          # pin; this proves the dodge kept working AND kept the package.
+          import markdown2dash  # noqa: F401
+          print('markdown2dash importable')
 
           import dash_mui_charts
           print('dash_mui_charts', dash_mui_charts.__version__,
@@ -260,7 +268,9 @@ jobs:
           python -m pip install "dash==${{ matrix.dash }}"
 
       - name: Install documentation-site requirements
-        run: python -m pip install -r requirements.txt
+        run: |
+          python -m pip install -r requirements.txt
+          python -m pip install --no-deps markdown2dash==0.1.2
 
       - name: Report the resolved Dash version
         # A silent upgrade here would make the whole matrix meaningless.

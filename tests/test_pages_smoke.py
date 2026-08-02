@@ -152,53 +152,61 @@ def test_the_url_location_contract(app):
     assert getattr(locations[0], "refresh", None) == "callback-nav"
 
 
-def test_the_sidebar_is_the_library_dogfooding_itself(app, page_paths):
-    """The nav is a dash_mui_charts.SimpleTreeView (id `nav-tree`) — keeping
-    it IS the point. And every leaf it navigates to must be a registered
-    route, or a sidebar click 404s."""
+def test_the_navbar_families_cover_the_registry_exactly(page_paths):
+    """The family map in components/navbar.py is the nav order authority
+    (what page_order is to the boilerplate). Every mapped path must be a
+    registered route (or a sidebar click 404s), and every registered route
+    must be mapped (or it renders in the unsorted "Other" section)."""
+    from components.navbar import FAMILIES, TOP_LINKS
+
+    mapped = {p for _t, paths in FAMILIES for p in paths}
+    mapped |= {p for p, _i in TOP_LINKS}
+    dead = sorted(mapped - set(page_paths))
+    assert dead == [], f"nav entries with no registered route: {dead}"
+    unmapped = sorted(set(page_paths) - mapped)
+    assert unmapped == [], (
+        f"registered routes missing from the navbar family map: {unmapped}"
+    )
+
+
+def test_the_analytics_sink_exists(app):
+    """The SPA page-view recorder's output target. (The old shell's
+    license-key-store retired with it — pages read MUI_PRO_API_KEY from the
+    environment directly; the store was dead plumbing.)"""
     from conftest import component_iter
 
-    trees = [c for c in component_iter(app.layout)
-             if getattr(c, "id", None) == "nav-tree"]
-    assert len(trees) == 1, "the nav-tree SimpleTreeView is gone"
-    tree = trees[0]
-    assert tree._namespace == "dash_mui_charts"
-
-    leaves = []
-
-    def walk(items):
-        for item in items or []:
-            if item.get("children"):
-                walk(item["children"])
-            elif item["itemId"].startswith("/"):
-                leaves.append(item["itemId"])
-
-    walk(tree.items)
-    dead = sorted(set(leaves) - set(page_paths))
-    assert dead == [], f"nav leaves with no registered route: {dead}"
-
-
-def test_the_analytics_sink_and_license_store_exist(app):
-    from conftest import component_iter
-
-    # String ids only — the ad slot's pattern-matching dict id is unhashable.
+    # String ids only — ad slots' pattern-matching dict ids are unhashable.
     ids = {c.id for c in component_iter(app.layout)
            if isinstance(getattr(c, "id", None), str)}
     assert "analytics-sink" in ids, "the SPA page-view callback lost its sink"
-    assert "license-key-store" in ids
 
 
-def test_the_floating_ad_slot_is_wired(app):
-    """The intentional ad_client fork: ONE static shell slot driven by the
-    url callback (the canonical MATCH mount-callback double-logged
-    impressions here). The slot's pattern id must survive."""
+def test_ad_slots_are_per_page_asides_not_a_shell_slot(app, pages):
+    """The boilerplate ad architecture: pages/markdown.py injects one slot
+    into each markdown page's TOC aside, attributed to that page's endpoint;
+    the mount-fired MATCH callback serves it per view. The old floating
+    shell slot (and the fork that existed to de-duplicate it) is retired —
+    a "__floating__" slot reappearing means the fork came back too."""
     from conftest import component_iter
 
-    slots = [c for c in component_iter(app.layout)
-             if isinstance(getattr(c, "id", None), dict)
-             and c.id.get("type") == "net-ad-container"]
-    assert len(slots) == 1, f"expected one shell ad slot, found {len(slots)}"
-    assert slots[0].id.get("page") == "__floating__"
+    shell_slots = [c for c in component_iter(app.layout)
+                   if isinstance(getattr(c, "id", None), dict)
+                   and c.id.get("type") == "net-ad-container"]
+    assert shell_slots == [], "a static shell ad slot is back"
+
+    # markdown.py registers pages under their display NAME (not a pages.*
+    # module path) — that asymmetry is the marker for markdown-driven pages.
+    ported = [(path, entry) for path, entry in pages
+              if not entry["module"].startswith("pages.")]
+    assert ported, "no markdown-driven pages registered yet?"
+    for path, entry in ported:
+        slots = [c for c in component_iter(page_layout(entry))
+                 if isinstance(getattr(c, "id", None), dict)
+                 and c.id.get("type") == "net-ad-container"]
+        assert len(slots) == 1, f"{path}: expected one aside ad slot"
+        assert slots[0].id.get("page") == path, (
+            f"{path}: ad slot attributed to {slots[0].id.get('page')!r}"
+        )
 
 
 # ---------------------------------------------------------- asset contracts --
@@ -213,12 +221,22 @@ def test_the_functions_registry_is_intact():
     assert "formatDate" in src
 
 
-def test_the_asset_load_order_still_wins_the_race():
-    """assets/00-loading-theme.js must sort FIRST among the JS assets — the
-    00- prefix is the ordering mechanism, not decoration."""
-    scripts = sorted(p.name for p in (REPO_ROOT / "assets").glob("*.js"))
-    assert scripts[0] == "00-loading-theme.js", scripts
-    assert "01-nav-restore.js" in scripts, "the nav-restore script is gone"
+def test_the_old_shell_assets_stay_deleted(app):
+    """00-loading-theme.js and 01-nav-restore.js served the RETIRED shell:
+    the theme script applied a stale `mantine-color-scheme-value`
+    localStorage key that would fight the boilerplate shell's
+    color-scheme-storage system on every load, and nav-restore set props on
+    a nav-tree that no longer exists. Their return means two theme systems
+    disagreeing about dark mode."""
+    from conftest import component_iter
+
+    scripts = {p.name for p in (REPO_ROOT / "assets").glob("*.js")}
+    assert "00-loading-theme.js" not in scripts
+    assert "01-nav-restore.js" not in scripts
+    # The replacement: the appshell's persisted color-scheme store.
+    ids = {c.id for c in component_iter(app.layout)
+           if isinstance(getattr(c, "id", None), str)}
+    assert "color-scheme-storage" in ids, "the theme persistence store is gone"
 
 
 def test_the_liquid_glass_styles_exist():

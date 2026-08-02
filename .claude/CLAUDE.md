@@ -120,12 +120,13 @@
 # Install dependencies
 npm install
 pip install -r requirements.txt
+pip install --no-deps markdown2dash==0.1.2   # pins gunicorn<22; see requirements.txt
 
 # Build components
 npm run build
 
 # Run demo app
-python app.py
+python run.py
 
 # Run standalone example
 python usage.py
@@ -133,9 +134,10 @@ python usage.py
 # Test suite (zero secrets by design — Pro pages must degrade to banners)
 pytest tests -q
 
-# Route-parity gate (needs MUI_PRO_API_KEY; run after any change to app.py
-# or pages/, keep green through every migration phase)
-python scripts/route_parity.py
+# Chart-parity gate (needs MUI_PRO_API_KEY; run after any change to run.py,
+# pages/ or docs/ — the boilerplate-migration invariant: every live example,
+# its chart ids and its callbacks survive re-wrapping)
+python scripts/route_parity.py --charts-only
 
 # Compatibility smoke (what ci.yml's Dash matrix runs)
 python scripts/smoke_test.py
@@ -157,7 +159,8 @@ flake8 lib pages tests scripts app.py usage.py verify_traffic.py _validate_init.
 | `dash_mui_charts/*.py` | Auto-generated Python wrappers |
 | `assets/muiChartsFunctions.js` | Functions-as-props registry (formatDate, etc.) |
 | `pages/*.py` | Demo page examples |
-| `app.py` | Main Dash application |
+| `run.py` | Main Dash application (boilerplate shell; markdown pages from `docs/`) |
+| `docs/*/` | Markdown-driven doc pages + exec example modules (boilerplate format) |
 | `setup.py` | Python package configuration |
 | `tests/` | Secretless suite: identity, social card, version parity, route smoke, analytics counting rule |
 | `scripts/route_parity.py` | Exact-tree migration gate (needs MUI_PRO_API_KEY) |

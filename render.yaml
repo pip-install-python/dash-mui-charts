@@ -4,8 +4,10 @@ services:
     runtime: python
     repo: https://github.com/pip-install-python/dash-mui-charts
     branch: main
-    buildCommand: pip install -r requirements.txt && pip install .
-    startCommand: gunicorn app:server -b 0.0.0.0:$PORT --workers 2 --timeout 120
+    # markdown2dash installs --no-deps: it pins gunicorn<22 against the
+    # CVE-driven >=23 floor (LESSONS §8). Same pair as the Dockerfile and CI.
+    buildCommand: pip install -r requirements.txt && pip install --no-deps markdown2dash==0.1.2 && pip install .
+    startCommand: gunicorn run:server -b 0.0.0.0:$PORT --workers 2 --timeout 120
     # The canonical origin. The legacy dash-mui-charts.onrender.com hostname
     # keeps resolving after this is attached — lib/constants.BASE_URL and the
     # canonical tags all point here, so link equity consolidates on one host.
