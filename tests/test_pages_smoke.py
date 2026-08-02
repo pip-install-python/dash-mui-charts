@@ -21,17 +21,24 @@ from conftest import CRAWLER_UA, REPO_ROOT, STUB_MARKER, layout_text, page_layou
 
 EXPECTED_ROUTES = 40
 
-# Pages that read MUI_PRO_API_KEY at module import (home only mentions it in
-# prose). Measured 2026-08-02; a page gaining or losing the dependency should
-# change this deliberately.
-PRO_PAGE_COUNT = 17
+# Routes whose demos read MUI_PRO_API_KEY (17, measured 2026-08-02). Pinned
+# by ROUTE, not by source file: the boilerplate migration moves a page's
+# key-reading code from pages/<x>.py into N exec modules under docs/, but
+# the route's degradation obligation never moves.
+PRO_ROUTES = [
+    "/barchart-pro", "/composite", "/composite-render-bp", "/composite-v120",
+    "/crosshair", "/heatmap", "/heatmap-props", "/highlighting-sync",
+    "/linechart-basic", "/linechart-brush", "/linechart-highlighting",
+    "/linechart-pro", "/linechart-referencelines", "/linechart-tick-hover",
+    "/linechart-zoom-preview", "/live-trading", "/tree-pro",
+]
 
-
-def _pro_modules():
-    return sorted(
-        p.name for p in (REPO_ROOT / "pages").glob("*.py")
-        if p.name != "home.py" and "MUI_PRO_API_KEY" in p.read_text()
-    )
+# The subset that explains the missing key IN the page (a visible banner in
+# the keyless layout). The others degrade to unlicensed charts silently.
+BANNER_ROUTES = {
+    "/barchart-pro", "/heatmap", "/heatmap-props", "/linechart-brush",
+    "/linechart-pro", "/tree-pro",
+}
 
 
 # ------------------------------------------------------------- route smoke --
@@ -102,38 +109,35 @@ def test_a_crawler_gets_prose_not_the_stub(client):
 # --------------------------------------------------------- Pro degradation --
 
 
-def test_the_pro_page_census_is_stable():
-    assert len(_pro_modules()) == PRO_PAGE_COUNT, _pro_modules()
+def test_every_pro_route_is_still_registered(page_paths):
+    missing = sorted(set(PRO_ROUTES) - set(page_paths))
+    assert missing == [], f"Pro routes gone from the registry: {missing}"
 
 
-def test_pro_pages_degrade_not_die(client, pages):
-    """With no license key every Pro page must still import, construct and
-    serve — showing its license banner or an unlicensed chart, never a
-    traceback. This posture is what lets CI run with zero secrets."""
-    by_module = {entry["module"].rsplit(".", 1)[-1] + ".py": (path, entry)
-                 for path, entry in pages}
-    for module_name in _pro_modules():
-        assert module_name in by_module, f"{module_name} registered no page"
-        path, entry = by_module[module_name]
-        assert page_layout(entry) is not None, f"{path} has no layout"
+def test_pro_routes_degrade_not_die(client, pages):
+    """With no license key every Pro route must still construct and serve —
+    showing its license banner or an unlicensed chart, never a traceback.
+    This posture is what lets CI run with zero secrets."""
+    by_path = dict(pages)
+    for path in PRO_ROUTES:
+        assert page_layout(by_path[path]) is not None, f"{path} has no layout"
         assert client.get(path).ok, f"{path} does not serve without a key"
 
 
-def test_pro_pages_with_banners_show_them(pages):
-    """The pages that explain the missing key must actually say so when it
+def test_banner_routes_show_their_banner(pages):
+    """The routes that explain the missing key must actually say so when it
     is missing — the banner is the difference between "degraded" and
-    "silently broken" for a reader."""
-    by_module = {entry["module"].rsplit(".", 1)[-1] + ".py": entry
-                 for _path, entry in pages}
-    silent = []
-    for module_name in _pro_modules():
-        source = (REPO_ROOT / "pages" / module_name).read_text()
-        if "MUI_PRO_API_KEY environment variable" not in source:
-            continue  # this page degrades without a banner — fine
-        if "MUI_PRO_API_KEY" not in layout_text(page_layout(by_module[module_name])):
-            silent.append(module_name)
-    assert silent == [], (
-        f"banner pages whose keyless layout shows no banner: {silent}"
+    "silently broken" for a reader. Set equality both ways: a banner
+    disappearing is a regression, a banner appearing is a deliberate
+    improvement that updates BANNER_ROUTES."""
+    by_path = dict(pages)
+    showing = {
+        path for path in PRO_ROUTES
+        if "MUI_PRO_API_KEY" in layout_text(page_layout(by_path[path]))
+    }
+    assert showing == BANNER_ROUTES, (
+        f"missing banner: {sorted(BANNER_ROUTES - showing)}; "
+        f"new banner (update BANNER_ROUTES): {sorted(showing - BANNER_ROUTES)}"
     )
 
 

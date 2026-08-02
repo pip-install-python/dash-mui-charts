@@ -1,29 +1,12 @@
-"""
-PieChart Props Playground
+"""PieChart props playground — nested two-ring pies on Titanic data.
 
-Interactive control panel for exploring and customizing PieChart component properties.
-Features nested/multi-series pie charts with inner and outer rings.
-Based on MUI X Charts Titanic survival statistics example.
+Rendered on /pie-props via `.. exec::`; ported verbatim from the
+pre-migration pages/pie_props.py (same ids, same callbacks).
 """
-import json
-import dash
-from dash import html, callback, Input, Output, dcc, ctx
+from dash import html, callback, Input, Output, dcc
 
 import dash_mantine_components as dmc
 from dash_mui_charts import PieChart
-
-from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
-
-dash.register_page(
-    __name__,
-    path='/pie-props',
-    name='Pie Chart Props',
-    title=PAGE_TITLE_PREFIX + 'PieChart Props Playground',
-    description='Interactive playground for nested two-ring PieCharts on '
-                'Titanic survival data with live controls for dimensions, '
-                'radii, ring gap, labels and highlighting.',
-    image_url=OG_IMAGE_URL,
-)
 
 # =============================================================================
 # TITANIC DATA
@@ -183,18 +166,7 @@ def create_control_card(title, children):
 # =============================================================================
 # LAYOUT
 # =============================================================================
-layout = html.Div([
-        # Header
-        html.Div([
-            html.H1('PieChart Props Playground'),
-            html.P(
-                'Interactive demo of nested/multi-series pie charts. '
-                'Visualize hierarchical data with inner and outer rings. '
-                'Based on MUI X Charts Titanic survival statistics example.',
-                style={'color': 'var(--mantine-color-dimmed)', 'marginBottom': '30px'}
-            ),
-        ]),
-
+component = html.Div([
         # Live Preview Section
         dmc.Paper(
             shadow='sm',

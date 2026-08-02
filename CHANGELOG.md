@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Boilerplate migration — M1 (Pie + Heatmap + Scatter)
+
+- **Five more pages markdown-driven** (18 of 40 routes' chart content now
+  under docs/): `/pie` (6 exec examples), `/pie-props` (Titanic nested-pie
+  playground, transformed whole), `/scatter` (7 examples sharing a
+  seeded `_data.py` so every point cloud renders exactly as before),
+  `/heatmap` (7 Pro examples + the color-scale reference as a real
+  markdown table), `/heatmap-props` (Pro playground, transformed whole).
+  Same endpoints, chart ids and callbacks throughout — chart parity GREEN
+  against the pre-migration baseline.
+- **Pro degradation tests pinned by ROUTE, not source file** — the
+  migration moves key-reading code from pages/<x>.py into docs/ exec
+  modules, but the route's obligation to degrade (banner or unlicensed
+  chart, never a traceback) doesn't move. 17 Pro routes, 6 banner routes,
+  set-equality both ways.
+- Transform fix caught by lint: the heatmap-props port had dropped its
+  `json` import (cell-click display would have crashed); restored, plus
+  inherited f-string debt cleaned rather than carried into docs/.
+- The stale "0.0.8" release banner on the Scatter page retired; its
+  llms.txt placeholder stubs (both props pages) became real documents.
+
 ### Boilerplate migration — M0 (shell + chart-parity gate + Sparkline pilot)
 
 - **The docs app now runs on the dash-documentation-boilerplate structure**

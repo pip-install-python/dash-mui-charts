@@ -1,29 +1,15 @@
-"""
-Heatmap Props Playground
+"""Heatmap props playground — MUI X Pro, live controls on a 5x5 grid.
 
-Interactive control panel for exploring and customizing Heatmap component properties.
-Uses dash-mantine-components for the control panel UI.
+Rendered on /heatmap-props via `.. exec::`; ported verbatim from the
+pre-migration pages/heatmap_props.py (same ids, same callbacks).
 """
-import os
 import json
-import dash
-from dash import html, callback, Input, Output, State, dcc
+import os
+
+from dash import html, callback, Input, Output, dcc
 
 import dash_mantine_components as dmc
 from dash_mui_charts import Heatmap
-
-from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
-
-dash.register_page(
-    __name__,
-    path='/heatmap-props',
-    name='Heatmap Props',
-    title=PAGE_TITLE_PREFIX + 'Heatmap Props Playground',
-    description='Interactive Heatmap props playground (MUI X Pro): live '
-                'controls for color scale, dimensions, cell style, '
-                'interactions and margins on a 5x5 grid.',
-    image_url=OG_IMAGE_URL,
-)
 
 # Get license key from environment
 MUI_LICENSE_KEY = os.environ.get('MUI_PRO_API_KEY', '')
@@ -67,17 +53,7 @@ def create_control_card(title, children):
     )
 
 
-layout = html.Div([
-        # Header
-        html.Div([
-            html.H1('Heatmap Props Playground'),
-            html.P(
-                'Interactively explore and customize Heatmap component properties. '
-                'Changes are reflected in real-time.',
-                style={'color': 'var(--mantine-color-dimmed)', 'marginBottom': '30px'}
-            ),
-        ]),
-
+component = html.Div([
         # Pro License Warning (if no key)
         html.Div([
             dmc.Paper(
@@ -506,32 +482,32 @@ def update_heatmap(
     code_lines.append(f"    yAxis={{'data': {Y_LABELS}}},")
     code_lines.append(f'    width={width},')
     code_lines.append(f'    height={height},')
-    code_lines.append(f'    colorScale={{')
+    code_lines.append('    colorScale={')
     code_lines.append(f"        'type': '{scale_type}',")
     code_lines.append(f"        'min': {min_value},")
     code_lines.append(f"        'max': {max_value},")
     code_lines.append(f"        'colors': ['{min_color}', '{max_color}'],")
-    code_lines.append(f'    }},')
+    code_lines.append('    },')
 
     if cell_style_prop:
-        code_lines.append(f'    cellStyle={{')
+        code_lines.append('    cellStyle={')
         code_lines.append(f"        'gap': {gap},")
         code_lines.append(f"        'borderRadius': {border_radius},")
         code_lines.append(f"        'showValue': {show_values},")
         code_lines.append(f"        'fontSize': {font_size},")
         code_lines.append(f"        'textColor': '{text_color}',")
-        code_lines.append(f'    }},')
+        code_lines.append('    },')
 
     if highlight_scope:
-        code_lines.append(f"    highlightScope={{'highlight': 'item'}},")
+        code_lines.append("    highlightScope={'highlight': 'item'},")
 
     if hide_legend:
-        code_lines.append(f'    hideLegend=True,')
+        code_lines.append('    hideLegend=True,')
 
-    code_lines.append(f'    margin={{')
+    code_lines.append('    margin={')
     code_lines.append(f"        'top': {margin_top}, 'right': {margin_right},")
     code_lines.append(f"        'bottom': {margin_bottom}, 'left': {margin_left},")
-    code_lines.append(f'    }},')
+    code_lines.append('    },')
     code_lines.append(')')
 
     code = '\n'.join(code_lines)
