@@ -6,7 +6,7 @@ name: Release
 # NO API TOKEN IS STORED ANYWHERE. Trusted publishing has PyPI verify a
 # short-lived OIDC token minted by GitHub for this specific repo + workflow +
 # environment, so there is no long-lived secret to leak or rotate. One-time
-# setup on PyPI (see .claude/PYPI_PUBLISH_PLAN.md):
+# setup on PyPI:
 #   pypi.org -> dash-mui-charts -> Publishing -> Add a new pending publisher
 #     Owner:            pip-install-python
 #     Repository:       dash-mui-charts

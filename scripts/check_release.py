@@ -281,7 +281,7 @@ def main() -> int:
             print(f"  - {p}")
         return 1
     print(f"\nClean. Ready to tag v{target} "
-          "(release.yml publishes on the tag push; see .claude/PYPI_PUBLISH_PLAN.md).")
+          "(release.yml publishes on the tag push via PyPI trusted publishing).")
     return 0
 
 

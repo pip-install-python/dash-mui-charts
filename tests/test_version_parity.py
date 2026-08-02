@@ -109,10 +109,10 @@ def test_the_noscript_surface_counts_thirteen(client):
 
 def test_no_surface_still_claims_nine_components():
     """The stale count survived in three places at once. The sweep is scoped
-    to reader-facing files — git history legitimately remembers."""
+    to reader-facing files IN the repo — git history legitimately remembers,
+    and .claude/ is untracked local state a CI checkout does not have."""
     offenders = []
-    for path in ("README.md", "templates/index.html", "lib/constants.py",
-                 ".claude/CLAUDE.md"):
+    for path in ("README.md", "templates/index.html", "lib/constants.py"):
         text = (REPO_ROOT / path).read_text()
         if re.search(r"\b9 components\b|\bnine components\b", text, re.I):
             offenders.append(path)
