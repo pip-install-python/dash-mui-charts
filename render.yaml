@@ -9,7 +9,19 @@ services:
     envVars:
       - key: MUI_PRO_API_KEY
         sync: false
+      # Shared network secret — signs the hourly traffic rollup this app
+      # POSTs to https://2plot.ai/api/satellite/traffic (lib/traffic_report).
+      # Unset = reporting silently OFF.
+      - key: CROSS_APP_WEBHOOK_SECRET
+        sync: false
+      # Where the hit log lives. Default is <repo>/analytics, which Render
+      # wipes on every deploy; point this at a mounted disk to keep a day's
+      # numbers across deploys.
+      - key: ANALYTICS_DIR
+        sync: false
       - key: PYTHON_VERSION
         value: "3.11.12"
-    healthCheckPath: /
+    # /healthz is the network liveness convention the hub's hourly sweep
+    # polls; "/" would render the whole Dash index on every probe.
+    healthCheckPath: /healthz
     autoDeploy: true

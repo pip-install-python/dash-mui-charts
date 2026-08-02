@@ -7,12 +7,15 @@ import os
 
 import dash
 import dash_mantine_components as dmc
-from dash import Dash, html, dcc, callback, Input, Output, State, page_container, clientside_callback
+from dash import (Dash, html, dcc, callback, Input, Output, State, no_update,
+                  page_container, clientside_callback)
 from dash_iconify import DashIconify
 
 from dash_mui_charts import SimpleTreeView
 
+from lib import analytics
 from lib.ad_client import create_ad_component, register_shell_ad
+from lib.traffic_report import register_healthz, start_traffic_reporter
 
 # Load .env if available
 try:
@@ -55,6 +58,38 @@ server = app.server  # WSGI entry point for gunicorn: gunicorn app:server
 
 # Store license key for pages
 app.server.config['MUI_LICENSE_KEY'] = MUI_LICENSE_KEY
+
+# ---------------------------------------------------------------------------
+# 2plot.ai satellite analytics — /healthz for the hub's hourly health sweep,
+# a document-request recorder for crawlers, and the hourly traffic reporter.
+# Page views themselves come from the url.pathname callback further down:
+# this is a single-page app, so document requests alone would report one hit
+# per visitor. See lib/traffic_report for the full counting rule.
+# ---------------------------------------------------------------------------
+register_healthz(server)
+
+
+@server.before_request
+def _track_document_request():
+    """Record every document request. Crawlers only ever land here (they run
+    no JS), which is exactly what `bot_hits` counts."""
+    try:
+        from flask import request as freq
+
+        if freq.method != 'GET':
+            return
+        analytics.record(
+            freq.path,
+            freq.headers.get('User-Agent', ''),
+            analytics.client_ip(freq.headers, freq.remote_addr),
+            source='doc',
+            country=analytics.cf_country(freq.headers),
+        )
+    except Exception:
+        pass
+
+
+start_traffic_reporter()
 
 # ---------------------------------------------------------------------------
 # Navigation tree items — groups use "group-*" ids, leaves use page paths
@@ -251,6 +286,9 @@ app.layout = dmc.MantineProvider(
         ),
         dcc.Location(id="url", refresh="callback-nav"),
         dcc.Store(id="license-key-store", data=MUI_LICENSE_KEY),
+        # Sink for the page-view recorder below (it only ever returns
+        # no_update — the callback exists for its side effect).
+        dcc.Store(id="analytics-sink"),
         # 2plot.dev ad network: floating card anchored top-right, below the
         # 60px header. Desktop only — a fixed card would cover content on
         # small screens.
@@ -276,6 +314,34 @@ app.layout = dmc.MantineProvider(
 # with the real pathname for attribution — except the home and changelog
 # pages, which stay ad-free.
 register_shell_ad("url", exclude_paths=("/", "/changelog"))
+
+
+# Page views for the satellite rollup. Fires on hard load AND on every
+# sidebar navigation, so `pages`, `sessions` and `median_session_s` describe
+# the doc pages people actually read — a request-level tracker would only
+# ever see the one document GET this SPA makes. It runs inside the Flask
+# request context of /_dash-update-component, so the forwarded IP and the
+# real user agent are both available.
+@callback(
+    Output("analytics-sink", "data"),
+    Input("url", "pathname"),
+    prevent_initial_call=False,
+)
+def track_page_view(pathname):
+    try:
+        from flask import request as freq
+
+        analytics.record(
+            pathname or "/",
+            freq.headers.get("User-Agent", ""),
+            analytics.client_ip(freq.headers, freq.remote_addr),
+            source="spa",
+            country=analytics.cf_country(freq.headers),
+        )
+    except Exception:
+        pass
+    return no_update
+
 
 # 1. Tree selection → SPA navigate via dcc.Location
 clientside_callback(

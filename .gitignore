@@ -62,3 +62,5 @@ htmlcov/
 
 # Dash
 # Note: .min.js.map files ARE committed — needed for production deployment
+# Satellite analytics hit log (lib/analytics.py) — local, ephemeral
+analytics/
