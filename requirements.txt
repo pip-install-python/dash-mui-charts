@@ -12,7 +12,6 @@ flask>=3.0.0
 # UI stack for the documentation app
 dash-mantine-components>=2.7.0
 dash-iconify>=0.1.2
-dash-widgetbot>=0.1.0
 
 # Documentation & utilities
 python-frontmatter>=1.0.0

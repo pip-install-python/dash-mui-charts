@@ -159,8 +159,8 @@ def test_the_navbar_families_cover_the_registry_exactly(page_paths):
     must be mapped (or it renders in the unsorted "Other" section)."""
     from components.navbar import FAMILIES, TOP_LINKS
 
-    mapped = {p for _t, paths in FAMILIES for p in paths}
-    mapped |= {p for p, _i in TOP_LINKS}
+    mapped = {p for _t, entries in FAMILIES for p, _label, _icon in entries}
+    mapped |= {p for p, _label, _icon in TOP_LINKS}
     dead = sorted(mapped - set(page_paths))
     assert dead == [], f"nav entries with no registered route: {dead}"
     unmapped = sorted(set(page_paths) - mapped)

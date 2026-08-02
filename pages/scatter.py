@@ -17,7 +17,7 @@ from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
 dash.register_page(
     __name__,
     path='/scatter',
-    name='Scatter Chart (0.0.8)',
+    name='Scatter Chart',
     title=PAGE_TITLE_PREFIX + 'ScatterChart',
     description='ScatterChart demos: two-series scatter, custom marker sizes, '
                 'z-axis color mapping, log-scale axes, click events, '

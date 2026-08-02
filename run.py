@@ -158,23 +158,6 @@ from lib import auth as _auth  # noqa: E402
 
 CLERK_ENABLED = _auth.register()
 
-# ----------------------------------------------------------------------------
-# WidgetBot Discord crate — must register BEFORE Dash() too.
-# ----------------------------------------------------------------------------
-from dash_widgetbot import add_discord_crate  # noqa: E402
-
-WIDGETBOT_SERVER = os.environ.get("WIDGETBOT_SERVER", "")
-WIDGETBOT_CHANNEL = os.environ.get("WIDGETBOT_CHANNEL", "")
-
-if WIDGETBOT_SERVER and WIDGETBOT_CHANNEL:
-    add_discord_crate(
-        server=WIDGETBOT_SERVER,
-        channel=WIDGETBOT_CHANNEL,
-        color="#1976d2",
-        location=["bottom", "right"],
-        defer=True,
-    )
-
 MCP_KWARGS = {}
 if MCP_ENABLED:
     if "enable_mcp" in inspect.signature(Dash.__init__).parameters:

@@ -41,8 +41,6 @@ SECRET_ENV_KEYS = (
     "MUI_PRO_API_KEY",
     "CROSS_APP_WEBHOOK_SECRET",
     "NETWORK_BULLETIN_URL",
-    "WIDGETBOT_SERVER",
-    "WIDGETBOT_CHANNEL",
 )
 for _key in SECRET_ENV_KEYS:
     os.environ[_key] = ""

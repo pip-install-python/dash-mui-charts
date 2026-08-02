@@ -43,6 +43,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tests updated for the new shell (80 passing, zero secrets): navbar
   family map ↔ registry parity, per-page aside ad slots, old-shell assets
   stay deleted; identity/card/version/traffic suites unchanged.
+- **M0 owner-review fixes**: the boilerplate's `main.css`/`m2d.css`/
+  `llms_copy.js` now ship in assets/ (their absence left the theme toggle
+  showing sun AND moon, and nav links unstyled); the navbar renders the
+  old sidebar's SHORT labels with per-item icons ("BARCHART / Basic", not
+  "BARCHART / Bar Chart - Basic") from a (path, label, icon) map; the
+  stale "(0.0.8)" dropped from the Scatter page's display name; the
+  Discord WidgetBot crate removed entirely (run.py, requirements,
+  render.yaml); `.claude/` is untracked and gitignored (owner request —
+  session plans and screenshots live outside version control now).
 
 ### Network-standard pass — Phase 4 (deploy cutover, repo side)
 

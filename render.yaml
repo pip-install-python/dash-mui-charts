@@ -45,11 +45,6 @@ services:
       # value: the viewer shows one generic tip where the hub publishes more.
       - key: NETWORK_BULLETIN_URL
         value: "https://2plot.dev/api/network/bulletin"
-      # Discord crate (dash-widgetbot). Optional — unset renders no crate.
-      - key: WIDGETBOT_SERVER
-        sync: false
-      - key: WIDGETBOT_CHANNEL
-        sync: false
       - key: PYTHON_VERSION
         value: "3.11.12"
     # /healthz is the network liveness convention the hub's hourly sweep

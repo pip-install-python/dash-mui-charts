@@ -15,36 +15,93 @@ from lib.constants import HEADER_HEIGHT
 # still renders, in a trailing "Other" section, so a newly added page is
 # visible-but-unsorted rather than lost.
 #
+# Each entry is (path, label, icon). LABELS ARE SHORT ON PURPOSE — the
+# section header already says the family, so the row says only what varies
+# ("Examples", "Pro Features"), exactly as the old SimpleTreeView sidebar
+# did. Registry names stay long-form ("Bar Chart - Basic") for the search
+# Select and page titles; rendering them here read as "BARCHART / Bar
+# Chart - Basic" — the redundancy this map exists to remove.
+#
 # Paths, not names, key the map: names are frontmatter/register_page
 # strings that migration phases may polish, while the endpoints are
 # contractually stable (BOILERPLATE_MIGRATION_PLAN.md decision 1).
 # ---------------------------------------------------------------------------
 FAMILIES = [
-    ("SparklineChart", ["/sparkline", "/sparkline-style",
-                        "/sparkline-style-advanced"]),
-    ("PieChart", ["/pie", "/pie-props"]),
-    ("BarChart", ["/barchart-basic", "/barchart-dataset",
-                  "/barchart-stacking", "/barchart-interaction",
-                  "/barchart-reference", "/barchart-pro"]),
-    ("Heatmap", ["/heatmap", "/heatmap-props"]),
-    ("ScatterChart", ["/scatter"]),
-    ("LineChart", ["/linechart-basic", "/linechart-pro", "/linechart-brush",
-                   "/linechart-referencelines", "/linechart-highlighting",
-                   "/highlighting-sync", "/linechart-zoom-preview",
-                   "/linechart-tick-hover", "/crosshair"]),
-    ("CandlestickChart", ["/candlestick"]),
-    ("LiveTradingChart", ["/live-trading"]),
-    ("CompositeChart", ["/composite", "/composite-v120",
-                        "/composite-render-bp"]),
-    ("TreeView", ["/tree-basic", "/tree-simple", "/tree-selection",
-                  "/tree-expansion", "/tree-editing", "/tree-icons",
-                  "/tree-disabled", "/tree-pro"]),
-    ("Date & Time Pickers", ["/time-clock", "/time-clock-lab"]),
+    ("SparklineChart", [
+        ("/sparkline", "Examples", "material-symbols:play-arrow"),
+        ("/sparkline-style", "Styling", "material-symbols:palette-outline"),
+        ("/sparkline-style-advanced", "Advanced",
+         "material-symbols:auto-graph"),
+    ]),
+    ("PieChart", [
+        ("/pie", "Examples", "material-symbols:play-arrow"),
+        ("/pie-props", "Props Explorer", "material-symbols:tune"),
+    ]),
+    ("BarChart", [
+        ("/barchart-basic", "Basic", "material-symbols:play-arrow"),
+        ("/barchart-dataset", "Dataset Mode",
+         "material-symbols:table-chart-outline"),
+        ("/barchart-stacking", "Stacking",
+         "material-symbols:stacked-bar-chart"),
+        ("/barchart-interaction", "Interaction",
+         "material-symbols:touch-app-outline"),
+        ("/barchart-reference", "Reference Lines", "material-symbols:rule"),
+        ("/barchart-pro", "Pro Features", "material-symbols:diamond-outline"),
+    ]),
+    ("Heatmap", [
+        ("/heatmap", "Examples", "material-symbols:play-arrow"),
+        ("/heatmap-props", "Props Explorer", "material-symbols:tune"),
+    ]),
+    ("ScatterChart", [
+        ("/scatter", "Examples", "material-symbols:play-arrow"),
+    ]),
+    ("LineChart", [
+        ("/linechart-basic", "Basics", "material-symbols:play-arrow"),
+        ("/linechart-pro", "Pro Features",
+         "material-symbols:diamond-outline"),
+        ("/linechart-brush", "Brush Selection", "material-symbols:brush"),
+        ("/linechart-referencelines", "Reference Lines",
+         "material-symbols:rule"),
+        ("/linechart-highlighting", "Highlighting",
+         "material-symbols:highlight"),
+        ("/highlighting-sync", "Highlighting Sync", "material-symbols:sync"),
+        ("/linechart-zoom-preview", "Zoom Preview",
+         "material-symbols:zoom-in"),
+        ("/linechart-tick-hover", "Ticks & Hover",
+         "material-symbols:mouse-outline"),
+        ("/crosshair", "Crosshair", "material-symbols:point-scan"),
+    ]),
+    ("CandlestickChart", [
+        ("/candlestick", "OHLC Charts", "material-symbols:candlestick-chart-outline"),
+    ]),
+    ("LiveTradingChart", [
+        ("/live-trading", "Examples", "material-symbols:trending-up"),
+    ]),
+    ("CompositeChart", [
+        ("/composite", "Examples", "material-symbols:play-arrow"),
+        ("/composite-v120", "v1.2.1", "material-symbols:star-outline"),
+        ("/composite-render-bp", "Render BP", "material-symbols:speed-outline"),
+    ]),
+    ("TreeView", [
+        ("/tree-basic", "Basic", "material-symbols:play-arrow"),
+        ("/tree-simple", "Simple", "material-symbols:view-list-outline"),
+        ("/tree-selection", "Selection",
+         "material-symbols:check-box-outline"),
+        ("/tree-expansion", "Expansion", "material-symbols:unfold-more"),
+        ("/tree-editing", "Editing", "material-symbols:edit-outline"),
+        ("/tree-icons", "Icons", "material-symbols:palette-outline"),
+        ("/tree-disabled", "Disabled", "material-symbols:block"),
+        ("/tree-pro", "Pro", "material-symbols:diamond-outline"),
+    ]),
+    ("Date & Time Pickers", [
+        ("/time-clock", "Time Clock", "material-symbols:schedule-outline"),
+        ("/time-clock-lab", "TimeClock Lab", "material-symbols:science-outline"),
+    ]),
 ]
 
 # Rendered with Home at the top rather than inside a family.
-TOP_LINKS = [("/", "fluent:home-24-regular"),
-             ("/changelog", "fluent:history-24-regular")]
+TOP_LINKS = [("/", "Home", "material-symbols:home-outline"),
+             ("/changelog", "Changelog", "material-symbols:history")]
 
 
 def create_nav_link(icon, text, href, external=False):
@@ -87,33 +144,30 @@ def create_content(data):
     then the network's standing sections."""
     by_path = {entry["path"]: entry for entry in data}
 
-    def link_for(path):
-        entry = by_path[path]
-        return create_nav_link(
-            entry.get("icon") or "fluent:document-24-regular",
-            entry["name"],
-            path,
-        )
-
     placed = set()
     sections = []
 
     top = []
-    for path, icon in TOP_LINKS:
+    for path, label, icon in TOP_LINKS:
         if path in by_path:
-            entry = by_path[path]
-            top.append(create_nav_link(entry.get("icon") or icon,
-                                       entry["name"], path))
+            top.append(create_nav_link(icon, label, path))
             placed.add(path)
 
-    for family, paths in FAMILIES:
-        links = [link_for(p) for p in paths if p in by_path]
-        placed.update(p for p in paths if p in by_path)
+    for family, entries in FAMILIES:
+        links = [create_nav_link(icon, label, path)
+                 for path, label, icon in entries if path in by_path]
+        placed.update(path for path, _l, _i in entries if path in by_path)
         if links:
             sections.append(create_nav_section(family, links))
 
-    # The safety net: registered pages the map does not know yet.
-    leftovers = [link_for(p) for p in sorted(by_path) if p not in placed]
+    # The safety net: registered pages the map does not know yet — shown
+    # under their full registry name, unsorted, so they are visible rather
+    # than lost.
+    leftovers = [
+        create_nav_link(by_path[p].get("icon") or "fluent:document-24-regular",
+                        by_path[p]["name"], p)
+        for p in sorted(by_path) if p not in placed
+    ]
     if leftovers:
         sections.append(create_nav_section("Other", leftovers))
 
