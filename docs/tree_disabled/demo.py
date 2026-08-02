@@ -1,24 +1,9 @@
-"""
-Tree View - Disabled Items
+"""Tree Disabled demo — rendered on /tree-disabled via `.. exec::`.
 
-Demonstrates disabling specific items, disabledItemsFocusable,
-and interaction of disabled items with selection.
+Ported verbatim from the pre-migration pages/tree_disabled.py (same ids, same callbacks).
 """
-
 import json
-import dash
 from dash import html, callback, Input, Output
-
-from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
-
-dash.register_page(
-    __name__,
-    path='/tree-disabled',
-    name='Tree Disabled',
-    title=PAGE_TITLE_PREFIX + 'TreeView Disabled Items',
-    description='TreeView disabled items: disabledItems blocking selection, checkbox propagation that skips them, disabledItemsFocusable, and disabled parent nodes.',
-    image_url=OG_IMAGE_URL,
-)
 
 from dash_mui_charts import TreeView
 
@@ -54,10 +39,7 @@ output_style = {
     'overflow': 'auto',
 }
 
-layout = html.Div([
-    html.H2("Tree View - Disabled Items"),
-    html.P("Disable specific items to prevent selection and interaction.", style={'color': '#666'}),
-
+component = html.Div([
     # --- 1. Disabled specific items ---
     html.Div([
         html.H3("1. Disabled Pro/Premium Items"),

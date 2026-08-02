@@ -1,127 +1,14 @@
+"""Tree Pro demo — rendered on /tree-pro via `.. exec::`.
+
+Ported verbatim from the pre-migration pages/tree_pro.py (same ids, same callbacks).
 """
-Tree View Pro - Pro Features
-
-Demonstrates TreeViewPro with drag-and-drop reordering, plus per-item
-Slider (0-100) and kebab action menu on each row.
-
-Section 3 is designed as the "map companion" pattern: a tree on the left where
-each row carries a 0-100 progress slider and a ⋮ actions menu, paired with a
-companion panel on the right that mirrors the selected layer's state. Slider
-moves and menu picks are surfaced via dmc.Text so callback wiring is visible.
-
-IDs are derived from labels at startup (spaces → "-", duplicates get "-1",
-"-2", ...). The right column shows the live reordered tree as nested JSON.
-
-Requires MUI X Pro license key.
-"""
-
 import copy
 import os
 import json
 import re
-
-import dash
 import dash_mantine_components as dmc
 from dash import html, dcc, callback, Input, Output, State, no_update
 from dash_iconify import DashIconify
-
-from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
-
-dash.register_page(
-    __name__,
-    path='/tree-pro',
-    name='Tree Pro',
-    title=PAGE_TITLE_PREFIX + 'TreeViewPro',
-    description='TreeViewPro (MUI X Pro): drag-and-drop reordering, reorderable subsets, and per-item 0-100 sliders plus kebab action menus wired to Dash callbacks.',
-    image_url=OG_IMAGE_URL,
-)
-
-LLMS_DOC = """\
-# TreeViewPro
-
-TreeViewPro extends `TreeView` with MUI X Pro features — it requires an
-MUI X Pro license key, passed as the `licenseKey` prop (this demo reads it
-from the `MUI_PRO_API_KEY` environment variable). It is designed for the
-"tree paired with a map / canvas" pattern where each leaf is a layer with
-a 0-100 value and a row-level actions menu.
-
-## Pro features
-
-```python
-import os
-from dash_mui_charts import TreeViewPro
-
-TreeViewPro(
-    id="layers",
-    items=LAYER_ITEMS,
-    licenseKey=os.environ["MUI_PRO_API_KEY"],
-    itemsReordering=True,            # drag-and-drop reorder
-    reorderableItems=["task-1"],     # optional subset that may be reordered
-    lazyLoading=True,                # fire `lazyLoadRequest` on expand
-    lazyLoadedChildren={...},        # parentId -> [child items]
-)
-```
-
-Outputs from reorder / lazy loading:
-
-- `itemPositionChanged` — `{itemId, oldPosition, newPosition,
-  event_timestamp}` per move.
-- `orderedItems` — the full live tree after each reorder, so Python can
-  render the current nested order without re-applying deltas. Falls back
-  to `items` until the first reorder.
-- `lazyLoadRequest` — `{itemId, event_timestamp}` when an unloaded node
-  is expanded.
-
-## Per-item slider + kebab controls (`showItemControls=True`)
-
-```python
-TreeViewPro(
-    showItemControls=True,
-    controlsItems=LEAF_IDS,                  # optional subset (leaves only)
-    sliderValues={"layer-a": 80},            # bidirectional {itemId: value}
-    sliderMin=0, sliderMax=100, sliderStep=1,
-    sliderColor="teal",                      # Mantine palette name, hex, or CSS
-    kebabMenuItems=[
-        {"label": "Duplicate", "value": "duplicate", "icon": "ContentCopy"},
-        {"label": "Delete",    "value": "delete",    "icon": "Delete"},
-    ],
-)
-```
-
-- `sliderChange` output — `{itemId, value, event_timestamp}` on slider
-  commit (mouse-up / touch-end); observe `sliderValues` for live mid-drag
-  values.
-- `kebabAction` output — `{itemId, action, event_timestamp}` when a menu
-  item is picked; `action` is the chosen entry's `value`.
-- `sliderColor` accepts Mantine palette names ("teal", "blue.5"), CSS
-  literals ("#ff6b6b"), or CSS expressions ("var(--mantine-color-...)").
-
-## Kebab submenus, dividers, and per-node menus (v1.4.0)
-
-`kebabMenuItems` entries may be a leaf `{label, value, icon?}`, a
-`{divider: True}` rule, or a submenu `{label, icon?, children: [entries]}`
-that opens on hover/click (recursive nesting; a leaf anywhere in the chain
-closes the whole menu and fires `kebabAction`). `kebabMenuItemsById`
-(`{itemId: [entries]}`) overrides the global `kebabMenuItems` for that
-node — same entry shape — so one tree can carry different action sets for
-different node types.
-
-## Also supported (inherited patterns)
-
-Selection (`multiSelect`, `checkboxSelection`), controlled expansion,
-inline label editing (`isItemEditable`, `editedItemLabel` output), and
-custom icons work the same as on `TreeView`.
-
-## Related pages
-
-- /tree-basic — TreeView, the Community data-driven tree
-- /tree-simple — SimpleTreeView, the lighter JSX-driven tree
-- /tree-selection — selection modes
-- /tree-expansion — expansion triggers and controlled expand/collapse
-- /tree-editing — inline label editing
-- /tree-icons — icons, indentation, height and sx styling
-- /tree-disabled — disabled items and focusability
-"""
 
 from dash_mui_charts import TreeViewPro
 
@@ -312,16 +199,10 @@ def _stat_card(label, value_id, initial, icon):
     )
 
 
-layout = dmc.Stack(
+component = dmc.Stack(
     [
         dmc.Stack(
             [
-                dmc.Title("Tree View Pro", order=2),
-                dmc.Text(
-                    "Pro features: drag-and-drop reordering, plus per-item Slider (0–100) and kebab actions menu, "
-                    "designed for pairing with a map / canvas as the layer list.",
-                    c="dimmed",
-                ),
                 dmc.Badge(
                     f"License key: {'Set' if LICENSE_KEY else 'Not set (set MUI_PRO_API_KEY)'}",
                     color="blue" if LICENSE_KEY else "red",

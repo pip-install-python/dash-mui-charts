@@ -1,22 +1,8 @@
-"""
-Tree View - Icons & Appearance
+"""Tree Icons demo — rendered on /tree-icons via `.. exec::`.
 
-Demonstrates custom icons, indentation, height, and sx styling.
+Ported verbatim from the pre-migration pages/tree_icons.py (same ids, same callbacks).
 """
-
-import dash
 from dash import html
-
-from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
-
-dash.register_page(
-    __name__,
-    path='/tree-icons',
-    name='Tree Icons',
-    title=PAGE_TITLE_PREFIX + 'TreeView Icons & Appearance',
-    description='TreeView appearance: custom expand/collapse/end icons, itemChildrenIndentation, fixed height with scrolling, and sx styling.',
-    image_url=OG_IMAGE_URL,
-)
 
 from dash_mui_charts import TreeView
 
@@ -41,10 +27,7 @@ FILE_SYSTEM = [
 
 section_style = {'marginBottom': '40px'}
 
-layout = html.Div([
-    html.H2("Tree View - Icons & Appearance"),
-    html.P("Customize icons, indentation, height, and styling.", style={'color': 'var(--mantine-color-dimmed)'}),
-
+component = html.Div([
     # --- 1. Default icons ---
     html.Div([
         html.H3("1. Default Icons"),

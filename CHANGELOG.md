@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Boilerplate migration — M4 (TreeView + Date & Time Pickers)
+
+- **Ten more pages markdown-driven** — the eight TreeView pages (basic,
+  simple, selection, expansion, editing, icons, disabled, and the Pro
+  page with its live license-posture badge kept) and both pickers
+  (`/time-clock`, and `/time-clock-lab` with its liquid-glass styling
+  intact). Whole-page transforms, ids and callbacks verbatim; the four
+  existing LLMS_DOC bodies folded into their md pages. Only home and
+  changelog remain in pages/.
+- **The dogfooding story returns as content**: `/tree-simple` gained a
+  sidebar demo built FROM `components/navbar.py`'s real family map — a
+  SimpleTreeView that genuinely navigates these docs, exactly as the
+  pre-migration shell's sidebar did (it can never drift from the actual
+  nav because it is generated from it). Chart baseline deliberately
+  re-recorded: 195 mounts, 79 chart-touching callbacks.
+
 ### Boilerplate migration — M3 (the LineChart batch)
 
 - **Twelve more pages markdown-driven (38 of 40)** — the seven LineChart

@@ -1,95 +1,9 @@
-"""
-Tree View - SimpleTreeView
+"""Tree Simple demo — rendered on /tree-simple via `.. exec::`.
 
-Demonstrates the SimpleTreeView component which uses a different
-item structure (itemId/label) and renders TreeItem JSX children.
-Lighter alternative to the data-driven TreeView.
+Ported verbatim from the pre-migration pages/tree_simple.py (same ids, same callbacks).
 """
-
 import json
-import dash
 from dash import html, callback, Input, Output
-
-from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
-
-dash.register_page(
-    __name__,
-    path='/tree-simple',
-    name='Tree Simple',
-    title=PAGE_TITLE_PREFIX + 'SimpleTreeView',
-    description='SimpleTreeView examples: itemId/label items, checkbox multi-select, per-item disabled flags, custom icons, and the iconContainer expansion trigger.',
-    image_url=OG_IMAGE_URL,
-)
-
-LLMS_DOC = """\
-# SimpleTreeView
-
-SimpleTreeView is the lightweight, JSX-driven tree in dash-mui-charts
-(Community license — no key needed). Unlike the data-driven `TreeView`
-(a `RichTreeView` wrapper with an MUI store), SimpleTreeView renders its
-items as `TreeItem` JSX children — a lighter alternative that suits
-navigation sidebars and small static trees. This documentation site
-dogfoods it: the site's own sidebar navigation is a SimpleTreeView
-(`NAV_ITEMS` in app.py).
-
-## Item shape — itemId, not id
-
-```python
-items = [
-    {"itemId": "1", "label": "Applications", "children": [
-        {"itemId": "1.1", "label": "Calendar"},
-        {"itemId": "1.2", "label": "Chrome"},
-    ]},
-]
-```
-
-Items also support per-item flags directly on the dict:
-
-- `disabled: True` — item is greyed out and inert.
-- `disableSelection: True` — item renders normally but cannot be selected.
-- `icon` — an MUI icon name, resolved through the library's icon resolver.
-
-## Basic usage
-
-```python
-from dash_mui_charts import SimpleTreeView
-
-SimpleTreeView(
-    id="nav",
-    items=items,
-    defaultExpandedItems=["1"],
-)
-```
-
-## Key props
-
-- `multiSelect=True` + `checkboxSelection=True` — checkbox multi-select.
-- `expandIcon` / `collapseIcon` / `endIcon` — MUI icon names, e.g.
-  `expandIcon="ChevronRight"`, `collapseIcon="ExpandMore"`,
-  `endIcon="Description"`.
-- `expansionTrigger="iconContainer"` — only clicking the expand/collapse
-  icon toggles the node (default `"content"` toggles on the whole row).
-
-## Outputs (use as callback Inputs)
-
-- `selectedItems` — the current selection (string or list with multiSelect).
-
-```python
-@callback(Output("out", "children"), Input("nav", "selectedItems"))
-def show_selection(sel):
-    return json.dumps(sel) if sel else "Select an item..."
-```
-
-## Related pages
-
-- /tree-basic — TreeView, the data-driven RichTreeView wrapper
-- /tree-selection — selection modes on TreeView
-- /tree-expansion — expansion triggers and controlled expand/collapse
-- /tree-editing — inline label editing
-- /tree-icons — icons, indentation, height and sx styling
-- /tree-disabled — disabled items and focusability
-- /tree-pro — TreeViewPro: drag-reorder, lazy loading, per-item controls
-"""
 
 from dash_mui_charts import SimpleTreeView
 
@@ -141,13 +55,7 @@ output_style = {
     'overflow': 'auto',
 }
 
-layout = html.Div([
-    html.H2("SimpleTreeView"),
-    html.P(
-        "Lighter alternative using itemId/label structure. Items are rendered as TreeItem JSX children.",
-        style={'color': '#666'},
-    ),
-
+component = html.Div([
     # --- 1. Basic ---
     html.Div([
         html.H3("1. Basic SimpleTreeView"),

@@ -1,24 +1,9 @@
-"""
-Tree View - Expansion
+"""Tree Expansion demo — rendered on /tree-expansion via `.. exec::`.
 
-Demonstrates expansion triggers, controlled expansion,
-and expand/collapse all.
+Ported verbatim from the pre-migration pages/tree_expansion.py (same ids, same callbacks).
 """
-
 import json
-import dash
 from dash import html, callback, Input, Output
-
-from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
-
-dash.register_page(
-    __name__,
-    path='/tree-expansion',
-    name='Tree Expansion',
-    title=PAGE_TITLE_PREFIX + 'TreeView Expansion',
-    description='TreeView expansion control: content vs iconContainer triggers, controlled expandedItems with expand/collapse-all buttons, and expansion tracking.',
-    image_url=OG_IMAGE_URL,
-)
 
 from dash_mui_charts import TreeView
 
@@ -57,10 +42,7 @@ output_style = {
     'overflow': 'auto',
 }
 
-layout = html.Div([
-    html.H2("Tree View - Expansion"),
-    html.P("Control how tree nodes expand and collapse.", style={'color': '#666'}),
-
+component = html.Div([
     # --- 1. expansionTrigger="content" (default) ---
     html.Div([
         html.H3('1. Expansion Trigger: "content" (default)'),

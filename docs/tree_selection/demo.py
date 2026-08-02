@@ -1,24 +1,9 @@
-"""
-Tree View - Selection
+"""Tree Selection demo — rendered on /tree-selection via `.. exec::`.
 
-Demonstrates single selection, multi-select, checkbox selection,
-selection propagation, and controlled selection.
+Ported verbatim from the pre-migration pages/tree_selection.py (same ids, same callbacks).
 """
-
 import json
-import dash
-from dash import html, callback, Input, Output, State
-
-from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
-
-dash.register_page(
-    __name__,
-    path='/tree-selection',
-    name='Tree Selection',
-    title=PAGE_TITLE_PREFIX + 'TreeView Selection',
-    description='TreeView selection modes: single, multi-select, checkbox selection, parent/descendant propagation, disabled selection, and controlled selectedItems.',
-    image_url=OG_IMAGE_URL,
-)
+from dash import html, callback, Input, Output
 
 from dash_mui_charts import TreeView
 
@@ -52,10 +37,7 @@ output_style = {
     'overflow': 'auto',
 }
 
-layout = html.Div([
-    html.H2("Tree View - Selection"),
-    html.P("Various selection modes and propagation behaviors.", style={'color': '#666'}),
-
+component = html.Div([
     # --- 1. Single selection (default) ---
     html.Div([
         html.H3("1. Single Selection (default)"),

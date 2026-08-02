@@ -1,37 +1,11 @@
-"""
-TimeClock Lab — dynamic theming, a stopwatch, and two-way pairings with
-dash-mantine-components time inputs.
+"""TimeClock Lab demo — rendered on /time-clock-lab via `.. exec::`.
 
-Shows the dash-mui-charts TimeClock working hand-in-hand with DMC. Each
-example carries a syntax-highlighted "View code" panel (dmc.CodeHighlightTabs):
-  1. dmc.ColorPicker/Input → recolor face (with opacity) + hand + digits live
-  2. Liquid glass clock    → CSS glassmorphism + magnifying-lens handle
-  3. dcc.Interval          → start/stop/restart stopwatch (seconds→minutes→hours)
-  4. dmc.TimeInput         → two-way sync + reset buttons
-  5. dmc.TimePicker        → two-way sync (dropdown, seconds)
-  6. dmc.TimeGrid          → two-way sync against preset half-hour slots
-  7. dmc.DateTimePicker    → the clock drives the time portion of a datetime
+Ported verbatim from the pre-migration pages/time_clock_lab.py (same ids, same callbacks).
 """
-
 import datetime as _dt
-
-import dash
 import dash_mantine_components as dmc
 from dash import html, dcc, callback, Input, Output, State, ctx, no_update
 from dash_iconify import DashIconify
-
-from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
-
-dash.register_page(
-    __name__,
-    path='/time-clock-lab',
-    name='TimeClock Lab',
-    title=PAGE_TITLE_PREFIX + 'TimeClock Lab',
-    description='TimeClock experiments: live recoloring, a liquid-glass '
-                'theme, a stopwatch, and two-way pairings with DMC TimeInput, '
-                'TimePicker, TimeGrid and DateTimePicker.',
-    image_url=OG_IMAGE_URL,
-)
 
 from dash_mui_charts import TimeClock
 
@@ -348,30 +322,11 @@ def sync_datetime(clock_value, dtp_value, dtp_state):
 # --------------------------------------------------------------------------- #
 # Layout
 # --------------------------------------------------------------------------- #
-layout = dmc.Container(
+component = dmc.Container(
     [
         dcc.Store(id="lab-sw-store", data={"elapsed": 0, "running": False}),
         dcc.Interval(id="lab-sw-interval", interval=1000, disabled=True,
                      n_intervals=0),
-
-        dmc.Stack(
-            [
-                dmc.Group(
-                    [
-                        dmc.Title("TimeClock Lab", order=1),
-                        dmc.Badge("TimeClock × DMC", color="grape", variant="light"),
-                    ],
-                    align="center",
-                ),
-                dmc.Text(
-                    "Deep-dive examples pairing the MUI TimeClock with "
-                    "dash-mantine-components — live theming, a stopwatch, and "
-                    "fully two-way-synced time inputs.",
-                    c="dimmed",
-                ),
-            ],
-            gap=4, mb="lg",
-        ),
 
         # --- 1. Dynamic colours ---------------------------------------------
         lab_section(

@@ -467,6 +467,12 @@
   },
   {
    "chart_refs": [
+    "tree-simple-sidebar-demo"
+   ],
+   "output": "url.href@84a073d34077b424ad8b29fb2d77b7beba89e2ae5728c1701b364d8a66debb52"
+  },
+  {
+   "chart_refs": [
     "v120-highlighted-axis"
    ],
    "output": "v120-axis-output.children"
@@ -1001,7 +1007,7 @@
   },
   "/tree-simple": {
    "mui_components": {
-    "dash_mui_charts.SimpleTreeView": 6
+    "dash_mui_charts.SimpleTreeView": 7
    },
    "mui_ids": [
     "tree-simple-basic",
@@ -1009,10 +1015,11 @@
     "tree-simple-disabled",
     "tree-simple-icon-trigger",
     "tree-simple-icons",
-    "tree-simple-select"
+    "tree-simple-select",
+    "tree-simple-sidebar-demo"
    ],
-   "mui_mounts": 6
+   "mui_mounts": 7
   }
  },
- "total_mui_mounts": 194
+ "total_mui_mounts": 195
 }

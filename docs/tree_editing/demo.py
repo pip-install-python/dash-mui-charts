@@ -1,24 +1,9 @@
-"""
-Tree View - Label Editing
+"""Tree Editing demo — rendered on /tree-editing via `.. exec::`.
 
-Demonstrates inline label editing: edit all items, edit specific items,
-and tracking edit events via callbacks.
+Ported verbatim from the pre-migration pages/tree_editing.py (same ids, same callbacks).
 """
-
 import json
-import dash
 from dash import html, callback, Input, Output
-
-from lib.constants import OG_IMAGE_URL, PAGE_TITLE_PREFIX
-
-dash.register_page(
-    __name__,
-    path='/tree-editing',
-    name='Tree Editing',
-    title=PAGE_TITLE_PREFIX + 'TreeView Label Editing',
-    description='Inline TreeView label editing: isItemEditable for all items, editableItems for a subset, and editedItemLabel callbacks with an edit history log.',
-    image_url=OG_IMAGE_URL,
-)
 
 from dash_mui_charts import TreeView
 
@@ -55,10 +40,7 @@ output_style = {
     'overflow': 'auto',
 }
 
-layout = html.Div([
-    html.H2("Tree View - Label Editing"),
-    html.P("Double-click an item label to edit. Press Enter to save, Esc to cancel.", style={'color': 'var(--mantine-color-dimmed)'}),
-
+component = html.Div([
     # --- 1. All items editable ---
     html.Div([
         html.H3("1. All Items Editable"),
