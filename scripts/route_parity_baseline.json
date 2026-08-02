@@ -1,5 +1,490 @@
 {
  "callback_count": 113,
+ "chart_callbacks": [
+  {
+   "chart_refs": [
+    "controlled-zoom-chart"
+   ],
+   "output": "..controlled-zoom-chart.zoom...controlled-zoom-output.children.."
+  },
+  {
+   "chart_refs": [
+    "lab-color-clock"
+   ],
+   "output": "..lab-color-clock.sx...lab-color-face.value...lab-color-hand.value...lab-color-num.value.."
+  },
+  {
+   "chart_refs": [
+    "lab-dtp-clock"
+   ],
+   "output": "..lab-dtp-clock.value...lab-dtp.value...lab-dtp-out.children.."
+  },
+  {
+   "chart_refs": [
+    "lab-sw-clock"
+   ],
+   "output": "..lab-sw-store.data...lab-sw-interval.disabled...lab-sw-clock.value...lab-sw-clock.view...lab-sw-readout.children...lab-sw-unit.children...lab-sw-unit.color.."
+  },
+  {
+   "chart_refs": [
+    "lab-tg-clock"
+   ],
+   "output": "..lab-tg-clock.value...lab-tg.value...lab-tg-out.children.."
+  },
+  {
+   "chart_refs": [
+    "lab-ti-clock"
+   ],
+   "output": "..lab-ti-clock.value...lab-ti-input.value...lab-ti-out.children.."
+  },
+  {
+   "chart_refs": [
+    "lab-tp-clock"
+   ],
+   "output": "..lab-tp-clock.value...lab-tp-input.value...lab-tp-out.children.."
+  },
+  {
+   "chart_refs": [
+    "lt-chart"
+   ],
+   "output": "..lt-alert-count.children...lt-alert-log.children.."
+  },
+  {
+   "chart_refs": [
+    "lt-chart"
+   ],
+   "output": "..lt-price-display.children...lt-price-display.style...lt-tick-display.children...lt-status.children...lt-status.style.."
+  },
+  {
+   "chart_refs": [
+    "npm-sparkline"
+   ],
+   "output": "..npm-download-count.children...npm-week-label.children.."
+  },
+  {
+   "chart_refs": [
+    "sec2-chart"
+   ],
+   "output": "..sec2-chart.referenceLines...sec2-tags.children...sec2-count.children...sec2-alert-status.children.."
+  },
+  {
+   "chart_refs": [
+    "sec3-humidity",
+    "sec3-pressure",
+    "sec3-temp"
+   ],
+   "output": "..sec3-temp.highlightedAxis...sec3-pressure.highlightedAxis...sec3-humidity.highlightedAxis...sec3-temp.syncedTooltipIndex...sec3-pressure.syncedTooltipIndex...sec3-humidity.syncedTooltipIndex...sec3-coord.children.."
+  },
+  {
+   "chart_refs": [
+    "sec3-humidity",
+    "sec3-pressure",
+    "sec3-temp"
+   ],
+   "output": "..sec3-temp.referenceLines...sec3-pressure.referenceLines...sec3-humidity.referenceLines...sec3-tags-temp.children...sec3-tags-pressure.children...sec3-tags-humidity.children...sec3-count.children.."
+  },
+  {
+   "chart_refs": [
+    "glass-sparkline"
+   ],
+   "output": "..sparkline-container.style...sparkline-container.className...hover-value-display.children...hover-index-display.children...change-display.children...change-display.className...hover-instruction.className.."
+  },
+  {
+   "chart_refs": [
+    "interactive-stock-sparkline"
+   ],
+   "output": "..stock-price-display.children...stock-hover-output.children.."
+  },
+  {
+   "chart_refs": [
+    "sync-line-a",
+    "sync-line-b"
+   ],
+   "output": "..sync-line-a.highlightedItem...sync-line-b.highlightedItem...custom-tooltip-a.style...custom-tooltip-a.children...custom-tooltip-b.style...custom-tooltip-b.children...sync-axis-output.children...profit-display.children.."
+  },
+  {
+   "chart_refs": [
+    "sync-line-chart",
+    "sync-pie-chart"
+   ],
+   "output": "..sync-line-chart.highlightedItem...sync-pie-chart.highlightedItem...sync-highlight-output.children.."
+  },
+  {
+   "chart_refs": [
+    "sync-revenue-spark",
+    "sync-sessions-spark",
+    "sync-users-spark"
+   ],
+   "output": "..sync-revenue-value.children...sync-revenue-label.children...sync-users-value.children...sync-users-label.children...sync-sessions-value.children...sync-sessions-label.children.."
+  },
+  {
+   "chart_refs": [
+    "tree-exp-controlled"
+   ],
+   "output": "..tree-exp-controlled.expandedItems...tree-exp-controlled-out.children.."
+  },
+  {
+   "chart_refs": [
+    "tree-pro-combo"
+   ],
+   "output": "..tree-pro-combo-action-log.children...tps-last-kebab.data.."
+  },
+  {
+   "chart_refs": [
+    "tree-pro-combo"
+   ],
+   "output": "..tree-pro-combo-edit.children...tps-label-overrides.data.."
+  },
+  {
+   "chart_refs": [
+    "tree-pro-combo"
+   ],
+   "output": "..tree-pro-combo-sliders.children...tps-last-slider.data.."
+  },
+  {
+   "chart_refs": [
+    "tree-sel-controlled"
+   ],
+   "output": "..tree-sel-controlled.selectedItems...tree-sel-controlled-out.children.."
+  },
+  {
+   "chart_refs": [
+    "v120-stack-humidity",
+    "v120-stack-pressure",
+    "v120-stack-temp"
+   ],
+   "output": "..v120-stack-temp.highlightedAxis...v120-stack-humidity.highlightedAxis...v120-stack-pressure.highlightedAxis...v120-stack-temp.syncedTooltipIndex...v120-stack-humidity.syncedTooltipIndex...v120-stack-pressure.syncedTooltipIndex.."
+  },
+  {
+   "chart_refs": [
+    "v120-stack-humidity",
+    "v120-stack-pressure",
+    "v120-stack-temp"
+   ],
+   "output": "..v120-stack-temp.xAxis...v120-stack-humidity.xAxis...v120-stack-pressure.xAxis...v120-stack-temp.margin...v120-stack-humidity.margin...v120-stack-pressure.margin...v120-stack-temp.height...v120-stack-humidity.height...v120-stack-pressure.height.."
+  },
+  {
+   "chart_refs": [
+    "v120-sync-humidity",
+    "v120-sync-temp"
+   ],
+   "output": "..v120-sync-temp.highlightedAxis...v120-sync-humidity.highlightedAxis...v120-sync-temp.syncedTooltipIndex...v120-sync-humidity.syncedTooltipIndex...v120-sync-output.children.."
+  },
+  {
+   "chart_refs": [
+    "axis-highlight-chart"
+   ],
+   "output": "axis-highlight-chart.highlightedAxis"
+  },
+  {
+   "chart_refs": [
+    "axis-highlight-chart"
+   ],
+   "output": "axis-highlight-output.children"
+  },
+  {
+   "chart_refs": [
+    "bar-int-axis-click"
+   ],
+   "output": "bar-int-axis-click-out.children"
+  },
+  {
+   "chart_refs": [
+    "bar-int-click"
+   ],
+   "output": "bar-int-click-out.children"
+  },
+  {
+   "chart_refs": [
+    "bar-int-highlight"
+   ],
+   "output": "bar-int-highlight-out.children"
+  },
+  {
+   "chart_refs": [
+    "brush-toggle-chart"
+   ],
+   "output": "brush-toggle-chart.brushOverlay"
+  },
+  {
+   "chart_refs": [
+    "candle-click"
+   ],
+   "output": "candle-click-out.children"
+  },
+  {
+   "chart_refs": [
+    "interactive-linechart"
+   ],
+   "output": "click-output.children"
+  },
+  {
+   "chart_refs": [
+    "composite-zoom"
+   ],
+   "output": "composite-zoom-output.children"
+  },
+  {
+   "chart_refs": [
+    "composite-zoom"
+   ],
+   "output": "composite-zoom.series"
+  },
+  {
+   "chart_refs": [
+    "cross-basic"
+   ],
+   "output": "cross-coord-display.children"
+  },
+  {
+   "chart_refs": [
+    "dynamic-ref-chart"
+   ],
+   "output": "dynamic-ref-chart.referenceLines"
+  },
+  {
+   "chart_refs": [
+    "interactive-heatmap"
+   ],
+   "output": "heatmap-click-output.children"
+  },
+  {
+   "chart_refs": [
+    "item-highlight-chart"
+   ],
+   "output": "item-highlight-chart.highlightedItem"
+  },
+  {
+   "chart_refs": [
+    "item-highlight-chart"
+   ],
+   "output": "item-highlight-output.children"
+  },
+  {
+   "chart_refs": [
+    "lab-glass-clock"
+   ],
+   "output": "lab-glass-readout.children"
+  },
+  {
+   "chart_refs": [
+    "lt-chart"
+   ],
+   "output": "lt-chart.drift"
+  },
+  {
+   "chart_refs": [
+    "lt-chart"
+   ],
+   "output": "lt-chart.intervalMs"
+  },
+  {
+   "chart_refs": [
+    "lt-chart"
+   ],
+   "output": "lt-chart.resetTrigger"
+  },
+  {
+   "chart_refs": [
+    "lt-chart"
+   ],
+   "output": "lt-chart.running"
+  },
+  {
+   "chart_refs": [
+    "lt-chart"
+   ],
+   "output": "lt-chart.showLabels"
+  },
+  {
+   "chart_refs": [
+    "lt-chart"
+   ],
+   "output": "lt-chart.showSlider"
+  },
+  {
+   "chart_refs": [
+    "lt-chart"
+   ],
+   "output": "lt-chart.showVolume"
+  },
+  {
+   "chart_refs": [
+    "lt-chart"
+   ],
+   "output": "lt-chart.volatility"
+  },
+  {
+   "chart_refs": [
+    "lt-chart"
+   ],
+   "output": "lt-chart.windowSize"
+  },
+  {
+   "chart_refs": [
+    "interactive-pie"
+   ],
+   "output": "pie-click-data.children"
+  },
+  {
+   "chart_refs": [
+    "interactive-pie"
+   ],
+   "output": "pie-highlight-data.children"
+  },
+  {
+   "chart_refs": [
+    "scatter-click"
+   ],
+   "output": "scatter-click-output.children"
+  },
+  {
+   "chart_refs": [
+    "sec2-chart"
+   ],
+   "output": "sec2-store.data"
+  },
+  {
+   "chart_refs": [
+    "sec3-humidity",
+    "sec3-pressure",
+    "sec3-temp"
+   ],
+   "output": "sec3-store.data"
+  },
+  {
+   "chart_refs": [
+    "tc-controlled"
+   ],
+   "output": "tc-controlled-out.children"
+  },
+  {
+   "chart_refs": [
+    "tc-controlled"
+   ],
+   "output": "tc-controlled.value"
+  },
+  {
+   "chart_refs": [
+    "tc-views-hms"
+   ],
+   "output": "tc-views-out.children"
+  },
+  {
+   "chart_refs": [
+    "tick-hover-interactive"
+   ],
+   "output": "tick-hover-click-output.children"
+  },
+  {
+   "chart_refs": [
+    "tree-basic-clicks"
+   ],
+   "output": "tree-basic-click-out.children"
+  },
+  {
+   "chart_refs": [
+    "tree-basic-focus"
+   ],
+   "output": "tree-basic-focus-out.children"
+  },
+  {
+   "chart_refs": [
+    "tree-dis-checkbox"
+   ],
+   "output": "tree-dis-checkbox-out.children"
+  },
+  {
+   "chart_refs": [
+    "tree-edit-all"
+   ],
+   "output": "tree-edit-all-out.children"
+  },
+  {
+   "chart_refs": [
+    "tree-edit-log"
+   ],
+   "output": "tree-edit-log-out.children"
+  },
+  {
+   "chart_refs": [
+    "tree-edit-specific"
+   ],
+   "output": "tree-edit-specific-out.children"
+  },
+  {
+   "chart_refs": [
+    "tree-exp-track"
+   ],
+   "output": "tree-exp-track-out.children"
+  },
+  {
+   "chart_refs": [
+    "tree-pro-combo"
+   ],
+   "output": "tree-pro-combo-sel.children"
+  },
+  {
+   "chart_refs": [
+    "tree-pro-reorder"
+   ],
+   "output": "tree-pro-reorder-out.children"
+  },
+  {
+   "chart_refs": [
+    "tree-sel-checkbox"
+   ],
+   "output": "tree-sel-checkbox-out.children"
+  },
+  {
+   "chart_refs": [
+    "tree-sel-multi"
+   ],
+   "output": "tree-sel-multi-out.children"
+  },
+  {
+   "chart_refs": [
+    "tree-sel-propagation"
+   ],
+   "output": "tree-sel-propagation-out.children"
+  },
+  {
+   "chart_refs": [
+    "tree-sel-single"
+   ],
+   "output": "tree-sel-single-out.children"
+  },
+  {
+   "chart_refs": [
+    "tree-simple-checkbox"
+   ],
+   "output": "tree-simple-checkbox-out.children"
+  },
+  {
+   "chart_refs": [
+    "tree-simple-select"
+   ],
+   "output": "tree-simple-select-out.children"
+  },
+  {
+   "chart_refs": [
+    "v120-highlighted-axis"
+   ],
+   "output": "v120-axis-output.children"
+  },
+  {
+   "chart_refs": [
+    "zoom-preview-chart"
+   ],
+   "output": "zoom-preview-output.children"
+  },
+  {
+   "chart_refs": [
+    "zoom-slider-chart"
+   ],
+   "output": "zoom-slider-output.children"
+  }
+ ],
  "plumbing": {
   "/_dash-dependencies": 200,
   "/_dash-layout": 200,
@@ -65,6 +550,7 @@
     "dash_mantine_components.Title": 8
    },
    "ids": [],
+   "mui_ids": [],
    "mui_mounts": 0
   },
   "/barchart-basic": {
@@ -83,6 +569,14 @@
     "bar-basic-rounded",
     "bar-basic-stacked"
    ],
+   "mui_ids": [
+    "bar-basic-horizontal",
+    "bar-basic-labels",
+    "bar-basic-multi",
+    "bar-basic-negative",
+    "bar-basic-rounded",
+    "bar-basic-stacked"
+   ],
    "mui_mounts": 6
   },
   "/barchart-dataset": {
@@ -94,6 +588,11 @@
     "dash_mui_charts.BarChart": 3
    },
    "ids": [
+    "bar-ds-gaps",
+    "bar-ds-stacked",
+    "bar-ds-temps"
+   ],
+   "mui_ids": [
     "bar-ds-gaps",
     "bar-ds-stacked",
     "bar-ds-temps"
@@ -122,6 +621,16 @@
     "bar-int-tt-axis",
     "bar-int-tt-item"
    ],
+   "mui_ids": [
+    "bar-int-ax-band",
+    "bar-int-ax-line",
+    "bar-int-ax-none",
+    "bar-int-axis-click",
+    "bar-int-click",
+    "bar-int-highlight",
+    "bar-int-tt-axis",
+    "bar-int-tt-item"
+   ],
    "mui_mounts": 8
   },
   "/barchart-pro": {
@@ -133,6 +642,11 @@
     "dash_mui_charts.BarChart": 3
    },
    "ids": [
+    "bar-pro-slider",
+    "bar-pro-stacked-zoom",
+    "bar-pro-toolbar"
+   ],
+   "mui_ids": [
     "bar-pro-slider",
     "bar-pro-stacked-zoom",
     "bar-pro-toolbar"
@@ -155,6 +669,14 @@
     "bar-ref-target",
     "bar-ref-vertical"
    ],
+   "mui_ids": [
+    "bar-ref-colors",
+    "bar-ref-multi",
+    "bar-ref-noanim",
+    "bar-ref-nolegend",
+    "bar-ref-target",
+    "bar-ref-vertical"
+   ],
    "mui_mounts": 6
   },
   "/barchart-stacking": {
@@ -166,6 +688,13 @@
     "dash_mui_charts.BarChart": 5
    },
    "ids": [
+    "bar-stack-diverging",
+    "bar-stack-expand",
+    "bar-stack-groups",
+    "bar-stack-horizontal",
+    "bar-stack-normal"
+   ],
+   "mui_ids": [
     "bar-stack-diverging",
     "bar-stack-expand",
     "bar-stack-groups",
@@ -193,6 +722,15 @@
     "candle-styled",
     "candle-volume"
    ],
+   "mui_ids": [
+    "candle-basic",
+    "candle-click",
+    "candle-dataset",
+    "candle-no-tooltip",
+    "candle-refs",
+    "candle-styled",
+    "candle-volume"
+   ],
    "mui_mounts": 7
   },
   "/changelog": {
@@ -204,6 +742,7 @@
     "dash_mantine_components.Title": 1
    },
    "ids": [],
+   "mui_ids": [],
    "mui_mounts": 0
   },
   "/composite": {
@@ -232,6 +771,12 @@
     "composite-zoom-output",
     "preview-marker-slider"
    ],
+   "mui_ids": [
+    "composite-multiaxis",
+    "composite-reference",
+    "composite-trend",
+    "composite-zoom"
+   ],
    "mui_mounts": 4
   },
   "/composite-render-bp": {
@@ -255,6 +800,7 @@
     "bp-loading-overlay",
     "bp-page-loaded"
    ],
+   "mui_ids": [],
    "mui_mounts": 0
   },
   "/composite-v120": {
@@ -285,6 +831,15 @@
     "v120-sync-humidity",
     "v120-sync-output",
     "v120-sync-switch",
+    "v120-sync-temp"
+   ],
+   "mui_ids": [
+    "v120-axis-tooltip",
+    "v120-highlighted-axis",
+    "v120-stack-humidity",
+    "v120-stack-pressure",
+    "v120-stack-temp",
+    "v120-sync-humidity",
     "v120-sync-temp"
    ],
    "mui_mounts": 7
@@ -325,6 +880,13 @@
     "sec3-tags-temp",
     "sec3-temp"
    ],
+   "mui_ids": [
+    "cross-basic",
+    "sec2-chart",
+    "sec3-humidity",
+    "sec3-pressure",
+    "sec3-temp"
+   ],
    "mui_mounts": 5
   },
   "/heatmap": {
@@ -353,6 +915,15 @@
     "correlation-heatmap",
     "custom-cell-heatmap",
     "heatmap-click-output",
+    "interactive-heatmap",
+    "piecewise-heatmap",
+    "rounded-heatmap",
+    "temperature-heatmap"
+   ],
+   "mui_ids": [
+    "basic-heatmap",
+    "correlation-heatmap",
+    "custom-cell-heatmap",
     "interactive-heatmap",
     "piecewise-heatmap",
     "rounded-heatmap",
@@ -406,6 +977,7 @@
     "heatmap-preview-container",
     "reset-heatmap-btn"
    ],
+   "mui_ids": [],
    "mui_mounts": 0
   },
   "/highlighting-sync": {
@@ -436,6 +1008,12 @@
     "sync-line-chart",
     "sync-pie-chart"
    ],
+   "mui_ids": [
+    "sync-line-a",
+    "sync-line-b",
+    "sync-line-chart",
+    "sync-pie-chart"
+   ],
    "mui_mounts": 4
   },
   "/linechart-basic": {
@@ -457,6 +1035,14 @@
     "basic-linechart",
     "biaxial-linechart",
     "click-output",
+    "custom-linechart",
+    "interactive-linechart",
+    "stacked-area-linechart"
+   ],
+   "mui_ids": [
+    "area-linechart",
+    "basic-linechart",
+    "biaxial-linechart",
     "custom-linechart",
     "interactive-linechart",
     "stacked-area-linechart"
@@ -493,6 +1079,11 @@
     "overlay-none-btn",
     "overlay-values-btn"
    ],
+   "mui_ids": [
+    "axis-highlight-chart",
+    "brush-toggle-chart",
+    "brush-values-chart"
+   ],
    "mui_mounts": 3
   },
   "/linechart-highlighting": {
@@ -521,6 +1112,11 @@
     "highlight-sep-axis-btn",
     "item-highlight-chart",
     "item-highlight-output"
+   ],
+   "mui_ids": [
+    "axis-highlight-chart",
+    "highlight-scope-chart",
+    "item-highlight-chart"
    ],
    "mui_mounts": 3
   },
@@ -559,6 +1155,12 @@
     "zoom-slider-chart",
     "zoom-slider-output"
    ],
+   "mui_ids": [
+    "biaxial-zoom-chart",
+    "controlled-zoom-chart",
+    "zoom-config-chart",
+    "zoom-slider-chart"
+   ],
    "mui_mounts": 4
   },
   "/linechart-referencelines": {
@@ -596,6 +1198,16 @@
     "threshold-input",
     "vertical-ref-chart"
    ],
+   "mui_ids": [
+    "combined-ref-chart",
+    "dynamic-ref-chart",
+    "horizontal-ref-chart",
+    "label-align-chart",
+    "line-style-chart",
+    "multiaxis-ref-chart",
+    "spacing-chart",
+    "vertical-ref-chart"
+   ],
    "mui_mounts": 8
   },
   "/linechart-tick-hover": {
@@ -621,6 +1233,16 @@
    },
    "ids": [
     "tick-hover-click-output",
+    "tick-hover-config",
+    "tick-hover-interactive",
+    "tick-hover-quarter",
+    "tick-hover-week",
+    "tick-hover-year-linear",
+    "tick-hover-year-point",
+    "tick-hover-zoom-pro",
+    "tick-hover-zoom-slider"
+   ],
+   "mui_ids": [
     "tick-hover-config",
     "tick-hover-interactive",
     "tick-hover-quarter",
@@ -660,6 +1282,12 @@
     "zoom-preview-chart",
     "zoom-preview-output"
    ],
+   "mui_ids": [
+    "axis-config-chart",
+    "zoom-interaction-chart",
+    "zoom-preview-biaxial",
+    "zoom-preview-chart"
+   ],
    "mui_mounts": 4
   },
   "/live-trading": {
@@ -696,6 +1324,9 @@
     "lt-volume-toggle",
     "lt-window"
    ],
+   "mui_ids": [
+    "lt-chart"
+   ],
    "mui_mounts": 1
   },
   "/pie": {
@@ -716,6 +1347,14 @@
     "labeled-pie",
     "pie-click-data",
     "pie-highlight-data",
+    "styled-pie"
+   ],
+   "mui_ids": [
+    "basic-pie",
+    "donut-pie",
+    "gauge-pie",
+    "interactive-pie",
+    "labeled-pie",
     "styled-pie"
    ],
    "mui_mounts": 6
@@ -770,6 +1409,7 @@
     "pie-reset-btn",
     "pie-view-toggle"
    ],
+   "mui_ids": [],
    "mui_mounts": 0
   },
   "/scatter": {
@@ -792,6 +1432,15 @@
     "scatter-basic",
     "scatter-click",
     "scatter-click-output",
+    "scatter-colormap",
+    "scatter-dataset",
+    "scatter-log",
+    "scatter-sizes"
+   ],
+   "mui_ids": [
+    "scatter-axis-styling",
+    "scatter-basic",
+    "scatter-click",
     "scatter-colormap",
     "scatter-dataset",
     "scatter-log",
@@ -845,6 +1494,13 @@
     "sync-users-spark",
     "sync-users-value"
    ],
+   "mui_ids": [
+    "interactive-stock-sparkline",
+    "npm-sparkline",
+    "sync-revenue-spark",
+    "sync-sessions-spark",
+    "sync-users-spark"
+   ],
    "mui_mounts": 20
   },
   "/sparkline-style": {
@@ -896,6 +1552,7 @@
     "sparkline-preview",
     "stroke-width"
    ],
+   "mui_ids": [],
    "mui_mounts": 0
   },
   "/sparkline-style-advanced": {
@@ -913,6 +1570,9 @@
     "hover-instruction",
     "hover-value-display",
     "sparkline-container"
+   ],
+   "mui_ids": [
+    "glass-sparkline"
    ],
    "mui_mounts": 1
   },
@@ -946,6 +1606,19 @@
     "tc-views-hms",
     "tc-views-ms",
     "tc-views-out"
+   ],
+   "mui_ids": [
+    "tc-ampm-default",
+    "tc-ampm-off",
+    "tc-ampm-on",
+    "tc-basic",
+    "tc-controlled",
+    "tc-disabled",
+    "tc-readonly",
+    "tc-uncontrolled",
+    "tc-views-h",
+    "tc-views-hms",
+    "tc-views-ms"
    ],
    "mui_mounts": 11
   },
@@ -1013,6 +1686,15 @@
     "lab-tp-input",
     "lab-tp-out"
    ],
+   "mui_ids": [
+    "lab-color-clock",
+    "lab-dtp-clock",
+    "lab-glass-clock",
+    "lab-sw-clock",
+    "lab-tg-clock",
+    "lab-ti-clock",
+    "lab-tp-clock"
+   ],
    "mui_mounts": 7
   },
   "/tree-basic": {
@@ -1033,6 +1715,13 @@
     "tree-basic-focus-out",
     "tree-basic-minimal"
    ],
+   "mui_ids": [
+    "tree-basic-clicks",
+    "tree-basic-custom-keys",
+    "tree-basic-expanded",
+    "tree-basic-focus",
+    "tree-basic-minimal"
+   ],
    "mui_mounts": 5
   },
   "/tree-disabled": {
@@ -1048,6 +1737,12 @@
     "tree-dis-basic",
     "tree-dis-checkbox",
     "tree-dis-checkbox-out",
+    "tree-dis-focusable",
+    "tree-dis-parents"
+   ],
+   "mui_ids": [
+    "tree-dis-basic",
+    "tree-dis-checkbox",
     "tree-dis-focusable",
     "tree-dis-parents"
    ],
@@ -1069,6 +1764,11 @@
     "tree-edit-log-out",
     "tree-edit-specific",
     "tree-edit-specific-out"
+   ],
+   "mui_ids": [
+    "tree-edit-all",
+    "tree-edit-log",
+    "tree-edit-specific"
    ],
    "mui_mounts": 3
   },
@@ -1093,6 +1793,12 @@
     "tree-exp-track",
     "tree-exp-track-out"
    ],
+   "mui_ids": [
+    "tree-exp-content",
+    "tree-exp-controlled",
+    "tree-exp-icon",
+    "tree-exp-track"
+   ],
    "mui_mounts": 4
   },
   "/tree-icons": {
@@ -1104,6 +1810,17 @@
     "dash_mui_charts.TreeView": 9
    },
    "ids": [
+    "tree-icon-addremove",
+    "tree-icon-arrow",
+    "tree-icon-default",
+    "tree-icon-file",
+    "tree-icon-height",
+    "tree-icon-indent-24",
+    "tree-icon-indent-48",
+    "tree-icon-indent-8",
+    "tree-icon-sx"
+   ],
+   "mui_ids": [
     "tree-icon-addremove",
     "tree-icon-arrow",
     "tree-icon-default",
@@ -1148,6 +1865,11 @@
     "tree-pro-reorder-out",
     "tree-pro-reorder-subset"
    ],
+   "mui_ids": [
+    "tree-pro-combo",
+    "tree-pro-reorder",
+    "tree-pro-reorder-subset"
+   ],
    "mui_mounts": 3
   },
   "/tree-selection": {
@@ -1176,6 +1898,14 @@
     "tree-sel-single",
     "tree-sel-single-out"
    ],
+   "mui_ids": [
+    "tree-sel-checkbox",
+    "tree-sel-controlled",
+    "tree-sel-disabled",
+    "tree-sel-multi",
+    "tree-sel-propagation",
+    "tree-sel-single"
+   ],
    "mui_mounts": 6
   },
   "/tree-simple": {
@@ -1196,6 +1926,14 @@
     "tree-simple-icons",
     "tree-simple-select",
     "tree-simple-select-out"
+   ],
+   "mui_ids": [
+    "tree-simple-basic",
+    "tree-simple-checkbox",
+    "tree-simple-disabled",
+    "tree-simple-icon-trigger",
+    "tree-simple-icons",
+    "tree-simple-select"
    ],
    "mui_mounts": 6
   }
@@ -1240,6 +1978,9 @@
    "{\"page\": \"__floating__\", \"type\": \"net-ad-data\"}",
    "{\"page\": \"__floating__\", \"type\": \"net-ad-img\"}",
    "{\"page\": \"__floating__\", \"type\": \"net-ad-link\"}"
+  ],
+  "mui_ids": [
+   "nav-tree"
   ],
   "mui_mounts": 1
  },
