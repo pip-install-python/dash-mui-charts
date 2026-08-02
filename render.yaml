@@ -6,6 +6,16 @@ services:
     branch: main
     buildCommand: pip install -r requirements.txt && pip install .
     startCommand: gunicorn app:server -b 0.0.0.0:$PORT --workers 2 --timeout 120
+    # The canonical origin. The legacy dash-mui-charts.onrender.com hostname
+    # keeps resolving after this is attached — lib/constants.BASE_URL and the
+    # canonical tags all point here, so link equity consolidates on one host.
+    domains:
+      - muicharts.2plot.dev
+    # LESSONS §10: blueprint envVars apply on BLUEPRINT SYNC, not on git-push
+    # autodeploys. Everything below must ALSO be set on the service in the
+    # Render dashboard, or a value added here does nothing until the next
+    # manual sync. The declarations are the documentation of what this app
+    # reads; the dashboard is what the running service actually gets.
     envVars:
       - key: MUI_PRO_API_KEY
         sync: false
@@ -18,6 +28,25 @@ services:
       # wipes on every deploy; point this at a mounted disk to keep a day's
       # numbers across deploys.
       - key: ANALYTICS_DIR
+        sync: false
+      # Canonical origin override. The code default is already the value
+      # below (lib/constants.DEFAULT_BASE_URL); declared so the service
+      # documents its own identity and a fork cannot inherit this one's.
+      - key: APP_BASE_URL
+        value: "https://muicharts.2plot.dev"
+      # This app's ONE short id on every hub surface (STANDARD §5). Also the
+      # code default — declared for the same reason as APP_BASE_URL.
+      - key: AD_APP_ID
+        value: "muicharts"
+      # The hub's announcement feed for the llms.txt viewer header. Opt-in:
+      # lib/bulletin.py wires nothing without it. Detection of a missing
+      # value: the viewer shows one generic tip where the hub publishes more.
+      - key: NETWORK_BULLETIN_URL
+        value: "https://2plot.dev/api/network/bulletin"
+      # Discord crate (dash-widgetbot). Optional — unset renders no crate.
+      - key: WIDGETBOT_SERVER
+        sync: false
+      - key: WIDGETBOT_CHANNEL
         sync: false
       - key: PYTHON_VERSION
         value: "3.11.12"

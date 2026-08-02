@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Network-standard pass — Phase 4 (deploy cutover, repo side)
+
+- **render.yaml declares the cutover**: `domains: [muicharts.2plot.dev]`
+  plus every env var the app reads (`APP_BASE_URL` and `AD_APP_ID` with
+  their canonical values, `NETWORK_BULLETIN_URL` pointing at the hub feed,
+  `WIDGETBOT_*` optional, the existing secrets). LESSONS §10 caveat is in
+  the file itself: blueprint envVars apply on Blueprint SYNC, not git-push
+  autodeploys — every value must also be set on the SERVICE in the Render
+  dashboard.
+- **Not applicable here**: the Clerk satellite env from STANDARD §9 — this
+  app ships no auth surface (no dash-clerk-auth anywhere); nothing to
+  configure until it ever gains one.
+- **Owner actions remain before go-live** (deliberately not automatable):
+  upload `build/social-cards/muicharts.2plot.dev.png` to
+  cdn.2plot.ai/github_assets/ and verify 200 + IHDR 1200×630 (the HARD
+  GATE — smoke_live fails the deploy while it 404s, by design), set the
+  service env, attach the subdomain + DNS, merge to main, then hub-side
+  STANDARD §9 in pip-docs+ (promote shipping→live, VERIFIED_APP_IDS).
+
 ### Network-standard pass — Phase 3 (tests + CI/CD)
 
 - **tests/ populated (80 tests, ZERO secrets by design)** — the suite runs
