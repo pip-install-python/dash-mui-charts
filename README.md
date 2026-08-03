@@ -16,6 +16,10 @@ A Dash component library wrapping [MUI X Charts](https://mui.com/x/react-charts/
 - **Heatmap** - Matrix visualizations with customizable color scales
 - **SparklineChart** - Compact inline charts for dashboards and tables
 - **LiveTradingChart** - Real-time streaming charts for live data visualization
+- **TreeView** - Data-driven rich tree with controlled selection, expansion, and label editing
+- **SimpleTreeView** - Lightweight JSX-driven tree for navigation sidebars
+- **TreeViewPro** - Drag-and-drop reordering, lazy loading, per-item slider + kebab controls (Pro)
+- **TimeClock** - Inline clock-face time picker (MUI X Date & Time Pickers)
 
 ## Installation
 

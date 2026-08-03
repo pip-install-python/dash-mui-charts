@@ -6,7 +6,120 @@ import dash
 import dash_mantine_components as dmc
 from dash import html, dcc
 
-dash.register_page(__name__, path='/', name='Home')
+from lib.constants import OG_IMAGE_URL, SITE_BRAND, SITE_DESCRIPTION
+
+dash.register_page(
+    __name__,
+    path='/',
+    name='Home',
+    title=SITE_BRAND,
+    description=SITE_DESCRIPTION,
+    image_url=OG_IMAGE_URL,
+)
+
+LLMS_DOC = """\
+# dash-mui-charts
+
+dash-mui-charts is a Plotly Dash component library of 13 components wrapping
+MUI X Charts, MUI X Tree View, and MUI X Date & Time Pickers for Python
+developers. Every component ships with full Python type hints and exposes
+its interactions (clicks, selections, zoom, edits) as Dash callback
+properties. Built by Pip Install Python; MIT licensed.
+
+## Install
+
+```bash
+pip install dash-mui-charts
+```
+
+## Components
+
+Charts (MUI X Charts):
+
+- **LineChart** — line/area charts, biaxial axes, zoom/pan, brush selection,
+  reference lines (Community / Pro). Docs: /linechart-basic
+- **BarChart** — vertical/horizontal bars, stacking, bar labels, dataset
+  mode, zoom/brush (Community / Pro). Docs: /barchart-basic
+- **CandlestickChart** — OHLC candlesticks with volume overlay, reference
+  lines, click events (Community / Pro). Docs: /candlestick
+- **PieChart** — pie, donut, and nested pies (Community). Docs: /pie
+- **ScatterChart** — scatter/point charts, z-axis color mapping, voronoi
+  interaction (Community). Docs: /scatter
+- **CompositeChart** — layer scatter + line plots on one surface, multi-axis
+  (Community / Pro). Docs: /composite
+- **Heatmap** — matrix/grid visualization with color scales (Pro).
+  Docs: /heatmap
+- **SparklineChart** — compact inline charts for dashboards and tables
+  (Community). Docs: /sparkline
+- **LiveTradingChart** — real-time streaming charts (Community / Pro).
+  Docs: /live-trading
+
+Tree View (MUI X Tree View):
+
+- **TreeView** — data-driven RichTreeView: selection, expansion, inline
+  label editing, disabling (Community). Docs: /tree-basic
+- **SimpleTreeView** — lightweight JSX-driven tree for navigation sidebars
+  (Community). Docs: /tree-simple
+- **TreeViewPro** — drag-and-drop reordering, lazy loading, per-item
+  slider + kebab menu controls (Pro). Docs: /tree-pro
+
+Date & Time Pickers (MUI X Date Pickers):
+
+- **TimeClock** — inline clock-face time picker, string in/out values
+  (Community). Docs: /time-clock
+
+## Community vs Pro
+
+Community features work with no license. MUI X Pro features — LineChart /
+BarChart / CompositeChart zoom, pan, slider, brush and toolbar; Heatmap;
+TreeViewPro reordering, lazy loading and per-item controls — require an
+MUI X Pro license key passed via the `licenseKey` prop (the demo app reads
+it from the `MUI_PRO_API_KEY` environment variable).
+
+## Quick start
+
+```python
+from dash import Dash, html
+from dash_mui_charts import LineChart
+
+app = Dash(__name__)
+
+app.layout = html.Div([
+    LineChart(
+        id='my-chart',
+        height=400,
+        series=[
+            {'data': [1, 4, 2, 5, 7], 'label': 'Series A'},
+        ],
+        xAxis=[{'data': [1, 2, 3, 4, 5]}],
+    )
+])
+
+if __name__ == '__main__':
+    app.run(debug=True)
+```
+
+## More documentation pages
+
+- LineChart: /linechart-pro, /linechart-brush, /linechart-referencelines,
+  /linechart-highlighting, /highlighting-sync, /linechart-zoom-preview,
+  /linechart-tick-hover, /crosshair
+- BarChart: /barchart-dataset, /barchart-stacking, /barchart-interaction,
+  /barchart-reference, /barchart-pro
+- Pie / Heatmap / Sparkline explorers: /pie-props, /heatmap-props,
+  /sparkline-style, /sparkline-style-advanced
+- CompositeChart: /composite-v120, /composite-render-bp
+- Tree View: /tree-selection, /tree-expansion, /tree-editing, /tree-icons,
+  /tree-disabled, /tree-pro
+- TimeClock: /time-clock-lab
+- Release history: /changelog
+
+## Links
+
+- GitHub: https://github.com/pip-install-python/dash-mui-charts
+- PyPI: https://pypi.org/project/dash-mui-charts/
+- MUI X Charts: https://mui.com/x/react-charts/
+"""
 
 INSTALL_CODE = "pip install dash-mui-charts"
 

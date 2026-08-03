@@ -25,7 +25,12 @@ setup(
         'Source': 'https://github.com/pip-install-python/dash-mui-charts',
         'Documentation': 'https://github.com/pip-install-python/dash-mui-charts#readme',
     },
-    install_requires=['dash>=3.0.0'],
+    # The MEASURED floor, not an aspiration: ci.yml's package jobs install
+    # the wheel against dash==3.3.0 and against the current release. The
+    # earlier `>=3.0.0` claim was never tested on 3.0-3.2. (The docs SITE
+    # needs dash>=4.1 — dash-improve-my-llms pins it — but that constrains
+    # requirements.txt, not the package.)
+    install_requires=['dash>=3.3.0'],
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Framework :: Dash',
@@ -33,13 +38,15 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
         'Programming Language :: Python :: 3.12',
+        'Programming Language :: Python :: 3.13',
         'Topic :: Scientific/Engineering :: Visualization',
     ],
     keywords='dash plotly charts mui material-ui visualization',
-    python_requires='>=3.8',
+    # Every interpreter ci.yml's package-python-range job measures — the
+    # 3.8 claim was dropped with the untested dash 3.0-3.2 range.
+    python_requires='>=3.9',
 )

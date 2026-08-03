@@ -1,0 +1,1031 @@
+{
+ "chart_callbacks": [
+  {
+   "chart_refs": [
+    "controlled-zoom-chart"
+   ],
+   "output": "..controlled-zoom-chart.zoom...controlled-zoom-output.children.."
+  },
+  {
+   "chart_refs": [
+    "lab-color-clock"
+   ],
+   "output": "..lab-color-clock.sx...lab-color-face.value...lab-color-hand.value...lab-color-num.value.."
+  },
+  {
+   "chart_refs": [
+    "lab-dtp-clock"
+   ],
+   "output": "..lab-dtp-clock.value...lab-dtp.value...lab-dtp-out.children.."
+  },
+  {
+   "chart_refs": [
+    "lab-sw-clock"
+   ],
+   "output": "..lab-sw-store.data...lab-sw-interval.disabled...lab-sw-clock.value...lab-sw-clock.view...lab-sw-readout.children...lab-sw-unit.children...lab-sw-unit.color.."
+  },
+  {
+   "chart_refs": [
+    "lab-tg-clock"
+   ],
+   "output": "..lab-tg-clock.value...lab-tg.value...lab-tg-out.children.."
+  },
+  {
+   "chart_refs": [
+    "lab-ti-clock"
+   ],
+   "output": "..lab-ti-clock.value...lab-ti-input.value...lab-ti-out.children.."
+  },
+  {
+   "chart_refs": [
+    "lab-tp-clock"
+   ],
+   "output": "..lab-tp-clock.value...lab-tp-input.value...lab-tp-out.children.."
+  },
+  {
+   "chart_refs": [
+    "lt-chart"
+   ],
+   "output": "..lt-alert-count.children...lt-alert-log.children.."
+  },
+  {
+   "chart_refs": [
+    "lt-chart"
+   ],
+   "output": "..lt-price-display.children...lt-price-display.style...lt-tick-display.children...lt-status.children...lt-status.style.."
+  },
+  {
+   "chart_refs": [
+    "npm-sparkline"
+   ],
+   "output": "..npm-download-count.children...npm-week-label.children.."
+  },
+  {
+   "chart_refs": [
+    "sec2-chart"
+   ],
+   "output": "..sec2-chart.referenceLines...sec2-tags.children...sec2-count.children...sec2-alert-status.children.."
+  },
+  {
+   "chart_refs": [
+    "sec3-humidity",
+    "sec3-pressure",
+    "sec3-temp"
+   ],
+   "output": "..sec3-temp.highlightedAxis...sec3-pressure.highlightedAxis...sec3-humidity.highlightedAxis...sec3-temp.syncedTooltipIndex...sec3-pressure.syncedTooltipIndex...sec3-humidity.syncedTooltipIndex...sec3-coord.children.."
+  },
+  {
+   "chart_refs": [
+    "sec3-humidity",
+    "sec3-pressure",
+    "sec3-temp"
+   ],
+   "output": "..sec3-temp.referenceLines...sec3-pressure.referenceLines...sec3-humidity.referenceLines...sec3-tags-temp.children...sec3-tags-pressure.children...sec3-tags-humidity.children...sec3-count.children.."
+  },
+  {
+   "chart_refs": [
+    "glass-sparkline"
+   ],
+   "output": "..sparkline-container.style...sparkline-container.className...hover-value-display.children...hover-index-display.children...change-display.children...change-display.className...hover-instruction.className.."
+  },
+  {
+   "chart_refs": [
+    "interactive-stock-sparkline"
+   ],
+   "output": "..stock-price-display.children...stock-hover-output.children.."
+  },
+  {
+   "chart_refs": [
+    "sync-line-a",
+    "sync-line-b"
+   ],
+   "output": "..sync-line-a.highlightedItem...sync-line-b.highlightedItem...custom-tooltip-a.style...custom-tooltip-a.children...custom-tooltip-b.style...custom-tooltip-b.children...sync-axis-output.children...profit-display.children.."
+  },
+  {
+   "chart_refs": [
+    "sync-line-chart",
+    "sync-pie-chart"
+   ],
+   "output": "..sync-line-chart.highlightedItem...sync-pie-chart.highlightedItem...sync-highlight-output.children.."
+  },
+  {
+   "chart_refs": [
+    "sync-revenue-spark",
+    "sync-sessions-spark",
+    "sync-users-spark"
+   ],
+   "output": "..sync-revenue-value.children...sync-revenue-label.children...sync-users-value.children...sync-users-label.children...sync-sessions-value.children...sync-sessions-label.children.."
+  },
+  {
+   "chart_refs": [
+    "tree-exp-controlled"
+   ],
+   "output": "..tree-exp-controlled.expandedItems...tree-exp-controlled-out.children.."
+  },
+  {
+   "chart_refs": [
+    "tree-pro-combo"
+   ],
+   "output": "..tree-pro-combo-action-log.children...tps-last-kebab.data.."
+  },
+  {
+   "chart_refs": [
+    "tree-pro-combo"
+   ],
+   "output": "..tree-pro-combo-edit.children...tps-label-overrides.data.."
+  },
+  {
+   "chart_refs": [
+    "tree-pro-combo"
+   ],
+   "output": "..tree-pro-combo-sliders.children...tps-last-slider.data.."
+  },
+  {
+   "chart_refs": [
+    "tree-sel-controlled"
+   ],
+   "output": "..tree-sel-controlled.selectedItems...tree-sel-controlled-out.children.."
+  },
+  {
+   "chart_refs": [
+    "v120-stack-humidity",
+    "v120-stack-pressure",
+    "v120-stack-temp"
+   ],
+   "output": "..v120-stack-temp.highlightedAxis...v120-stack-humidity.highlightedAxis...v120-stack-pressure.highlightedAxis...v120-stack-temp.syncedTooltipIndex...v120-stack-humidity.syncedTooltipIndex...v120-stack-pressure.syncedTooltipIndex.."
+  },
+  {
+   "chart_refs": [
+    "v120-stack-humidity",
+    "v120-stack-pressure",
+    "v120-stack-temp"
+   ],
+   "output": "..v120-stack-temp.xAxis...v120-stack-humidity.xAxis...v120-stack-pressure.xAxis...v120-stack-temp.margin...v120-stack-humidity.margin...v120-stack-pressure.margin...v120-stack-temp.height...v120-stack-humidity.height...v120-stack-pressure.height.."
+  },
+  {
+   "chart_refs": [
+    "v120-sync-humidity",
+    "v120-sync-temp"
+   ],
+   "output": "..v120-sync-temp.highlightedAxis...v120-sync-humidity.highlightedAxis...v120-sync-temp.syncedTooltipIndex...v120-sync-humidity.syncedTooltipIndex...v120-sync-output.children.."
+  },
+  {
+   "chart_refs": [
+    "axis-highlight-chart"
+   ],
+   "output": "axis-highlight-chart.highlightedAxis"
+  },
+  {
+   "chart_refs": [
+    "axis-highlight-chart"
+   ],
+   "output": "axis-highlight-output.children"
+  },
+  {
+   "chart_refs": [
+    "bar-int-axis-click"
+   ],
+   "output": "bar-int-axis-click-out.children"
+  },
+  {
+   "chart_refs": [
+    "bar-int-click"
+   ],
+   "output": "bar-int-click-out.children"
+  },
+  {
+   "chart_refs": [
+    "bar-int-highlight"
+   ],
+   "output": "bar-int-highlight-out.children"
+  },
+  {
+   "chart_refs": [
+    "brush-toggle-chart"
+   ],
+   "output": "brush-toggle-chart.brushOverlay"
+  },
+  {
+   "chart_refs": [
+    "candle-click"
+   ],
+   "output": "candle-click-out.children"
+  },
+  {
+   "chart_refs": [
+    "interactive-linechart"
+   ],
+   "output": "click-output.children"
+  },
+  {
+   "chart_refs": [
+    "composite-zoom"
+   ],
+   "output": "composite-zoom-output.children"
+  },
+  {
+   "chart_refs": [
+    "composite-zoom"
+   ],
+   "output": "composite-zoom.series"
+  },
+  {
+   "chart_refs": [
+    "cross-basic"
+   ],
+   "output": "cross-coord-display.children"
+  },
+  {
+   "chart_refs": [
+    "dynamic-ref-chart"
+   ],
+   "output": "dynamic-ref-chart.referenceLines"
+  },
+  {
+   "chart_refs": [
+    "interactive-heatmap"
+   ],
+   "output": "heatmap-click-output.children"
+  },
+  {
+   "chart_refs": [
+    "item-highlight-chart"
+   ],
+   "output": "item-highlight-chart.highlightedItem"
+  },
+  {
+   "chart_refs": [
+    "item-highlight-chart"
+   ],
+   "output": "item-highlight-output.children"
+  },
+  {
+   "chart_refs": [
+    "lab-glass-clock"
+   ],
+   "output": "lab-glass-readout.children"
+  },
+  {
+   "chart_refs": [
+    "lt-chart"
+   ],
+   "output": "lt-chart.drift"
+  },
+  {
+   "chart_refs": [
+    "lt-chart"
+   ],
+   "output": "lt-chart.intervalMs"
+  },
+  {
+   "chart_refs": [
+    "lt-chart"
+   ],
+   "output": "lt-chart.resetTrigger"
+  },
+  {
+   "chart_refs": [
+    "lt-chart"
+   ],
+   "output": "lt-chart.running"
+  },
+  {
+   "chart_refs": [
+    "lt-chart"
+   ],
+   "output": "lt-chart.showLabels"
+  },
+  {
+   "chart_refs": [
+    "lt-chart"
+   ],
+   "output": "lt-chart.showSlider"
+  },
+  {
+   "chart_refs": [
+    "lt-chart"
+   ],
+   "output": "lt-chart.showVolume"
+  },
+  {
+   "chart_refs": [
+    "lt-chart"
+   ],
+   "output": "lt-chart.volatility"
+  },
+  {
+   "chart_refs": [
+    "lt-chart"
+   ],
+   "output": "lt-chart.windowSize"
+  },
+  {
+   "chart_refs": [
+    "interactive-pie"
+   ],
+   "output": "pie-click-data.children"
+  },
+  {
+   "chart_refs": [
+    "interactive-pie"
+   ],
+   "output": "pie-highlight-data.children"
+  },
+  {
+   "chart_refs": [
+    "scatter-click"
+   ],
+   "output": "scatter-click-output.children"
+  },
+  {
+   "chart_refs": [
+    "sec2-chart"
+   ],
+   "output": "sec2-store.data"
+  },
+  {
+   "chart_refs": [
+    "sec3-humidity",
+    "sec3-pressure",
+    "sec3-temp"
+   ],
+   "output": "sec3-store.data"
+  },
+  {
+   "chart_refs": [
+    "tc-controlled"
+   ],
+   "output": "tc-controlled-out.children"
+  },
+  {
+   "chart_refs": [
+    "tc-controlled"
+   ],
+   "output": "tc-controlled.value"
+  },
+  {
+   "chart_refs": [
+    "tc-views-hms"
+   ],
+   "output": "tc-views-out.children"
+  },
+  {
+   "chart_refs": [
+    "tick-hover-interactive"
+   ],
+   "output": "tick-hover-click-output.children"
+  },
+  {
+   "chart_refs": [
+    "tree-basic-clicks"
+   ],
+   "output": "tree-basic-click-out.children"
+  },
+  {
+   "chart_refs": [
+    "tree-basic-focus"
+   ],
+   "output": "tree-basic-focus-out.children"
+  },
+  {
+   "chart_refs": [
+    "tree-dis-checkbox"
+   ],
+   "output": "tree-dis-checkbox-out.children"
+  },
+  {
+   "chart_refs": [
+    "tree-edit-all"
+   ],
+   "output": "tree-edit-all-out.children"
+  },
+  {
+   "chart_refs": [
+    "tree-edit-log"
+   ],
+   "output": "tree-edit-log-out.children"
+  },
+  {
+   "chart_refs": [
+    "tree-edit-specific"
+   ],
+   "output": "tree-edit-specific-out.children"
+  },
+  {
+   "chart_refs": [
+    "tree-exp-track"
+   ],
+   "output": "tree-exp-track-out.children"
+  },
+  {
+   "chart_refs": [
+    "tree-pro-combo"
+   ],
+   "output": "tree-pro-combo-sel.children"
+  },
+  {
+   "chart_refs": [
+    "tree-pro-reorder"
+   ],
+   "output": "tree-pro-reorder-out.children"
+  },
+  {
+   "chart_refs": [
+    "tree-sel-checkbox"
+   ],
+   "output": "tree-sel-checkbox-out.children"
+  },
+  {
+   "chart_refs": [
+    "tree-sel-multi"
+   ],
+   "output": "tree-sel-multi-out.children"
+  },
+  {
+   "chart_refs": [
+    "tree-sel-propagation"
+   ],
+   "output": "tree-sel-propagation-out.children"
+  },
+  {
+   "chart_refs": [
+    "tree-sel-single"
+   ],
+   "output": "tree-sel-single-out.children"
+  },
+  {
+   "chart_refs": [
+    "tree-simple-checkbox"
+   ],
+   "output": "tree-simple-checkbox-out.children"
+  },
+  {
+   "chart_refs": [
+    "tree-simple-select"
+   ],
+   "output": "tree-simple-select-out.children"
+  },
+  {
+   "chart_refs": [
+    "tree-simple-sidebar-demo"
+   ],
+   "output": "url.href@84a073d34077b424ad8b29fb2d77b7beba89e2ae5728c1701b364d8a66debb52"
+  },
+  {
+   "chart_refs": [
+    "v120-highlighted-axis"
+   ],
+   "output": "v120-axis-output.children"
+  },
+  {
+   "chart_refs": [
+    "zoom-preview-chart"
+   ],
+   "output": "zoom-preview-output.children"
+  },
+  {
+   "chart_refs": [
+    "zoom-slider-chart"
+   ],
+   "output": "zoom-slider-output.children"
+  }
+ ],
+ "healthz": [
+  200,
+  true
+ ],
+ "route_statuses": {
+  "/": 200,
+  "/api": 200,
+  "/barchart-basic": 200,
+  "/barchart-dataset": 200,
+  "/barchart-interaction": 200,
+  "/barchart-pro": 200,
+  "/barchart-reference": 200,
+  "/barchart-stacking": 200,
+  "/candlestick": 200,
+  "/changelog": 200,
+  "/composite": 200,
+  "/composite-render-bp": 200,
+  "/composite-v120": 200,
+  "/crosshair": 200,
+  "/heatmap": 200,
+  "/heatmap-props": 200,
+  "/highlighting-sync": 200,
+  "/linechart-basic": 200,
+  "/linechart-brush": 200,
+  "/linechart-highlighting": 200,
+  "/linechart-pro": 200,
+  "/linechart-referencelines": 200,
+  "/linechart-tick-hover": 200,
+  "/linechart-zoom-preview": 200,
+  "/live-trading": 200,
+  "/pie": 200,
+  "/pie-props": 200,
+  "/scatter": 200,
+  "/sparkline": 200,
+  "/sparkline-style": 200,
+  "/sparkline-style-advanced": 200,
+  "/time-clock": 200,
+  "/time-clock-lab": 200,
+  "/tree-basic": 200,
+  "/tree-disabled": 200,
+  "/tree-editing": 200,
+  "/tree-expansion": 200,
+  "/tree-icons": 200,
+  "/tree-pro": 200,
+  "/tree-selection": 200,
+  "/tree-simple": 200
+ },
+ "routes": {
+  "/": {
+   "mui_components": {},
+   "mui_ids": [],
+   "mui_mounts": 0
+  },
+  "/api": {
+   "mui_components": {},
+   "mui_ids": [],
+   "mui_mounts": 0
+  },
+  "/barchart-basic": {
+   "mui_components": {
+    "dash_mui_charts.BarChart": 6
+   },
+   "mui_ids": [
+    "bar-basic-horizontal",
+    "bar-basic-labels",
+    "bar-basic-multi",
+    "bar-basic-negative",
+    "bar-basic-rounded",
+    "bar-basic-stacked"
+   ],
+   "mui_mounts": 6
+  },
+  "/barchart-dataset": {
+   "mui_components": {
+    "dash_mui_charts.BarChart": 3
+   },
+   "mui_ids": [
+    "bar-ds-gaps",
+    "bar-ds-stacked",
+    "bar-ds-temps"
+   ],
+   "mui_mounts": 3
+  },
+  "/barchart-interaction": {
+   "mui_components": {
+    "dash_mui_charts.BarChart": 8
+   },
+   "mui_ids": [
+    "bar-int-ax-band",
+    "bar-int-ax-line",
+    "bar-int-ax-none",
+    "bar-int-axis-click",
+    "bar-int-click",
+    "bar-int-highlight",
+    "bar-int-tt-axis",
+    "bar-int-tt-item"
+   ],
+   "mui_mounts": 8
+  },
+  "/barchart-pro": {
+   "mui_components": {
+    "dash_mui_charts.BarChart": 3
+   },
+   "mui_ids": [
+    "bar-pro-slider",
+    "bar-pro-stacked-zoom",
+    "bar-pro-toolbar"
+   ],
+   "mui_mounts": 3
+  },
+  "/barchart-reference": {
+   "mui_components": {
+    "dash_mui_charts.BarChart": 6
+   },
+   "mui_ids": [
+    "bar-ref-colors",
+    "bar-ref-multi",
+    "bar-ref-noanim",
+    "bar-ref-nolegend",
+    "bar-ref-target",
+    "bar-ref-vertical"
+   ],
+   "mui_mounts": 6
+  },
+  "/barchart-stacking": {
+   "mui_components": {
+    "dash_mui_charts.BarChart": 5
+   },
+   "mui_ids": [
+    "bar-stack-diverging",
+    "bar-stack-expand",
+    "bar-stack-groups",
+    "bar-stack-horizontal",
+    "bar-stack-normal"
+   ],
+   "mui_mounts": 5
+  },
+  "/candlestick": {
+   "mui_components": {
+    "dash_mui_charts.CandlestickChart": 7
+   },
+   "mui_ids": [
+    "candle-basic",
+    "candle-click",
+    "candle-dataset",
+    "candle-no-tooltip",
+    "candle-refs",
+    "candle-styled",
+    "candle-volume"
+   ],
+   "mui_mounts": 7
+  },
+  "/changelog": {
+   "mui_components": {},
+   "mui_ids": [],
+   "mui_mounts": 0
+  },
+  "/composite": {
+   "mui_components": {
+    "dash_mui_charts.CompositeChart": 4
+   },
+   "mui_ids": [
+    "composite-multiaxis",
+    "composite-reference",
+    "composite-trend",
+    "composite-zoom"
+   ],
+   "mui_mounts": 4
+  },
+  "/composite-render-bp": {
+   "mui_components": {},
+   "mui_ids": [],
+   "mui_mounts": 0
+  },
+  "/composite-v120": {
+   "mui_components": {
+    "dash_mui_charts.CompositeChart": 7
+   },
+   "mui_ids": [
+    "v120-axis-tooltip",
+    "v120-highlighted-axis",
+    "v120-stack-humidity",
+    "v120-stack-pressure",
+    "v120-stack-temp",
+    "v120-sync-humidity",
+    "v120-sync-temp"
+   ],
+   "mui_mounts": 7
+  },
+  "/crosshair": {
+   "mui_components": {
+    "dash_mui_charts.CompositeChart": 5
+   },
+   "mui_ids": [
+    "cross-basic",
+    "sec2-chart",
+    "sec3-humidity",
+    "sec3-pressure",
+    "sec3-temp"
+   ],
+   "mui_mounts": 5
+  },
+  "/heatmap": {
+   "mui_components": {
+    "dash_mui_charts.Heatmap": 7
+   },
+   "mui_ids": [
+    "basic-heatmap",
+    "correlation-heatmap",
+    "custom-cell-heatmap",
+    "interactive-heatmap",
+    "piecewise-heatmap",
+    "rounded-heatmap",
+    "temperature-heatmap"
+   ],
+   "mui_mounts": 7
+  },
+  "/heatmap-props": {
+   "mui_components": {},
+   "mui_ids": [],
+   "mui_mounts": 0
+  },
+  "/highlighting-sync": {
+   "mui_components": {
+    "dash_mui_charts.LineChart": 3,
+    "dash_mui_charts.PieChart": 1
+   },
+   "mui_ids": [
+    "sync-line-a",
+    "sync-line-b",
+    "sync-line-chart",
+    "sync-pie-chart"
+   ],
+   "mui_mounts": 4
+  },
+  "/linechart-basic": {
+   "mui_components": {
+    "dash_mui_charts.LineChart": 6
+   },
+   "mui_ids": [
+    "area-linechart",
+    "basic-linechart",
+    "biaxial-linechart",
+    "custom-linechart",
+    "interactive-linechart",
+    "stacked-area-linechart"
+   ],
+   "mui_mounts": 6
+  },
+  "/linechart-brush": {
+   "mui_components": {
+    "dash_mui_charts.LineChart": 3
+   },
+   "mui_ids": [
+    "axis-highlight-chart",
+    "brush-toggle-chart",
+    "brush-values-chart"
+   ],
+   "mui_mounts": 3
+  },
+  "/linechart-highlighting": {
+   "mui_components": {
+    "dash_mui_charts.LineChart": 3
+   },
+   "mui_ids": [
+    "axis-highlight-chart",
+    "highlight-scope-chart",
+    "item-highlight-chart"
+   ],
+   "mui_mounts": 3
+  },
+  "/linechart-pro": {
+   "mui_components": {
+    "dash_mui_charts.LineChart": 4
+   },
+   "mui_ids": [
+    "biaxial-zoom-chart",
+    "controlled-zoom-chart",
+    "zoom-config-chart",
+    "zoom-slider-chart"
+   ],
+   "mui_mounts": 4
+  },
+  "/linechart-referencelines": {
+   "mui_components": {
+    "dash_mui_charts.LineChart": 8
+   },
+   "mui_ids": [
+    "combined-ref-chart",
+    "dynamic-ref-chart",
+    "horizontal-ref-chart",
+    "label-align-chart",
+    "line-style-chart",
+    "multiaxis-ref-chart",
+    "spacing-chart",
+    "vertical-ref-chart"
+   ],
+   "mui_mounts": 8
+  },
+  "/linechart-tick-hover": {
+   "mui_components": {
+    "dash_mui_charts.LineChart": 8
+   },
+   "mui_ids": [
+    "tick-hover-config",
+    "tick-hover-interactive",
+    "tick-hover-quarter",
+    "tick-hover-week",
+    "tick-hover-year-linear",
+    "tick-hover-year-point",
+    "tick-hover-zoom-pro",
+    "tick-hover-zoom-slider"
+   ],
+   "mui_mounts": 8
+  },
+  "/linechart-zoom-preview": {
+   "mui_components": {
+    "dash_mui_charts.LineChart": 4
+   },
+   "mui_ids": [
+    "axis-config-chart",
+    "zoom-interaction-chart",
+    "zoom-preview-biaxial",
+    "zoom-preview-chart"
+   ],
+   "mui_mounts": 4
+  },
+  "/live-trading": {
+   "mui_components": {
+    "dash_mui_charts.LiveTradingChart": 1
+   },
+   "mui_ids": [
+    "lt-chart"
+   ],
+   "mui_mounts": 1
+  },
+  "/pie": {
+   "mui_components": {
+    "dash_mui_charts.PieChart": 6
+   },
+   "mui_ids": [
+    "basic-pie",
+    "donut-pie",
+    "gauge-pie",
+    "interactive-pie",
+    "labeled-pie",
+    "styled-pie"
+   ],
+   "mui_mounts": 6
+  },
+  "/pie-props": {
+   "mui_components": {},
+   "mui_ids": [],
+   "mui_mounts": 0
+  },
+  "/scatter": {
+   "mui_components": {
+    "dash_mui_charts.ScatterChart": 7
+   },
+   "mui_ids": [
+    "scatter-axis-styling",
+    "scatter-basic",
+    "scatter-click",
+    "scatter-colormap",
+    "scatter-dataset",
+    "scatter-log",
+    "scatter-sizes"
+   ],
+   "mui_mounts": 7
+  },
+  "/sparkline": {
+   "mui_components": {
+    "dash_mui_charts.SparklineChart": 20
+   },
+   "mui_ids": [
+    "interactive-stock-sparkline",
+    "npm-sparkline",
+    "sync-revenue-spark",
+    "sync-sessions-spark",
+    "sync-users-spark"
+   ],
+   "mui_mounts": 20
+  },
+  "/sparkline-style": {
+   "mui_components": {},
+   "mui_ids": [],
+   "mui_mounts": 0
+  },
+  "/sparkline-style-advanced": {
+   "mui_components": {
+    "dash_mui_charts.SparklineChart": 1
+   },
+   "mui_ids": [
+    "glass-sparkline"
+   ],
+   "mui_mounts": 1
+  },
+  "/time-clock": {
+   "mui_components": {
+    "dash_mui_charts.TimeClock": 11
+   },
+   "mui_ids": [
+    "tc-ampm-default",
+    "tc-ampm-off",
+    "tc-ampm-on",
+    "tc-basic",
+    "tc-controlled",
+    "tc-disabled",
+    "tc-readonly",
+    "tc-uncontrolled",
+    "tc-views-h",
+    "tc-views-hms",
+    "tc-views-ms"
+   ],
+   "mui_mounts": 11
+  },
+  "/time-clock-lab": {
+   "mui_components": {
+    "dash_mui_charts.TimeClock": 7
+   },
+   "mui_ids": [
+    "lab-color-clock",
+    "lab-dtp-clock",
+    "lab-glass-clock",
+    "lab-sw-clock",
+    "lab-tg-clock",
+    "lab-ti-clock",
+    "lab-tp-clock"
+   ],
+   "mui_mounts": 7
+  },
+  "/tree-basic": {
+   "mui_components": {
+    "dash_mui_charts.TreeView": 5
+   },
+   "mui_ids": [
+    "tree-basic-clicks",
+    "tree-basic-custom-keys",
+    "tree-basic-expanded",
+    "tree-basic-focus",
+    "tree-basic-minimal"
+   ],
+   "mui_mounts": 5
+  },
+  "/tree-disabled": {
+   "mui_components": {
+    "dash_mui_charts.TreeView": 4
+   },
+   "mui_ids": [
+    "tree-dis-basic",
+    "tree-dis-checkbox",
+    "tree-dis-focusable",
+    "tree-dis-parents"
+   ],
+   "mui_mounts": 4
+  },
+  "/tree-editing": {
+   "mui_components": {
+    "dash_mui_charts.TreeView": 3
+   },
+   "mui_ids": [
+    "tree-edit-all",
+    "tree-edit-log",
+    "tree-edit-specific"
+   ],
+   "mui_mounts": 3
+  },
+  "/tree-expansion": {
+   "mui_components": {
+    "dash_mui_charts.TreeView": 4
+   },
+   "mui_ids": [
+    "tree-exp-content",
+    "tree-exp-controlled",
+    "tree-exp-icon",
+    "tree-exp-track"
+   ],
+   "mui_mounts": 4
+  },
+  "/tree-icons": {
+   "mui_components": {
+    "dash_mui_charts.TreeView": 9
+   },
+   "mui_ids": [
+    "tree-icon-addremove",
+    "tree-icon-arrow",
+    "tree-icon-default",
+    "tree-icon-file",
+    "tree-icon-height",
+    "tree-icon-indent-24",
+    "tree-icon-indent-48",
+    "tree-icon-indent-8",
+    "tree-icon-sx"
+   ],
+   "mui_mounts": 9
+  },
+  "/tree-pro": {
+   "mui_components": {
+    "dash_mui_charts.TreeViewPro": 3
+   },
+   "mui_ids": [
+    "tree-pro-combo",
+    "tree-pro-reorder",
+    "tree-pro-reorder-subset"
+   ],
+   "mui_mounts": 3
+  },
+  "/tree-selection": {
+   "mui_components": {
+    "dash_mui_charts.TreeView": 6
+   },
+   "mui_ids": [
+    "tree-sel-checkbox",
+    "tree-sel-controlled",
+    "tree-sel-disabled",
+    "tree-sel-multi",
+    "tree-sel-propagation",
+    "tree-sel-single"
+   ],
+   "mui_mounts": 6
+  },
+  "/tree-simple": {
+   "mui_components": {
+    "dash_mui_charts.SimpleTreeView": 7
+   },
+   "mui_ids": [
+    "tree-simple-basic",
+    "tree-simple-checkbox",
+    "tree-simple-disabled",
+    "tree-simple-icon-trigger",
+    "tree-simple-icons",
+    "tree-simple-select",
+    "tree-simple-sidebar-demo"
+   ],
+   "mui_mounts": 7
+  }
+ },
+ "total_mui_mounts": 195
+}

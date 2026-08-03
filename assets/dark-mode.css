@@ -405,3 +405,28 @@ body:has(._dash-loading)::after {
 [data-mantine-color-scheme="dark"] .bp-loading-logo {
     content: url("/assets/2plot_dark_mode.png");
 }
+
+
+/* ============================================================
+   MUI Tree View vs the boilerplate's global list styling
+   ------------------------------------------------------------
+   assets/main.css (boilerplate copy) styles BARE ul/ol/li for markdown
+   prose: `ul, ol { margin-bottom: 1rem; padding-left: 1.5rem }` and
+   `li { margin-bottom: .5rem }`. MUI trees render as nested ul/li; MUI's
+   emotion classes declare their own indentation (so padding-left loses to
+   them) but declare NO margins — the globals leaked through, inflating
+   every tree's height (a height=200 tree overflowed its box into the next
+   section on /tree-icons). Scope-neutralize the margins here; upstream,
+   the boilerplate rule should arguably be prose-scoped.
+   ============================================================ */
+.MuiRichTreeView-root,
+.MuiSimpleTreeView-root {
+    padding-left: 0;
+    margin-bottom: 0;
+}
+.MuiRichTreeView-root ul,
+.MuiSimpleTreeView-root ul,
+.MuiRichTreeView-root li,
+.MuiSimpleTreeView-root li {
+    margin-bottom: 0;
+}

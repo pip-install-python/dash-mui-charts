@@ -7,6 +7,335 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Boilerplate migration — M5 (API reference)
+
+- **NEW `/api` page**: every prop of all 13 components as tables generated
+  from the components' own metadata via the `.. kwargs::` directive — they
+  can never drift from the installed version. Enabling fix in
+  `lib/directives/kwargs.py`: the numpy-style override (built for
+  dash-mantine-components docstrings) shadowed markdown2dash's own parser
+  for `dash-generate-components` docstrings, so dash-built components
+  rendered EMPTY tables; the hook now falls back to the base parser when
+  it sees "Keyword arguments:". Navbar gains a Reference section; route
+  count 40 → 41 (both parity baselines re-recorded deliberately).
+- **Home stays the bespoke Python page** it already was — it mounts no
+  charts, carries the brand/install/catalog and a full LLMS_DOC, and
+  per-satellite custom homes are the network norm. Changelog likewise
+  stays a Python page (its disk read is exercised by the suite on every
+  run).
+
+### Fixed — tree rendering under the boilerplate shell (owner review)
+
+- **TreeView and SimpleTreeView now follow the theme toggle** — both
+  components gained the `data-mantine-color-scheme` watcher +
+  MUI ThemeProvider that TreeViewPro and TimeClock already had, so
+  checkboxes, icons and edit fields switch with light/dark mode instead
+  of rendering in the light palette everywhere (component fix in
+  src/lib/components, bundle + wrappers rebuilt; wrappers regenerated on
+  the current dash-generate-components, gaining its dash≤4.1 compat shim).
+- **Trees no longer overflow their fixed-height boxes** — the
+  boilerplate's global markdown list styling (`ul/ol` and `li` margins in
+  assets/main.css) leaked into MUI's nested ul/li tree DOM, inflating
+  every tree's height (a `height=200` tree bled into the next section on
+  /tree-icons). Neutralized inside tree roots via assets/dark-mode.css;
+  upstream, the boilerplate rule should arguably be prose-scoped.
+- The /tree-icons SX demo's hardcoded light `#f8f9ff` background became
+  `var(--mantine-color-default)` — it was unreadable in dark mode.
+- **The `height` prop now actually contains the tree** (TreeView and
+  SimpleTreeView): a fixed height previously sized the wrapper only —
+  block children grow past a fixed-height parent and divs don't clip, so
+  the tree rendered full-length over the next section. `height` now
+  implies `overflow: auto` on the wrapper, making the /tree-icons
+  "Fixed Height with Scroll" demo do what its title says.
+
+### Boilerplate migration — M4 (TreeView + Date & Time Pickers)
+
+- **Ten more pages markdown-driven** — the eight TreeView pages (basic,
+  simple, selection, expansion, editing, icons, disabled, and the Pro
+  page with its live license-posture badge kept) and both pickers
+  (`/time-clock`, and `/time-clock-lab` with its liquid-glass styling
+  intact). Whole-page transforms, ids and callbacks verbatim; the four
+  existing LLMS_DOC bodies folded into their md pages. Only home and
+  changelog remain in pages/.
+- **The dogfooding story returns as content**: `/tree-simple` gained a
+  sidebar demo built FROM `components/navbar.py`'s real family map — a
+  SimpleTreeView that genuinely navigates these docs, exactly as the
+  pre-migration shell's sidebar did (it can never drift from the actual
+  nav because it is generated from it). Chart baseline deliberately
+  re-recorded: 195 mounts, 79 chart-touching callbacks.
+
+### Boilerplate migration — M3 (the LineChart batch)
+
+- **Twelve more pages markdown-driven (38 of 40)** — the seven LineChart
+  pages (basics, Pro, brush, reference lines, highlighting, ticks & hover,
+  zoom preview), `/highlighting-sync`, `/crosshair`, and the three
+  CompositeChart pages. The batch's 7,550 lines ported as whole-page
+  transforms — one `demo.py` exec module per page, every id and all ~50
+  callbacks verbatim (the sync-tooltip overlays, the crosshair alert
+  system and the render-BP LoadingOverlay dashboard included) — with md
+  wrappers carrying frontmatter, overview prose, and the two existing
+  LLMS_DOC bodies folded in. Per-section md granularity for this family is
+  deliberately deferred to a content pass; the format, metadata, TOC/ad
+  asides and real llms.txt documents are all in place now.
+- **Every Pro route now explains the key requirement in-page**
+  (BANNER_ROUTES == PRO_ROUTES): the twelve md files carry the Pro
+  admonition naming MUI_PRO_API_KEY, so silent degradation to a
+  watermarked chart with no explanation is no longer an allowed posture —
+  the test asserts it stays that way.
+- Transform bugs the gates caught before runtime: the module cut point
+  matched `from dash_mui_charts import` inside LLMS_DOC code fences
+  (syntax error), prose lines starting with "from " were harvested as
+  imports, the banner-block strip went one line too deep on the two
+  banner pages, and two pages lost the `import dash` their callbacks use
+  (F821). All fixed; flake8 and chart parity green.
+
+### Boilerplate migration — M2 (BarChart + Candlestick + LiveTrading)
+
+- **Eight more pages markdown-driven** (26 of 40): the six BarChart pages
+  (`/barchart-basic` 6 examples, `/barchart-dataset` 3, `/barchart-stacking`
+  5, `/barchart-interaction` 5 incl. the click/axis-click/highlight
+  callbacks, `/barchart-reference` 6, `/barchart-pro` 3 Pro zoom demos with
+  the license-posture line in the first), `/candlestick` (7 examples over a
+  shared OHLC generator; the never-rendered 60-candle dataset dropped as
+  dead code), and `/live-trading` (the whole simulator — 11 callbacks —
+  transformed as one exec module; the redundant View Code block replaced by
+  `.. source::`). Chart parity GREEN throughout.
+- **Directory naming rule learned**: families whose examples import shared
+  `_data.py` need UNDERSCORE directories (`docs/barchart_basic/`) — a
+  hyphenated package can be exec'd via importlib but cannot be
+  sibling-imported (`from docs.barchart-basic._data import x` is a syntax
+  error). Endpoints are unaffected (frontmatter owns them).
+- `/live-trading` joined BANNER_ROUTES: its markdown now documents the
+  MUI_PRO_API_KEY requirement permanently (Pro admonition +
+  functions-as-props note) rather than only when the key is missing.
+
+### Boilerplate migration — M1 (Pie + Heatmap + Scatter)
+
+- **Five more pages markdown-driven** (18 of 40 routes' chart content now
+  under docs/): `/pie` (6 exec examples), `/pie-props` (Titanic nested-pie
+  playground, transformed whole), `/scatter` (7 examples sharing a
+  seeded `_data.py` so every point cloud renders exactly as before),
+  `/heatmap` (7 Pro examples + the color-scale reference as a real
+  markdown table), `/heatmap-props` (Pro playground, transformed whole).
+  Same endpoints, chart ids and callbacks throughout — chart parity GREEN
+  against the pre-migration baseline.
+- **Pro degradation tests pinned by ROUTE, not source file** — the
+  migration moves key-reading code from pages/<x>.py into docs/ exec
+  modules, but the route's obligation to degrade (banner or unlicensed
+  chart, never a traceback) doesn't move. 17 Pro routes, 6 banner routes,
+  set-equality both ways.
+- Transform fix caught by lint: the heatmap-props port had dropped its
+  `json` import (cell-click display would have crashed); restored, plus
+  inherited f-string debt cleaned rather than carried into docs/.
+- The stale "0.0.8" release banner on the Scatter page retired; its
+  llms.txt placeholder stubs (both props pages) became real documents.
+
+### Boilerplate migration — M0 (shell + chart-parity gate + Sparkline pilot)
+
+- **The docs app now runs on the dash-documentation-boilerplate structure**
+  (model: dash_pannellum): `run.py` entry point (gunicorn `run:server`),
+  `components/` appshell/header/navbar, pluggable-backend plumbing (Flask
+  enforced until the analytics hooks grow async twins), dependency floors
+  at boot, optional Clerk (vendored 0.9.1, dormant without keys), proxy
+  scheme fix, optional Dash MCP, and `pages/markdown.py` serving
+  `docs/**/*.md` with frontmatter, TOC asides, `.. exec::` live examples
+  and per-page llms.txt built from the markdown body.
+- **Chart parity replaces exact-tree parity as the migration gate**
+  (`scripts/route_parity.py --charts-only`): route set, per-route
+  dash_mui_charts census, chart component ids, and the 78 chart-touching
+  callbacks — recorded from the pre-migration app and GREEN after M0: all
+  40 routes, 194 chart mounts identical.
+- **SparklineChart family ported to markdown** (`docs/sparkline*/`): 3 md
+  pages + 11 exec example modules, callbacks verbatim, same endpoints. The
+  three placeholder llms.txt stubs became real documents for free.
+- **The docs stack moves to Dash 4.4 / dmc 2.7** (requirements.txt;
+  markdown2dash installs `--no-deps` against its gunicorn<22 pin, mistune
+  listed explicitly — LESSONS §8). The dash_mui_charts PACKAGE floor is
+  unchanged (dash>=3.3).
+- **Ad client returns to the canonical boilerplate copy** — per-page aside
+  slots served by the mount-fired MATCH callback, `AD_APP_ID=muicharts`.
+  The floating-slot fork (and the double-impression bug it dodged) retired
+  with the static shell that caused it.
+- **Old shell retired**: SimpleTreeView sidebar (nav is now the grouped
+  boilerplate navbar; the dogfooding story moves into the TreeView docs in
+  M4), `00-loading-theme.js` + `01-nav-restore.js` (they fought the new
+  color-scheme system / targeted the removed tree), the dead
+  license-key-store. `dcc.Location(id="url")` and the SPA analytics
+  counting rule carry over unchanged; the header keeps the
+  `header-avatar` favicon-swapper contract and the package-version badge.
+- Tests updated for the new shell (80 passing, zero secrets): navbar
+  family map ↔ registry parity, per-page aside ad slots, old-shell assets
+  stay deleted; identity/card/version/traffic suites unchanged.
+- **M0 owner-review fixes**: the boilerplate's `main.css`/`m2d.css`/
+  `llms_copy.js` now ship in assets/ (their absence left the theme toggle
+  showing sun AND moon, and nav links unstyled); the navbar renders the
+  old sidebar's SHORT labels with per-item icons ("BARCHART / Basic", not
+  "BARCHART / Bar Chart - Basic") from a (path, label, icon) map; the
+  stale "(0.0.8)" dropped from the Scatter page's display name; the
+  Discord WidgetBot crate removed entirely (run.py, requirements,
+  render.yaml); `.claude/` is untracked and gitignored (owner request —
+  session plans and screenshots live outside version control now).
+
+### Network-standard pass — Phase 4 (deploy cutover, repo side)
+
+- **render.yaml declares the cutover**: `domains: [muicharts.2plot.dev]`
+  plus every env var the app reads (`APP_BASE_URL` and `AD_APP_ID` with
+  their canonical values, `NETWORK_BULLETIN_URL` pointing at the hub feed,
+  `WIDGETBOT_*` optional, the existing secrets). LESSONS §10 caveat is in
+  the file itself: blueprint envVars apply on Blueprint SYNC, not git-push
+  autodeploys — every value must also be set on the SERVICE in the Render
+  dashboard.
+- **Not applicable here**: the Clerk satellite env from STANDARD §9 — this
+  app ships no auth surface (no dash-clerk-auth anywhere); nothing to
+  configure until it ever gains one.
+- **Owner actions remain before go-live** (deliberately not automatable):
+  upload `build/social-cards/muicharts.2plot.dev.png` to
+  cdn.2plot.ai/github_assets/ and verify 200 + IHDR 1200×630 (the HARD
+  GATE — smoke_live fails the deploy while it 404s, by design), set the
+  service env, attach the subdomain + DNS, merge to main, then hub-side
+  STANDARD §9 in pip-docs+ (promote shipping→live, VERIFIED_APP_IDS).
+
+### Network-standard pass — Phase 3 (tests + CI/CD)
+
+- **tests/ populated (80 tests, ZERO secrets by design)** — the suite runs
+  exactly as CI's secretless container does, proving the degraded postures:
+  the 17 MUI Pro pages fall back to license banners instead of dying, the
+  traffic reporter stays dormant, the bulletin stays off. Files: site
+  identity (one brand, every surface), social card (per-page image_url +
+  description, template division rules, the placeholder-in-comment trap),
+  **version parity** (the fix for the five-way version drift: package.json ↔
+  package-info.json ↔ header badge ↔ JSON-LD ↔ noscript, and no surface may
+  claim "9 components" again), route smoke + preservation invariants (the
+  `url` Location contract, the SimpleTreeView nav with every leaf routed,
+  the ad-slot fork, asset contracts), internal-traffic contract (both
+  halves), and the SPA/doc **counting rule** as executable arithmetic.
+- **CI (`ci.yml`)** — lint (flake8 with a budgeted, documented pages/ debt
+  ledger in `.flake8`, plus actionlint first), secretless pytest + a real
+  gunicorn boot probed by the network battery, a **Docker job** that builds
+  the production image, asserts version fingerprints INSIDE it (dash ≥4.1,
+  dimll ≥2.3.4, gunicorn ≥23) and boots it against the same battery CD runs
+  (LESSONS §19), a Dash **matrix** (4.1.0/4.2.0/4.3.0/4.4.1 × py3.12 +
+  4.4.1 × 3.10/3.13) that rebuilds the components with Node 20 (`npm ci` +
+  build + validate-init) before smoke-testing, wheel build + clean-venv
+  verification (13 components, `top_level == dash_mui_charts`, version ==
+  package.json, and a **measured dash==3.3.0 floor install**), a package ×
+  Python 3.9–3.13 range, JS parse checks on the committed bundle and every
+  asset script, and advisory pip-audit.
+- **CD (`cd.yml`)** — main → full CI → Render deploy hook → 120s settle +
+  5 consecutive healthz 200s (Render swaps instances; one 200 proves
+  nothing) → `network_smoke.py` + `smoke_live.py` against the live domain,
+  including the social card's real pixels. Peer checks warn; own-host
+  checks fail.
+- **Release (`release.yml`)** — tag-gated PyPI publish via OIDC trusted
+  publishing (no stored token), gated on tag == package.json version and
+  `scripts/check_release.py`; GitHub Release cut from the CHANGELOG
+  section. Publishing 1.3.0/1.4.0 remains a decision, not a side effect.
+- **Scripts** — `network_smoke.py` (boilerplate battery, per-site block:
+  this brand's H1, `/sparkline/llms.txt`, hidden-page canaries),
+  `smoke_live.py` (canonical copy with the LESSONS §21 wake loop),
+  `check_release.py` (versions, bundle freshness via git timestamps, a
+  Python class per React component, packaging/SEO/network invariants),
+  `smoke_test.py` (the matrix's structural gate — 40 routes, 200s,
+  healthz, ≥150 chart mounts, node parse of every JS artifact).
+- **Two Dash floors made explicit and measured** — the DOCS SITE needs
+  dash ≥4.1 (dash-improve-my-llms pins `dash<5,>=4.1`; production already
+  resolves 4.4.x), while the PACKAGE needs only ≥3.3: `setup.py` now claims
+  `dash>=3.3.0` (raised from an unmeasured `>=3.0.0`) and
+  `python_requires>=3.9` (3.13 classifier added, untested 3.8 dropped) —
+  both now measured by CI rather than asserted. Verified locally: the full
+  route-parity gate is green under Dash 4.4.1, byte-identical to the 3.3.0
+  baseline.
+- **gunicorn floor raised to ≥23** in requirements.txt — closes
+  CVE-2024-6827 / CVE-2024-1135 (request smuggling); asserted inside the
+  Docker image by CI so it cannot silently regress.
+- Housekeeping: `import dash` (unused) dropped from app.py; flake8 config
+  added with per-file ignores documenting why app.py's late imports and the
+  pages idiom are deliberate.
+
+### Network-standard pass — Phase 2 (card + traffic + app id + bulletin)
+
+- **Social card generated** — `scripts/make_social_card.py` (boilerplate
+  template, this site's MUI-blue palette and area-chart mark) renders
+  `build/social-cards/muicharts.2plot.dev.png`, 1200×630. HARD GATE
+  outstanding: hand-upload to cdn.2plot.ai/github_assets/ and verify
+  200 + IHDR before the og:image deploy.
+- **Internal-traffic contract, both halves** — `lib/analytics.record`
+  drops `2plot-internal` UAs at write time, before bot classification;
+  the hourly rollup POST and every ad-server fetch now send
+  `internal_ua(...)` so the hub stops counting this app as a
+  python-requests bot.
+- **One short app id: `muicharts`** — `traffic_report.APP_KEY`,
+  `ad_client.AD_APP_ID` default, bulletin app_id and /healthz all
+  converge on the directory key (legacy "dash-mui-charts" folds in at the
+  hub). NOTE: the 2plot.ai traffic sink still keys this app "charts" and
+  must gain a muicharts fold before deploy or its series forks.
+- **Bulletin wired opt-in** — `lib/bulletin.py`; boot log states wired/off.
+  `NETWORK_BULLETIN_URL` must be set on the Render SERVICE (blueprint
+  envVars only apply on Blueprint sync).
+
+### Network-standard pass — Phase 1 (identity + llms surfaces)
+
+- **One brand, every surface** — `lib/constants.py` (SITE_BRAND
+  "dash-mui-charts — MUI X charts for Dash", SITE_DESCRIPTION, BASE_URL
+  defaulting to https://muicharts.2plot.dev, OG card block, INTERNAL_UA).
+  The header version badge, the JSON-LD version and the template origin are
+  now substituted from single sources of truth at boot — this repo carried
+  five conflicting version strings and three "9 components" claims (it has
+  13; README and .claude/CLAUDE.md corrected).
+- **dash-improve-my-llms ≥2.3.4 wired** — /llms.txt (site prose from
+  pages/home.py's LLMS_DOC), per-page /<page>/llms.txt, /robots.txt with
+  per-vendor bot policy, /sitemap.xml (40 URLs on the canonical origin),
+  per-route canonical/og prerender, cross-host network directory
+  (`lib/network_directory.py`). The analytics before_request stays
+  registered ahead of the bot middleware so crawler hits keep being
+  counted.
+- **Every register_page carries title/description/image_url** — one
+  missing and Dash emits an empty tag that wins with scrapers; all 40
+  routes verified to serve zero empty meta tags. 14 pages (home + one per
+  component family) carry LLMS_DOC prose sourced from SKILLS.md.
+- **templates/index.html rebuilt on the dedup rule** — declares only what
+  Dash does not emit (og:site_name/locale/url, og:image auxiliaries,
+  twitter:image:alt); the duplicate hardcoded title, static og/twitter
+  block, stale JSON-LD and hardcoded canonical are gone. GA4 kept; favicon
+  randomizer kept but its header-avatar sync now retries bounded instead
+  of forever; SPA canonical/og:url sync script added.
+
+### Network-standard pass — Phase 0 (stabilize)
+
+- **Satellite analytics committed** — `lib/analytics.py` (SPA-aware hit
+  recorder), `lib/traffic_report.py` (hourly signed rollup + `/healthz`),
+  `verify_traffic.py` (headless pipeline verification against the hub's own
+  ingest verifier). All checks green.
+- **Route-parity gate** — `scripts/route_parity.py` fingerprints all 40
+  routes (component tree, ids, chart-mount counts, callback census, HTTP
+  sweep) against a committed baseline; every migration phase must keep it
+  green.
+- **Requirements drift fixed** — `requirements-deploy.txt` deleted (it had
+  lost `requests`, so the Docker image could not import `app.py`);
+  `requirements.txt` is now the single dependency file for Render and the
+  Dockerfile alike. Dockerfile gains `PYTHONUNBUFFERED=1`.
+- **Stray build artifact removed** — `dash_mui_charts/dash_mui_charts` was a
+  full copy of `package.json`, created by `build:backends` passing the
+  package name to `-p/--package-info-filename`; the flag now correctly says
+  `package-info.json` and the artifact is deleted.
+
+---
+
+## [1.4.0] - 2026-07-19
+
+### Added
+
+- **TreeViewPro kebab submenus + dividers.** `kebabMenuItems` entries may now be
+  a leaf `{label, value, icon?}`, a `{divider: true}` rule, or a submenu
+  `{label, icon?, children: [entries]}` that opens on hover/click (recursive
+  nesting; a leaf anywhere in the chain closes the whole menu and fires
+  `kebabAction`).
+- **`kebabMenuItemsById`** — per-node kebab menus: `{itemId: [entries]}`
+  overrides the global `kebabMenuItems` for that node (same entry shape,
+  submenus/dividers included). Lets one tree carry different action sets for
+  different node types (channel nodes vs media nodes vs viewport nodes — the
+  2plot.media /360-broadcast use case that motivated this).
+
 ---
 
 ## [1.3.0] - 2026-06-05

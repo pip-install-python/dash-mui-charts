@@ -13,18 +13,25 @@ Wiring (boilerplate apps):
     inject_ad_into_aside(layout, metadata.endpoint)
 
 Wiring (custom apps without the markdown TOC aside):
-    from lib.ad_client import create_ad_component, register_shell_ad
-    ...place create_ad_component("__floating__", compact=True) in the shell...
-    register_shell_ad("url", exclude_paths=("/",))  # serve per navigation
+    from lib.ad_client import create_ad_component, register_location_refresh
+    ...place create_ad_component("__navbar__") in a static shell...
+    register_location_refresh("url")   # re-serve the ad on SPA navigation
 
 Env:
     AD_SERVER_URL  — ad server origin (default https://2plot.dev)
-    AD_APP_ID      — this app's identity in the network (default from
-                     the APP_ID fallback below; override per deployment)
+    AD_APP_ID      — this app's identity in the network (default
+                     "boilerplate"; a fork MUST override it or its
+                     impressions and clicks land on the template's rows)
 
 Failure behaviour: if the ad server is unreachable the slot simply stays
 hidden, and a 60s circuit breaker stops retrying so an outage never adds
 the HTTP timeout to every page view.
+
+Analytics: the server-to-server fetch sends the network's internal-traffic
+User-Agent (``lib/constants.INTERNAL_UA``) so 2plot.dev does not count this
+app's ad requests as visits to itself. The click beacon deliberately does
+not — it is fired by the reader's own browser, which cannot set a
+User-Agent anyway, and a click IS a real person.
 """
 from __future__ import annotations
 
@@ -41,7 +48,27 @@ from dash_iconify import DashIconify
 logger = logging.getLogger(__name__)
 
 AD_SERVER_URL = os.environ.get("AD_SERVER_URL", "https://2plot.dev").rstrip("/")
-APP_ID = os.environ.get("AD_APP_ID", "dash-mui-charts")
+
+# "boilerplate", NOT "dash-documentation-boilerplate". This is the app's own
+# key in the hub's network directory — the same string `SATELLITE_APP_KEY`
+# carries for traffic rollups, `lib/bulletin.py` sends as `?app=`, and
+# `lib/hub_client.py` presents as `X-Satellite-App`. One identifier for this
+# app on every hub surface, so /admin/ad-board and /traffic name the same
+# thing and a column of them stays readable.
+#
+# It also removes a real hazard: `lib/hub_client.app_id()` falls back to
+# `AD_APP_ID` when `SATELLITE_APP_KEY` is unset, so while the ad identifier
+# was a long name that was NOT a directory key, a deployment that set it for
+# ads alone silently re-keyed its hub calls off the directory.
+# `lib/satellite_reporter.app_key()` still refuses to chain to it — see the
+# note there; a fork is free to use a long ad identifier (leaflet.2plot.dev
+# uses "dash-leaflet2" against directory key "leaflet") and that must not
+# re-key its analytics. The hub already folds the legacy "dash-mui-charts"
+# spelling into "muicharts" at ingest, so pre-migration impressions survive.
+#
+# CHANGING THIS SPLITS HISTORY. The ad server keys impressions and clicks by
+# `app`, so anything logged under the old identifier stays under it.
+APP_ID = os.environ.get("AD_APP_ID", "muicharts")
 
 _TIMEOUT = 2          # seconds per fetch — never stall a page view longer
 _COOLDOWN = 60        # seconds to skip fetches after a failure
@@ -62,11 +89,20 @@ def fetch_ad(page: str) -> dict | None:
     with _breaker_lock:
         if time.time() - _last_failure < _COOLDOWN:
             return None
+    from lib.constants import internal_ua
+
     try:
         resp = _session.get(
             f"{AD_SERVER_URL}/api/ad-network/serve",
             params={"app": APP_ID, "page": page},
             timeout=_TIMEOUT,
+            # The highest-volume outbound call this app makes — one per docs
+            # page view, server-to-server. Without the internal-traffic token
+            # every one of them reached 2plot.dev as `python-requests/2.x`,
+            # which its tracker classifies as a bot: this satellite's readers
+            # were being counted as crawler traffic on the hub. See
+            # lib/constants.INTERNAL_UA.
+            headers={"User-Agent": internal_ua("ad-client")},
         )
         if resp.status_code == 200 and resp.content:
             return resp.json()
@@ -78,35 +114,28 @@ def fetch_ad(page: str) -> dict | None:
         return None
 
 
-def create_ad_component(page_path: str, compact: bool = False) -> html.Div:
-    """Hidden ad shell; the serve callback below fills it per page view.
-
-    ``compact=True`` drops the section divider and adds a shadow — for
-    floating placements where the card is not part of a document flow.
-    """
-    divider = [] if compact else [
-        dmc.Divider(
-            label="Advertisement",
-            labelPosition="center",
-            mb="md",
-            mt="xl",
-            styles={
-                "label": {
-                    "fontSize": "0.75rem",
-                    "fontWeight": 600,
-                    "textTransform": "uppercase",
-                    "letterSpacing": "0.5px",
-                    "color": "var(--mantine-color-gray-6)",
-                }
-            },
-        ),
-    ]
+def create_ad_component(page_path: str) -> html.Div:
+    """Hidden ad shell; the mount callback below fills it per page view."""
     return html.Div(
         id={"type": "net-ad-container", "page": page_path},
         style={"display": "none"},
         children=[
             dcc.Store(id={"type": "net-ad-data", "page": page_path}, data=None),
-            *divider,
+            dmc.Divider(
+                label="Advertisement",
+                labelPosition="center",
+                mb="md",
+                mt="xl",
+                styles={
+                    "label": {
+                        "fontSize": "0.75rem",
+                        "fontWeight": 600,
+                        "textTransform": "uppercase",
+                        "letterSpacing": "0.5px",
+                        "color": "var(--mantine-color-gray-6)",
+                    }
+                },
+            ),
             html.A(
                 href="#",
                 target="_blank",
@@ -143,7 +172,6 @@ def create_ad_component(page_path: str, compact: bool = False) -> html.Div:
                     p="sm",
                     withBorder=True,
                     radius="md",
-                    shadow="md" if compact else None,
                     style={"cursor": "pointer"},
                 ),
             ),
@@ -202,11 +230,16 @@ def _serve(page: str):
     )
 
 
-# NOTE (dash-mui-charts divergence from the canonical boilerplate copy):
-# this app's only ad slot lives in the static shell, so the generic
-# mount-fired MATCH callback is intentionally absent — with it, every hard
-# load would fetch twice (mount + location) and log a double impression.
-# The location callback in register_shell_ad below is the sole driver.
+@callback(
+    *_AD_OUTPUTS(MATCH),
+    Input({"type": "net-ad-container", "page": MATCH}, "id"),
+    # Explicit: boilerplate apps may set prevent_initial_callbacks=True
+    # app-wide; the mount-fire is exactly what serves the ad per page view.
+    prevent_initial_call=False,
+)
+def serve_network_ad(container_id):
+    """Fetch + show an ad every time the slot mounts (each page view)."""
+    return _serve((container_id or {}).get("page", "unknown"))
 
 
 # Click beacon: browser → 2plot.dev directly. text/plain keeps it a CORS
@@ -238,25 +271,20 @@ clientside_callback(
 )
 
 
-def register_shell_ad(location_id: str = "url",
-                      page_key: str = "__floating__",
-                      exclude_paths: tuple[str, ...] = ()) -> None:
-    """Drive a static-shell ad slot from the URL bar.
+def register_location_refresh(location_id: str = "url",
+                              page_key: str = "__navbar__") -> None:
+    """For ad slots living in the static app shell (not per-page layouts).
 
-    Fires on hard load and on every SPA navigation, attributing the real
-    pathname. Paths in ``exclude_paths`` keep the slot hidden and fetch
-    nothing (no impression is logged for them).
+    Static shells mount once per hard load, so the mount callback above
+    only fires once. Apps like dash-mui-charts call this to re-serve the
+    slot on every SPA navigation, attributing the real pathname.
     """
-    excluded = {(p.rstrip("/") or "/") for p in exclude_paths}
 
     @callback(
-        *_AD_OUTPUTS(page_key),
+        *[Output(o.component_id, o.component_property, allow_duplicate=True)
+          for o in _AD_OUTPUTS(page_key)],
         Input(location_id, "pathname"),
-        prevent_initial_call=False,
+        prevent_initial_call="initial_duplicate",
     )
     def refresh_shell_ad(pathname):
-        path = (pathname or "/").rstrip("/") or "/"
-        if path in excluded:
-            # clear the store too so a stale click_url can't outlive the hide
-            return no_update, no_update, no_update, None, {"display": "none"}
-        return _serve(path)
+        return _serve(pathname or page_key)

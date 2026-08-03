@@ -27,9 +27,11 @@ import Slider from '@mui/material/Slider';
 import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
+import Divider from '@mui/material/Divider';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import {resolveIcon} from '../fragments/iconResolver';
 
 let licenseKeySet = false;
@@ -136,6 +138,92 @@ const applyReorder = (items, change, idField, childrenField) => {
 // --- Shared context for per-item slider + kebab ------------------------------
 const ItemControlsContext = React.createContext(null);
 
+// --- Kebab menu entries (recursive: leaves, dividers, hover submenus) --------
+// An entry is one of:
+//   {label, value, icon}                — a leaf; picking it fires kebabAction
+//   {divider: true}                     — a horizontal rule
+//   {label, icon, children: [entries]}  — a submenu (opens on hover or click)
+const KebabSubMenu = ({entry, onLeaf}) => {
+    const [anchor, setAnchor] = useState(null);
+    const IconComp = entry.icon ? resolveIcon(entry.icon) : null;
+    return (
+        <React.Fragment>
+            <MenuItem
+                onClick={(e) => {
+                    e.stopPropagation();
+                    setAnchor(e.currentTarget);
+                }}
+                onMouseEnter={(e) => setAnchor(e.currentTarget)}
+            >
+                {IconComp ? (
+                    <ListItemIcon>
+                        <IconComp fontSize="small" />
+                    </ListItemIcon>
+                ) : null}
+                <ListItemText>{entry.label}</ListItemText>
+                <ChevronRightIcon fontSize="small" sx={{ml: 1, opacity: 0.6}} />
+            </MenuItem>
+            <Menu
+                anchorEl={anchor}
+                open={Boolean(anchor)}
+                onClose={() => setAnchor(null)}
+                onClick={(e) => e.stopPropagation()}
+                anchorOrigin={{vertical: 'top', horizontal: 'right'}}
+                transformOrigin={{vertical: 'top', horizontal: 'left'}}
+                // hover-opened: let the pointer travel into the submenu
+                sx={{pointerEvents: 'auto'}}
+                MenuListProps={{onMouseLeave: () => setAnchor(null)}}
+            >
+                <KebabEntries
+                    entries={entry.children || []}
+                    onLeaf={(v) => {
+                        setAnchor(null);
+                        onLeaf(v);
+                    }}
+                />
+            </Menu>
+        </React.Fragment>
+    );
+};
+
+KebabSubMenu.propTypes = {
+    entry: PropTypes.object,
+    onLeaf: PropTypes.func,
+};
+
+const KebabEntries = ({entries, onLeaf}) => {
+    return (entries || []).map((m, i) => {
+        if (m.divider) {
+            return <Divider key={`div-${i}`} />;
+        }
+        if (m.children && m.children.length) {
+            return <KebabSubMenu key={`sub-${i}`} entry={m} onLeaf={onLeaf} />;
+        }
+        const IconComp = m.icon ? resolveIcon(m.icon) : null;
+        return (
+            <MenuItem
+                key={m.value != null ? m.value : `item-${i}`}
+                onClick={(e) => {
+                    e.stopPropagation();
+                    onLeaf(m.value);
+                }}
+            >
+                {IconComp ? (
+                    <ListItemIcon>
+                        <IconComp fontSize="small" />
+                    </ListItemIcon>
+                ) : null}
+                <ListItemText>{m.label}</ListItemText>
+            </MenuItem>
+        );
+    });
+};
+
+KebabEntries.propTypes = {
+    entries: PropTypes.array,
+    onLeaf: PropTypes.func,
+};
+
 // Rendered as the TreeItem `label` *slot* (not the `label` prop). MUI passes
 // the real string label as `children`, plus `onDoubleClick`/`className` that
 // drive the built-in editing flow — we forward those untouched so editing and
@@ -182,8 +270,13 @@ const ItemLabelWithControls = ({
         sliderColor,
         onSliderChange,
         kebabMenuItems,
+        kebabMenuItemsById,
         onKebabAction,
     } = ctx;
+
+    // per-node menu override wins over the global menu
+    const menuEntries =
+        (kebabMenuItemsById && kebabMenuItemsById[itemId]) || kebabMenuItems;
 
     const showControls = !controlsItemSet || controlsItemSet.has(itemId);
     if (!showControls) {
@@ -312,26 +405,13 @@ const ItemLabelWithControls = ({
                 onClose={() => setMenuAnchor(null)}
                 onClick={stopReact}
             >
-                {(kebabMenuItems || []).map((m) => {
-                    const IconComp = m.icon ? resolveIcon(m.icon) : null;
-                    return (
-                        <MenuItem
-                            key={m.value}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setMenuAnchor(null);
-                                onKebabAction(itemId, m.value);
-                            }}
-                        >
-                            {IconComp ? (
-                                <ListItemIcon>
-                                    <IconComp fontSize="small" />
-                                </ListItemIcon>
-                            ) : null}
-                            <ListItemText>{m.label}</ListItemText>
-                        </MenuItem>
-                    );
-                })}
+                <KebabEntries
+                    entries={menuEntries || []}
+                    onLeaf={(value) => {
+                        setMenuAnchor(null);
+                        onKebabAction(itemId, value);
+                    }}
+                />
             </Menu>
         </div>
     );
@@ -488,6 +568,7 @@ const TreeViewPro = ({
     sliderStep = 1,
     sliderColor,
     kebabMenuItems,
+    kebabMenuItemsById,
     // Dash
     setProps,
 }) => {
@@ -618,6 +699,7 @@ const TreeViewPro = ({
             sliderColor: resolvedSliderColor,
             onSliderChange: handleSliderChange,
             kebabMenuItems: kebabMenuItems || [],
+            kebabMenuItemsById: kebabMenuItemsById || null,
             onKebabAction: handleKebabAction,
         }),
         [
@@ -628,6 +710,7 @@ const TreeViewPro = ({
             sliderStep,
             resolvedSliderColor,
             kebabMenuItems,
+            kebabMenuItemsById,
             handleSliderChange,
             handleKebabAction,
         ]
@@ -945,14 +1028,29 @@ TreeViewPro.propTypes = {
      */
     sliderColor: PropTypes.string,
 
-    /** Kebab menu options: [{label, value, icon?}]. `value` is sent back as `action`. */
+    /**
+     * Kebab menu entries. Each entry is one of:
+     * a LEAF {label, value, icon?} — picking it fires `kebabAction` with
+     * `action` = its `value`; a DIVIDER {divider: true}; or a SUBMENU
+     * {label, icon?, children: [entries]} that opens on hover/click
+     * (nesting is recursive).
+     */
     kebabMenuItems: PropTypes.arrayOf(
-        PropTypes.exact({
-            label: PropTypes.string.isRequired,
-            value: PropTypes.string.isRequired,
+        PropTypes.shape({
+            label: PropTypes.string,
+            value: PropTypes.string,
             icon: PropTypes.string,
+            divider: PropTypes.bool,
+            children: PropTypes.array,
         })
     ),
+
+    /**
+     * Per-node kebab menus: {itemId: [entries]} (same entry shape as
+     * `kebabMenuItems`, submenus/dividers included). A node listed here gets
+     * its own menu; all other nodes fall back to `kebabMenuItems`.
+     */
+    kebabMenuItemsById: PropTypes.objectOf(PropTypes.array),
 
     /** Output: fires once on each commit (mouse-up) of a slider drag. {itemId, value, event_timestamp} */
     sliderChange: PropTypes.exact({

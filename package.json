@@ -1,6 +1,6 @@
 {
   "name": "dash_mui_charts",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Dash components wrapping MUI X Charts for creating interactive data visualizations",
   "main": "build/index.js",
   "repository": {
@@ -14,7 +14,7 @@
   "scripts": {
     "start": "webpack serve --config webpack.serve.config.js --open",
     "build:js": "webpack --mode production",
-    "build:backends": "dash-generate-components ./src/lib/components dash_mui_charts -p dash_mui_charts --ignore \\.test\\.",
+    "build:backends": "dash-generate-components ./src/lib/components dash_mui_charts -p package-info.json --ignore \\.test\\.",
     "build": "npm run build:js && npm run build:backends",
     "validate-init": "python _validate_init.py"
   },
@@ -44,6 +44,7 @@
     "css-loader": "^6.8.1",
     "prop-types": "^15.8.1",
     "react": "^18.2.0",
+    "react-docgen": "^5.4.3",
     "react-dom": "^18.2.0",
     "style-loader": "^3.3.3",
     "webpack": "^5.88.2",

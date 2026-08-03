@@ -1,7 +1,55 @@
-dash>=3.0.0
-python-dotenv>=1.0.0
-dash-mantine-components>=2.6.0
+# ============================================================================
+# dash-mui-charts — docs site requirements (the boilerplate docs stack).
+# The component PACKAGE itself only depends on dash>=3.3.0 (see setup.py);
+# everything below serves the documentation app.
+# ============================================================================
+
+# Core Dash 4.x — the boilerplate docs stack's floor (run.py enforces it at
+# boot, warning-level on Flask). Production runs the Flask backend.
+dash>=4.4.0
+flask>=3.0.0
+
+# UI stack for the documentation app
+dash-mantine-components>=2.7.0
 dash-iconify>=0.1.2
-dash-widgetbot>=0.1.0
+
+# Documentation & utilities
+python-frontmatter>=1.0.0
+pydantic>=2.3.0
+python-dotenv>=1.0.0
 requests>=2.27.1              # 2plot.dev ad-network client (lib/ad_client.py)
-gunicorn>=21.2.0,<23.0.0
+
+# markdown2dash 0.1.2 declares `gunicorn>=21.2.0,<22.0.0` — a markdown parser
+# pinning a WSGI server, directly against the CVE-driven gunicorn>=23 floor
+# below (CVE-2024-6827, CVE-2024-1135 — request smuggling). pip cannot
+# resolve both, so markdown2dash is NOT listed here; it is installed on its
+# own line, without its dependency graph:
+#
+#     pip install -r requirements.txt
+#     pip install --no-deps markdown2dash==0.1.2
+#
+# The Dockerfile and .github/workflows/ci.yml both do exactly that pair, and
+# CI asserts the resulting gunicorn version INSIDE the built image. Its real
+# runtime dependencies (dash, dash-iconify, dash-mantine-components,
+# pydantic) are all pinned above; the only one that is not is mistune,
+# listed here so nothing quietly relies on --no-deps having installed it:
+mistune>=3.0.0
+# markdown2dash==0.1.2        <- installed --no-deps, see above
+
+# AI/LLM Integration & SEO. 2.3.4 is the network standard: below it
+# `resolve_site_title` does not exist and this site's published identity
+# (the /llms.txt H1, the llms viewer's brand chip) silently degrades to
+# `app.title`. NOTE: dimll pins dash<5,>=4.1 — this is what makes the SITE's
+# Dash floor higher than the package's.
+dash-improve-my-llms>=2.3.4
+
+# Clerk satellite auth for the HOSTED docs site only (lib/auth.py) — fully
+# dormant without the CLERK_* env keys. Not on PyPI; vendored like the
+# other satellites'. 0.9.1 floor: 0.9.0 ships a dead avatar on satellites.
+./vendor/dash_clerk_auth-0.9.1.tar.gz
+clerk-backend-api>=5.0.0,<6
+
+# Production server. gunicorn fronts every deployment in this network, so
+# the floor is the network's security baseline: 21.x carried two HTTP
+# request-smuggling CVEs (CVE-2024-6827, CVE-2024-1135), fixed in 23.0.
+gunicorn>=23.0.0

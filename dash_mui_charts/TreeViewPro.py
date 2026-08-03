@@ -3,18 +3,20 @@
 import typing  # noqa: F401
 from typing_extensions import TypedDict, NotRequired, Literal # noqa: F401
 from dash.development.base_component import Component, _explicitize_args
+try:
+    from dash.types import NumberType  # noqa: F401
+except ImportError:
+    # Backwards compatibility for dash<=4.1.0
+    if typing.TYPE_CHECKING:
+        raise
+    NumberType = typing.Union[  # noqa: F401
+        typing.SupportsFloat, typing.SupportsInt, typing.SupportsComplex
+    ]
 
+ComponentSingleType = typing.Union[str, int, float, Component, None]
 ComponentType = typing.Union[
-    str,
-    int,
-    float,
-    Component,
-    None,
-    typing.Sequence[typing.Union[str, int, float, Component, None]],
-]
-
-NumberType = typing.Union[
-    typing.SupportsFloat, typing.SupportsInt, typing.SupportsComplex
+    ComponentSingleType,
+    typing.Sequence[ComponentSingleType],
 ]
 
 
@@ -144,16 +146,28 @@ Keyword arguments:
     - event_timestamp (number; optional)
 
 - kebabMenuItems (list of dicts; optional):
-    Kebab menu options: [{label, value, icon?}]. `value` is sent back
-    as `action`.
+    Kebab menu entries. Each entry is one of: a LEAF {label, value,
+    icon?} — picking it fires `kebabAction` with `action` = its
+    `value`; a DIVIDER {divider: True}; or a SUBMENU {label, icon?,
+    children: [entries]} that opens on hover/click (nesting is
+    recursive).
 
     `kebabMenuItems` is a list of dicts with keys:
 
-    - label (string; required)
+    - label (string; optional)
 
-    - value (string; required)
+    - value (string; optional)
 
     - icon (string; optional)
+
+    - divider (boolean; optional)
+
+    - children (list; optional)
+
+- kebabMenuItemsById (dict with strings as keys and values of type list; optional):
+    Per-node kebab menus: {itemId: [entries]} (same entry shape as
+    `kebabMenuItems`, submenus/dividers included). A node listed here
+    gets its own menu; all other nodes fall back to `kebabMenuItems`.
 
 - lazyLoadRequest (dict; optional):
     Output: Fired when unloaded node is expanded. {itemId,
@@ -261,9 +275,11 @@ Keyword arguments:
     KebabMenuItems = TypedDict(
         "KebabMenuItems",
             {
-            "label": str,
-            "value": str,
-            "icon": NotRequired[str]
+            "label": NotRequired[str],
+            "value": NotRequired[str],
+            "icon": NotRequired[str],
+            "divider": NotRequired[bool],
+            "children": NotRequired[typing.Sequence]
         }
     )
 
@@ -355,6 +371,7 @@ Keyword arguments:
         sliderStep: typing.Optional[NumberType] = None,
         sliderColor: typing.Optional[str] = None,
         kebabMenuItems: typing.Optional[typing.Sequence["KebabMenuItems"]] = None,
+        kebabMenuItemsById: typing.Optional[typing.Dict[typing.Union[str, float, int], typing.Sequence]] = None,
         sliderChange: typing.Optional["SliderChange"] = None,
         kebabAction: typing.Optional["KebabAction"] = None,
         clickedItem: typing.Optional["ClickedItem"] = None,
@@ -362,9 +379,9 @@ Keyword arguments:
         editedItemLabel: typing.Optional["EditedItemLabel"] = None,
         **kwargs
     ):
-        self._prop_names = ['id', 'ariaLabel', 'ariaLabelledBy', 'checkboxSelection', 'clickedItem', 'collapseIcon', 'controlsItems', 'defaultExpandedItems', 'defaultSelectedItems', 'disableSelection', 'disabledItems', 'disabledItemsFocusable', 'editableItems', 'editedItemLabel', 'endIcon', 'expandIcon', 'expandedItems', 'expansionTrigger', 'focusedItem', 'getItemChildren', 'getItemId', 'getItemLabel', 'height', 'isItemEditable', 'itemChildrenIndentation', 'itemPositionChanged', 'items', 'itemsReordering', 'kebabAction', 'kebabMenuItems', 'lazyLoadRequest', 'lazyLoadedChildren', 'lazyLoading', 'licenseKey', 'multiSelect', 'orderedItems', 'reorderableItems', 'selectedItems', 'selectionPropagation', 'showItemControls', 'sliderChange', 'sliderColor', 'sliderMax', 'sliderMin', 'sliderStep', 'sliderValues', 'sx']
+        self._prop_names = ['id', 'ariaLabel', 'ariaLabelledBy', 'checkboxSelection', 'clickedItem', 'collapseIcon', 'controlsItems', 'defaultExpandedItems', 'defaultSelectedItems', 'disableSelection', 'disabledItems', 'disabledItemsFocusable', 'editableItems', 'editedItemLabel', 'endIcon', 'expandIcon', 'expandedItems', 'expansionTrigger', 'focusedItem', 'getItemChildren', 'getItemId', 'getItemLabel', 'height', 'isItemEditable', 'itemChildrenIndentation', 'itemPositionChanged', 'items', 'itemsReordering', 'kebabAction', 'kebabMenuItems', 'kebabMenuItemsById', 'lazyLoadRequest', 'lazyLoadedChildren', 'lazyLoading', 'licenseKey', 'multiSelect', 'orderedItems', 'reorderableItems', 'selectedItems', 'selectionPropagation', 'showItemControls', 'sliderChange', 'sliderColor', 'sliderMax', 'sliderMin', 'sliderStep', 'sliderValues', 'sx']
         self._valid_wildcard_attributes =            []
-        self.available_properties = ['id', 'ariaLabel', 'ariaLabelledBy', 'checkboxSelection', 'clickedItem', 'collapseIcon', 'controlsItems', 'defaultExpandedItems', 'defaultSelectedItems', 'disableSelection', 'disabledItems', 'disabledItemsFocusable', 'editableItems', 'editedItemLabel', 'endIcon', 'expandIcon', 'expandedItems', 'expansionTrigger', 'focusedItem', 'getItemChildren', 'getItemId', 'getItemLabel', 'height', 'isItemEditable', 'itemChildrenIndentation', 'itemPositionChanged', 'items', 'itemsReordering', 'kebabAction', 'kebabMenuItems', 'lazyLoadRequest', 'lazyLoadedChildren', 'lazyLoading', 'licenseKey', 'multiSelect', 'orderedItems', 'reorderableItems', 'selectedItems', 'selectionPropagation', 'showItemControls', 'sliderChange', 'sliderColor', 'sliderMax', 'sliderMin', 'sliderStep', 'sliderValues', 'sx']
+        self.available_properties = ['id', 'ariaLabel', 'ariaLabelledBy', 'checkboxSelection', 'clickedItem', 'collapseIcon', 'controlsItems', 'defaultExpandedItems', 'defaultSelectedItems', 'disableSelection', 'disabledItems', 'disabledItemsFocusable', 'editableItems', 'editedItemLabel', 'endIcon', 'expandIcon', 'expandedItems', 'expansionTrigger', 'focusedItem', 'getItemChildren', 'getItemId', 'getItemLabel', 'height', 'isItemEditable', 'itemChildrenIndentation', 'itemPositionChanged', 'items', 'itemsReordering', 'kebabAction', 'kebabMenuItems', 'kebabMenuItemsById', 'lazyLoadRequest', 'lazyLoadedChildren', 'lazyLoading', 'licenseKey', 'multiSelect', 'orderedItems', 'reorderableItems', 'selectedItems', 'selectionPropagation', 'showItemControls', 'sliderChange', 'sliderColor', 'sliderMax', 'sliderMin', 'sliderStep', 'sliderValues', 'sx']
         self.available_wildcard_properties =            []
         _explicit_args = kwargs.pop('_explicit_args')
         _locals = locals()

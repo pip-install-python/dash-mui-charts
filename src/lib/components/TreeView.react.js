@@ -3,10 +3,38 @@
  *
  * Data-driven tree with selection, expansion, editing, focus callbacks.
  */
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import PropTypes from 'prop-types';
 import {RichTreeView} from '@mui/x-tree-view/RichTreeView';
+import {ThemeProvider, createTheme} from '@mui/material/styles';
 import {resolveIcon} from '../fragments/iconResolver';
+
+// --- Color scheme: watch <html data-mantine-color-scheme="..."> ---------------
+const readMantineScheme = () => {
+    if (typeof document === 'undefined') return 'light';
+    const v = document.documentElement.getAttribute('data-mantine-color-scheme');
+    return v === 'dark' ? 'dark' : 'light';
+};
+
+const useMantineColorScheme = () => {
+    const [scheme, setScheme] = useState(readMantineScheme);
+    useEffect(() => {
+        if (typeof document === 'undefined') return undefined;
+        const html = document.documentElement;
+        const sync = () => setScheme(readMantineScheme());
+        const obs = new MutationObserver(sync);
+        obs.observe(html, {
+            attributes: true,
+            attributeFilter: ['data-mantine-color-scheme'],
+        });
+        sync();
+        return () => obs.disconnect();
+    }, []);
+    return scheme;
+};
+
+const lightTheme = createTheme({palette: {mode: 'light'}});
+const darkTheme = createTheme({palette: {mode: 'dark'}});
 
 const TreeView = (props) => {
     const {
@@ -129,12 +157,22 @@ const TreeView = (props) => {
     // --- Container style ---
     const containerStyle = useMemo(() => {
         const s = {};
-        if (height) s.height = typeof height === 'number' ? `${height}px` : height;
+        if (height) {
+            s.height = typeof height === 'number' ? `${height}px` : height;
+            // A fixed height must CONTAIN the tree: block children grow past
+            // a fixed-height parent and divs do not clip by default, so
+            // without this the tree renders full-length over whatever
+            // follows (seen on /tree-icons' height=200 demo).
+            s.overflow = 'auto';
+        }
         return s;
     }, [height]);
 
+    const scheme = useMantineColorScheme();
+
     return (
         <div id={id} style={containerStyle}>
+            <ThemeProvider theme={scheme === 'dark' ? darkTheme : lightTheme}>
             <RichTreeView
                 items={items || []}
                 getItemId={getItemId}
@@ -170,6 +208,7 @@ const TreeView = (props) => {
                 aria-label={ariaLabel}
                 aria-labelledby={ariaLabelledBy}
             />
+            </ThemeProvider>
         </div>
     );
 };
