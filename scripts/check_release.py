@@ -238,7 +238,9 @@ def main() -> int:
     ) >= (2, 3, 4)
     check("dash-improve-my-llms floor >= 2.3.4", ok_floor,
           f">={floor.group(1)}" if floor else "not pinned in requirements.txt")
-    gunicorn_floor = re.search(r"gunicorn>=([\d.]+)", reqs)
+    # Anchored to line start: the requirements COMMENT quotes markdown2dash's
+    # spurious `gunicorn>=21.2.0,<22` pin, which a bare search matches first.
+    gunicorn_floor = re.search(r"^gunicorn>=([\d.]+)", reqs, re.M)
     check("gunicorn floor >= 23 (CVE-2024-6827/-1135)",
           gunicorn_floor is not None
           and int(gunicorn_floor.group(1).split(".")[0]) >= 23,

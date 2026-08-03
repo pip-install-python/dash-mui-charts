@@ -3,8 +3,8 @@
 
 ci.yml runs it across the supported Dash range (the matrix installs
 `dash==X` first, then requirements). It answers the question the version
-matrix exists for: with this exact Dash resolved, do all 40 page modules
-import, do their layouts construct, does every route serve 200, and is the
+matrix exists for: with this exact Dash resolved, do all 41 pages
+register, do their layouts construct, does every route serve 200, and is the
 component bundle the browser will load syntactically whole?
 
 This is deliberately NOT scripts/route_parity.py: the parity gate compares
