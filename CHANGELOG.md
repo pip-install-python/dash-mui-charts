@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [1.4.0] - 2026-08-03
+
 ### Boilerplate migration — M5 (API reference)
 
 - **NEW `/api` page**: every prop of all 13 components as tables generated
@@ -321,9 +325,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.4.0] - 2026-07-19
-
-### Added
+### Components — TreeViewPro (2026-07-19)
 
 - **TreeViewPro kebab submenus + dividers.** `kebabMenuItems` entries may now be
   a leaf `{label, value, icon?}`, a `{divider: true}` rule, or a submenu
