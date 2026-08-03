@@ -77,6 +77,11 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
+          # markdown2dash pins gunicorn<22 against the CVE-driven gunicorn>=23
+          # floor. Same two-command install as the Dockerfile, render service
+          # and ci.yml — this was the one install site the M0 migration
+          # missed, found when the 1.4.0 release build failed here.
+          python -m pip install --no-deps markdown2dash==0.1.2
           python scripts/smoke_test.py
 
       - name: Build
