@@ -496,6 +496,7 @@
  ],
  "route_statuses": {
   "/": 200,
+  "/api": 200,
   "/barchart-basic": 200,
   "/barchart-dataset": 200,
   "/barchart-interaction": 200,
@@ -538,6 +539,11 @@
  },
  "routes": {
   "/": {
+   "mui_components": {},
+   "mui_ids": [],
+   "mui_mounts": 0
+  },
+  "/api": {
    "mui_components": {},
    "mui_ids": [],
    "mui_mounts": 0

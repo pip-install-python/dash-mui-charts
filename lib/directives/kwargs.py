@@ -61,10 +61,21 @@ class Kwargs(KwargsBase):
                 docstring = inspect.getdoc(component)
 
                 if docstring and "----------" in docstring:
+                    # numpy-style (dash-mantine-components hand-written docs)
                     docstring = docstring.split("----------\n")[-1]
                     attrs["kwargs"] = convert_docstring_to_dict(docstring)
+                elif docstring and "Keyword arguments:" in docstring:
+                    # dash-generate-components style — every dash_mui_charts
+                    # wrapper. The base package ships a parser for exactly
+                    # this format; the numpy override above shadowed it.
+                    from markdown2dash.src.utils import (
+                        convert_docstring_to_dict as dash_convert,
+                    )
+
+                    attrs["kwargs"] = dash_convert(
+                        docstring.split("Keyword arguments:")[-1]
+                    )
                 else:
-                    # If no proper docstring, use component's __init__ signature
                     attrs["kwargs"] = []
             except Exception:
                 # Import failed or the component has no usable docstring;

@@ -97,6 +97,9 @@ FAMILIES = [
         ("/time-clock", "Time Clock", "material-symbols:schedule-outline"),
         ("/time-clock-lab", "TimeClock Lab", "material-symbols:science-outline"),
     ]),
+    ("Reference", [
+        ("/api", "API Reference", "material-symbols:api"),
+    ]),
 ]
 
 # Rendered with Home at the top rather than inside a family.

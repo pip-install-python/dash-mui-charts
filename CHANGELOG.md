@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Boilerplate migration — M5 (API reference)
+
+- **NEW `/api` page**: every prop of all 13 components as tables generated
+  from the components' own metadata via the `.. kwargs::` directive — they
+  can never drift from the installed version. Enabling fix in
+  `lib/directives/kwargs.py`: the numpy-style override (built for
+  dash-mantine-components docstrings) shadowed markdown2dash's own parser
+  for `dash-generate-components` docstrings, so dash-built components
+  rendered EMPTY tables; the hook now falls back to the base parser when
+  it sees "Keyword arguments:". Navbar gains a Reference section; route
+  count 40 → 41 (both parity baselines re-recorded deliberately).
+- **Home stays the bespoke Python page** it already was — it mounts no
+  charts, carries the brand/install/catalog and a full LLMS_DOC, and
+  per-satellite custom homes are the network norm. Changelog likewise
+  stays a Python page (its disk read is exercised by the suite on every
+  run).
+
 ### Fixed — tree rendering under the boilerplate shell (owner review)
 
 - **TreeView and SimpleTreeView now follow the theme toggle** — both

@@ -35,7 +35,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO))
 
-EXPECTED_ROUTES = 40
+EXPECTED_ROUTES = 41  # 40 originals + /api
 # dash_mui_charts component instances across all pages: 194 on 2026-08-02,
 # with and without a Pro key (Pro pages mount their charts unlicensed and add
 # a banner). The floor has slack for demo edits but fails on "a whole
