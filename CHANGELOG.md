@@ -24,6 +24,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   upstream, the boilerplate rule should arguably be prose-scoped.
 - The /tree-icons SX demo's hardcoded light `#f8f9ff` background became
   `var(--mantine-color-default)` — it was unreadable in dark mode.
+- **The `height` prop now actually contains the tree** (TreeView and
+  SimpleTreeView): a fixed height previously sized the wrapper only —
+  block children grow past a fixed-height parent and divs don't clip, so
+  the tree rendered full-length over the next section. `height` now
+  implies `overflow: auto` on the wrapper, making the /tree-icons
+  "Fixed Height with Scroll" demo do what its title says.
 
 ### Boilerplate migration — M4 (TreeView + Date & Time Pickers)
 

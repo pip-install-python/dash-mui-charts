@@ -157,7 +157,14 @@ const TreeView = (props) => {
     // --- Container style ---
     const containerStyle = useMemo(() => {
         const s = {};
-        if (height) s.height = typeof height === 'number' ? `${height}px` : height;
+        if (height) {
+            s.height = typeof height === 'number' ? `${height}px` : height;
+            // A fixed height must CONTAIN the tree: block children grow past
+            // a fixed-height parent and divs do not clip by default, so
+            // without this the tree renders full-length over whatever
+            // follows (seen on /tree-icons' height=200 demo).
+            s.overflow = 'auto';
+        }
         return s;
     }, [height]);
 
