@@ -168,14 +168,9 @@ def create_appshell(data):
             },
         },
         children=[
-            # The id "url" is load-bearing beyond navigation: the SPA
-            # page-view recorder (run.py track_page_view) and the ad
-            # client's location refresh both hang off it. See
-            # lib/traffic_report.py THE COUNTING RULE.
+            # The id "url" is load-bearing beyond navigation: the ad
+            # client's location refresh hangs off it.
             dcc.Location(id="url", refresh="callback-nav"),
-            # Sink for the SPA page-view recorder (it only ever returns
-            # no_update — the callback exists for its side effect).
-            dcc.Store(id="analytics-sink"),
             dcc.Store(id="color-scheme-storage", storage_type="local"),
             # Persists the desktop-navbar collapse state across reloads.
             # null/false = visible (default), true = collapsed.

@@ -50,8 +50,9 @@ CHART_BASELINE = Path(__file__).resolve().parent / "chart_parity_baseline.json"
 
 sys.path.insert(0, str(REPO))
 
-# Keep gate runs out of the real analytics log, and the reporter asleep.
-os.environ["ANALYTICS_DIR"] = tempfile.mkdtemp(prefix="route-parity-")
+# Keep gate runs out of the real visitor ledger, and the reporter asleep.
+os.environ["TRAFFIC_ANALYTICS_FILE"] = os.path.join(
+    tempfile.mkdtemp(prefix="route-parity-"), "visitor_analytics.json")
 os.environ.pop("CROSS_APP_WEBHOOK_SECRET", None)
 
 

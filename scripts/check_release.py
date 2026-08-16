@@ -245,8 +245,9 @@ def main() -> int:
           gunicorn_floor is not None
           and int(gunicorn_floor.group(1).split(".")[0]) >= 23,
           f">={gunicorn_floor.group(1)}" if gunicorn_floor else "not pinned")
-    for mod in ("constants", "analytics", "traffic_report", "ad_client",
-                "bulletin", "network_directory"):
+    for mod in ("constants", "analytics_tracker", "satellite_reporter",
+                "traffic_rollup", "ad_client", "bulletin",
+                "network_directory"):
         check(f"lib/{mod}.py present", (ROOT / "lib" / f"{mod}.py").exists())
 
     render_yaml = (ROOT / "render.yaml").read_text()

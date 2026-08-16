@@ -11,7 +11,7 @@ CI's zero-secret container does: no MUI_PRO_API_KEY (the 17 Pro pages must
 degrade to their license banners — that degradation IS a test, in
 test_pages_smoke.py), no CROSS_APP_WEBHOOK_SECRET (the traffic reporter never
 starts a thread), no NETWORK_BULLETIN_URL (the llms viewer falls back to
-built-in tips), and the analytics hit log in a temp dir so a test run never
+built-in tips), and the visitor ledger in a temp dir so a test run never
 lands in the real ledger or the next hourly rollup.
 
 The env block below has to run BEFORE anything imports `run.py`, because
@@ -47,9 +47,10 @@ for _key in SECRET_ENV_KEYS:
 
 # --- 2. Keep app state out of the repo, and identity deterministic ----------
 _TMP_STATE = tempfile.mkdtemp(prefix="muicharts-tests-")
-os.environ["ANALYTICS_DIR"] = _TMP_STATE
-# Reporting is already off (no secret); the explicit kill switch documents it.
-os.environ["TRAFFIC_REPORT"] = "0"
+os.environ["TRAFFIC_ANALYTICS_FILE"] = os.path.join(
+    _TMP_STATE, "visitor_analytics.json")
+# Keep the suite offline: no ip-api.com lookups for synthetic visitors.
+os.environ["ANALYTICS_GEO_LOOKUP"] = "0"
 # A dev .env pointing APP_BASE_URL elsewhere must not change what the suite
 # measures — every canonical/og assertion is against the network domain.
 os.environ["APP_BASE_URL"] = "https://muicharts.2plot.dev"

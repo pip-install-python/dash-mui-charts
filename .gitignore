@@ -62,7 +62,15 @@ htmlcov/
 
 # Dash
 # Note: .min.js.map files ARE committed — needed for production deployment
-# Satellite analytics hit log (lib/analytics.py) — local, ephemeral
+# Runtime visitor ledger written by lib/analytics_tracker.py — generated
+# state, not seed data; committing it means every local run shows up as a
+# diff. Unanchored so it matches whatever directory the app is run from.
+visitor_analytics.json
+visitor_analytics.json.lock
+visitor_analytics.json.tmp
+# Reporter lease — which worker POSTed the last hourly rollup to 2plot.ai.
+.satellite_report.lease
+# Legacy Gen-0 hit-log directory (pre-retrofit) — may linger on dev boxes.
 analytics/
 
 # Project-local Claude working files (plans, screenshots, session notes)

@@ -21,14 +21,13 @@ from dotenv import load_dotenv
 
 # MUST come before the first-party imports below, and this is not style.
 # Several modules read os.environ at *import* time — lib/constants.py
-# (APP_BASE_URL), lib/ad_client.py (AD_SERVER_URL, AD_APP_ID) and
-# lib/analytics.py (ANALYTICS_DIR). Loading the .env after importing them
-# means every one of those silently falls back to its default no matter
-# what the file says.
+# (APP_BASE_URL) and lib/ad_client.py (AD_SERVER_URL, AD_APP_ID). Loading
+# the .env after importing them means every one of those silently falls
+# back to its default no matter what the file says.
 load_dotenv()
 
 import dash  # noqa: E402
-from dash import Dash, Input, Output, callback, no_update  # noqa: E402
+from dash import Dash  # noqa: E402
 
 from components.appshell import create_appshell  # noqa: E402
 
@@ -66,10 +65,16 @@ LLMS_PKG_FLOOR = (2, 3, 4)
 
 from dash_mui_charts import __version__ as _COMPONENT_VERSION  # noqa: E402
 
-# This repo's OWN analytics chain — the SPA-aware doc/spa recorder, NOT the
-# boilerplate's request-level analytics_tracker. See lib/traffic_report.py
-# THE COUNTING RULE and BOILERPLATE_MIGRATION_PLAN.md decision 3.
-from lib import analytics, network_directory  # noqa: E402
+# The network's analytics trio, ported from the boilerplate at 1.3.0:
+# lib/analytics_tracker records every document request into the visitor
+# ledger, lib/traffic_rollup folds it into the daily payload, and
+# lib/satellite_reporter POSTs that to 2plot.ai hourly. ONE measurement
+# rule fleet-wide — traffic_rollup's _SKIP stays byte-identical to the
+# boilerplate's. (Request-level on purpose: SPA navigations are not
+# counted until the network ports the doc/spa split everywhere at once —
+# the x402 data window needs every satellite counting the same way.)
+from lib import network_directory  # noqa: E402
+from lib.analytics_tracker import tracker  # noqa: E402
 from lib.constants import (  # noqa: E402
     APP_TITLE,
     BASE_URL,
@@ -78,7 +83,7 @@ from lib.constants import (  # noqa: E402
     SITE_DESCRIPTION,
     require_owned_base_url,
 )
-from lib.traffic_report import register_healthz, start_traffic_reporter  # noqa: E402
+from lib.satellite_reporter import start_reporter  # noqa: E402
 
 # Backend selection (flask | fastapi | quart) — see lib/backend.py. The
 # machinery is the boilerplate's; this app's analytics hooks and /healthz
@@ -91,10 +96,10 @@ BACKEND_INFO = get_backend_info(BACKEND)
 
 if BACKEND != "flask":
     raise RuntimeError(
-        f"DASH_BACKEND={BACKEND!r}: this site's analytics recorder, "
-        "/healthz and traffic reporter are wired for Flask only. Port "
-        "lib/analytics + lib/traffic_report hooks before flipping the "
-        "backend (BOILERPLATE_MIGRATION_PLAN.md, open question 4)."
+        f"DASH_BACKEND={BACKEND!r}: this site's visitor-tracking hook is "
+        "wired for Flask only. Port the boilerplate's Quart/FastAPI "
+        "track_visitor variants (its run.py + lib/asgi_middleware) before "
+        "flipping the backend."
     )
 
 print(
@@ -222,39 +227,40 @@ app._backend_info = BACKEND_INFO
 
 # ----------------------------------------------------------------------------
 # 2plot.ai satellite analytics — /healthz for the hub's hourly health sweep,
-# a document-request recorder for crawlers, and the hourly traffic reporter.
-# Page views themselves come from the url.pathname callback further down:
-# this is a single-page app, so document requests alone would report one hit
-# per visitor. See lib/traffic_report for the full counting rule.
+# the per-request visitor recorder, and the hourly signed rollup POSTed to
+# the hub (no-op without CROSS_APP_WEBHOOK_SECRET, and the boot log says
+# so). Contract: 2plotai/docs/network/satellite-analytics.md.
 #
 # ORDER MATTERS: this before_request is registered BEFORE add_llms_routes,
-# so crawler hits are recorded before the bot middleware answers them with
-# prerendered HTML (a hook added after it never sees bot traffic).
+# whose bot middleware short-circuits AI-search crawlers with its own
+# prerendered response — a hook added after it never sees exactly the bot
+# traffic a docs site most wants counted.
 # ----------------------------------------------------------------------------
-register_healthz(server)
+from lib.health import register_health_route  # noqa: E402
+
+register_health_route(app, BACKEND)
+
+from flask import request as _flask_request  # noqa: E402
 
 
 @server.before_request
-def _track_document_request():
-    """Record every document request. Crawlers only ever land here (they run
-    no JS), which is exactly what `bot_hits` counts."""
+def track_visitor():
+    """Track visitor analytics before each request."""
     try:
-        from flask import request as freq
-
-        if freq.method != 'GET':
-            return
-        analytics.record(
-            freq.path,
-            freq.headers.get('User-Agent', ''),
-            analytics.client_ip(freq.headers, freq.remote_addr),
-            source='doc',
-            country=analytics.cf_country(freq.headers),
+        # Headers are passed so the tracker can read the REAL client IP
+        # and country from the proxy/CDN (behind Render or Cloudflare,
+        # remote_addr is the proxy — every visitor would look like one).
+        tracker.track_visit(
+            _flask_request.path,
+            _flask_request.headers.get('User-Agent', ''),
+            _flask_request.remote_addr,
+            headers=dict(_flask_request.headers),
         )
     except Exception:
         pass
 
 
-start_traffic_reporter()
+start_reporter()
 
 # ============================================================================
 # AI/LLM & SEO surfaces
@@ -308,33 +314,6 @@ add_llms_routes(app, LLMSConfig(warn_missing_llms_doc=True))
 # ============================================================================
 
 app.layout = create_appshell(dash.page_registry.values())
-
-
-# Page views for the satellite rollup. Fires on hard load AND on every
-# navigation, so `pages`, `sessions` and `median_session_s` describe the doc
-# pages people actually read — a request-level tracker would only ever see
-# the one document GET this SPA makes. Runs inside the Flask request context
-# of /_dash-update-component, so the forwarded IP and real user agent are
-# both available.
-@callback(
-    Output("analytics-sink", "data"),
-    Input("url", "pathname"),
-    prevent_initial_call=False,
-)
-def track_page_view(pathname):
-    try:
-        from flask import request as freq
-
-        analytics.record(
-            pathname or "/",
-            freq.headers.get("User-Agent", ""),
-            analytics.client_ip(freq.headers, freq.remote_addr),
-            source="spa",
-            country=analytics.cf_country(freq.headers),
-        )
-    except Exception:
-        pass
-    return no_update
 
 
 if __name__ == "__main__":

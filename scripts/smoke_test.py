@@ -79,9 +79,11 @@ def main() -> int:
     ap.add_argument("--json", help="write the measurement report to this path")
     args = ap.parse_args()
 
-    # Keep a smoke run out of the real hit log wherever it runs.
-    os.environ.setdefault("ANALYTICS_DIR",
-                          tempfile.mkdtemp(prefix="smoke-test-"))
+    # Keep a smoke run out of the real visitor ledger wherever it runs.
+    os.environ.setdefault(
+        "TRAFFIC_ANALYTICS_FILE",
+        os.path.join(tempfile.mkdtemp(prefix="smoke-test-"),
+                     "visitor_analytics.json"))
     os.environ.pop("CROSS_APP_WEBHOOK_SECRET", None)
 
     import dash

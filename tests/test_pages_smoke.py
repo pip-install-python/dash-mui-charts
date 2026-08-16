@@ -74,12 +74,14 @@ def test_every_route_serves_200(client, page_paths):
 
 def test_healthz_returns_ok_true(client):
     """A 200 with different JSON is a deploy-blocking "unhealthy" to the
-    network battery (LESSONS §11) — the field, not just the status."""
+    network battery (LESSONS §11) — the field, not just the status. The
+    payload shape is the boilerplate's lib/health.py (ok + backend), the
+    fleet's shared probe contract."""
     response = client.get("/healthz")
     assert response.ok
     body = json.loads(response.text)
     assert body.get("ok") is True
-    assert body.get("app") == "muicharts"
+    assert body.get("backend") == "flask"
 
 
 def test_dash_plumbing_answers(client):
@@ -172,16 +174,18 @@ def test_the_navbar_families_cover_the_registry_exactly(page_paths):
     )
 
 
-def test_the_analytics_sink_exists(app):
-    """The SPA page-view recorder's output target. (The old shell's
-    license-key-store retired with it — pages read MUI_PRO_API_KEY from the
-    environment directly; the store was dead plumbing.)"""
+def test_the_analytics_sink_is_retired(app):
+    """The SPA page-view recorder retired with the trio retrofit (the
+    fleet's one-measurement-rule pass): tracking is the request-level
+    lib/analytics_tracker hook, wired in run.py. The sink store coming
+    back means the second, SPA-side counting path came back with it —
+    and this host's numbers stop being comparable to the fleet's."""
     from conftest import component_iter
 
     # String ids only — ad slots' pattern-matching dict ids are unhashable.
     ids = {c.id for c in component_iter(app.layout)
            if isinstance(getattr(c, "id", None), str)}
-    assert "analytics-sink" in ids, "the SPA page-view callback lost its sink"
+    assert "analytics-sink" not in ids, "the retired SPA page-view sink is back"
 
 
 def test_ad_slots_are_per_page_asides_not_a_shell_slot(app, pages):
