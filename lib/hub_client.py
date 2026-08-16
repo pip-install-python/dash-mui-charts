@@ -76,7 +76,7 @@ def _secret() -> Optional[str]:
 
 def app_id() -> str:
     """This satellite's identity to the hub. Same key the reporter uses."""
-    return os.getenv("SATELLITE_APP_KEY") or os.getenv("AD_APP_ID") or "pannellum"
+    return os.getenv("SATELLITE_APP_KEY") or os.getenv("AD_APP_ID") or "muicharts"
 
 
 def enabled() -> bool:

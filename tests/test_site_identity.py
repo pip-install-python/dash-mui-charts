@@ -183,3 +183,20 @@ def test_identity_files_do_not_publish_the_legacy_host():
         if "dash-mui-charts.onrender.com" in stripped:
             offenders.append(path)
     assert offenders == [], f"the legacy host survives in {offenders}"
+
+
+def test_hub_identity_fallbacks_are_this_app(monkeypatch):
+    """This host may only ever identify to the hub as ITSELF.
+
+    hub_client shipped with its fork-parent's fallback ("pannellum"), so a
+    deployment missing both env keys verified agent keys — and could land
+    heartbeat rows — under another satellite's identity. The reporter's
+    template fallback ("boilerplate") is the same bug one fork earlier.
+    Both fallbacks are pinned to this app's directory key.
+    """
+    from lib import hub_client, satellite_reporter
+
+    monkeypatch.delenv("SATELLITE_APP_KEY", raising=False)
+    monkeypatch.delenv("AD_APP_ID", raising=False)
+    assert hub_client.app_id() == "muicharts"
+    assert satellite_reporter.app_key() == "muicharts"
