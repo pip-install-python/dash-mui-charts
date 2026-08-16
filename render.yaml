@@ -2,6 +2,9 @@ services:
   - type: web
     name: dash-mui-charts
     runtime: python
+    # Explicit, not inherited: the disk below and the always-on posture the
+    # hub's hourly sweep expects both assume a paid instance.
+    plan: starter
     repo: https://github.com/pip-install-python/dash-mui-charts
     branch: main
     # markdown2dash installs --no-deps: it pins gunicorn<22 against the
@@ -22,15 +25,31 @@ services:
       - key: MUI_PRO_API_KEY
         sync: false
       # Shared network secret — signs the hourly traffic rollup this app
-      # POSTs to https://2plot.ai/api/satellite/traffic (lib/traffic_report).
-      # Unset = reporting silently OFF.
+      # POSTs to https://2plot.ai/api/satellite/traffic
+      # (lib/satellite_reporter). Unset = reporting OFF, and the boot log
+      # says so.
       - key: CROSS_APP_WEBHOOK_SECRET
         sync: false
-      # Where the hit log lives. Default is <repo>/analytics, which Render
-      # wipes on every deploy; point this at a mounted disk to keep a day's
-      # numbers across deploys.
-      - key: ANALYTICS_DIR
-        sync: false
+      # This app's key in the hub's network directory — what the reporter,
+      # hub_client and the bulletin all identify as. Also the code default,
+      # declared so the identity is visible here.
+      - key: SATELLITE_APP_KEY
+        value: "muicharts"
+      # The hub takes the LAST report for a given (app, date). On an
+      # ephemeral filesystem a mid-day deploy wipes the ledger and the next
+      # hourly report overwrites the day's real total with whatever accrued
+      # since the restart. The disk below is what stops that.
+      - key: TRAFFIC_ANALYTICS_FILE
+        value: "/var/data/visitor_analytics.json"
+      # Access tiers for the tiered corpus documents (/llms-small.txt,
+      # /llms-full.txt — dash-improve-my-llms >= 2.4.0). Deliberately set to
+      # the default so the knob is visible: the 402 experiment tightens the
+      # full corpus by flipping this to `auth`, per satellite, with no code
+      # change.
+      - key: LLMS_SMALL_TIER
+        value: "public"
+      - key: LLMS_FULL_TIER
+        value: "public"
       # Canonical origin override. The code default is already the value
       # below (lib/constants.DEFAULT_BASE_URL); declared so the service
       # documents its own identity and a fork cannot inherit this one's.
@@ -51,3 +70,8 @@ services:
     # polls; "/" would render the whole Dash index on every probe.
     healthCheckPath: /healthz
     autoDeploy: true
+    # Persists the visitor ledger across deploys — see TRAFFIC_ANALYTICS_FILE.
+    disk:
+      name: analytics
+      mountPath: /var/data
+      sizeGB: 1
