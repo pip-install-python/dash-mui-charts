@@ -5,6 +5,7 @@ Home Page - Dash MUI Charts Examples
 import dash
 import dash_mantine_components as dmc
 from dash import html, dcc
+from dash_mui_charts import __version__ as _PKG_VERSION
 
 from lib.constants import OG_IMAGE_URL, SITE_BRAND, SITE_DESCRIPTION
 
@@ -284,8 +285,13 @@ layout = html.Div([
             ),
             dmc.Group(
                 [
-                    dmc.Badge("v1.2.1", size="lg", variant="light", color="blue"),
-                    dmc.Badge("9 Components", size="lg", variant="light", color="gray"),
+                    # Derived, never written: the hardcoded "v1.2.1" here
+                    # survived two releases (network standard: version claims
+                    # come from the installed package — see lib/versions.py).
+                    dmc.Badge(f"v{_PKG_VERSION}", size="lg", variant="light",
+                              color="blue"),
+                    dmc.Badge(f"{len(COMPONENTS)} Components", size="lg",
+                              variant="light", color="gray"),
                     dmc.Badge("MIT License", size="lg", variant="light", color="green"),
                 ],
                 gap="sm",

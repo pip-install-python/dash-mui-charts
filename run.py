@@ -49,10 +49,14 @@ def _version(text: str) -> tuple:
 
 DASH_VERSION = _version(dash.__version__)
 
-# AI/LLM Integration & SEO — dash-improve-my-llms >= 2.3.4 from PyPI.
-# 2.3.4 brings `resolve_site_title`, which is what carries SITE_BRAND into
-# the /llms.txt H1 and the llms viewer's brand chip; 2.3.3 fixed the
-# Anthropic bot taxonomy and directive stripping.
+# AI/LLM Integration & SEO — dash-improve-my-llms >= 2.5.1 from PyPI.
+# 2.5.1 is the Tier-B SEO standard: per-page `title`/`image_url`/
+# `schema_type` actually reaching the crawler document, the crawler <title>
+# carrying the site name, and a prerender that no longer clobbers the
+# browser's per-page <title>. (2.4.0 brought the tiered corpus docs
+# /llms-small.txt + /llms-full.txt; 2.3.4 brought `resolve_site_title`,
+# which carries SITE_BRAND into the /llms.txt H1 and the viewer's brand
+# chip.)
 from dash_improve_my_llms import (  # noqa: E402
     __version__ as LLMS_PKG_VERSION,
     add_llms_routes,
@@ -61,7 +65,7 @@ from dash_improve_my_llms import (  # noqa: E402
     register_page_metadata,
 )
 
-LLMS_PKG_FLOOR = (2, 3, 4)
+LLMS_PKG_FLOOR = (2, 5, 1)
 
 from dash_mui_charts import __version__ as _COMPONENT_VERSION  # noqa: E402
 
@@ -135,8 +139,9 @@ if LLMS_PKG_FLOOR > _version(LLMS_PKG_VERSION):
     _dependency_floor(
         f"dash-improve-my-llms {LLMS_PKG_VERSION} is below the "
         f"{'.'.join(str(n) for n in LLMS_PKG_FLOOR)} floor in "
-        "requirements.txt. Below 2.3.4 this site's published identity "
-        "silently degrades to whatever `app.title` happens to be.",
+        "requirements.txt. Below 2.5.1 the crawler document drops this "
+        "site's per-page identity (title/image/schema type); below 2.3.4 "
+        "the published identity itself degrades to `app.title`.",
         fatal=True,
     )
 
@@ -289,6 +294,10 @@ register_page_metadata(
     path="/",
     name=SITE_BRAND,
     description=SITE_DESCRIPTION,
+    # The home page of a component library is a SoftwareApplication, not a
+    # generic WebPage — the one structured-data type that exactly describes
+    # it. Docs pages default to TechArticle in pages/markdown.py.
+    schema_type="SoftwareApplication",
 )
 
 # The hub's announcement feed, rendered in this site's llms.txt viewer
@@ -306,6 +315,17 @@ print(
 # after page registration and before the routes attach. OFF unless some
 # page declares a non-public tier.
 from lib import access as _access  # noqa: E402
+from lib import page_tiers as _page_tiers  # noqa: E402
+
+# Tiered corpus documents (dash-improve-my-llms >= 2.4.0). Pseudo-paths:
+# they never enter dash.page_registry, so they cannot leak into listings —
+# registering them here lets this satellite tier its compact briefing and
+# full corpus via env (LLMS_SMALL_TIER / LLMS_FULL_TIER; unset = the
+# default tier, i.e. public), and the hub can tighten either network-wide
+# through its page-tier ceilings with no redeploy here. Inert on older
+# package versions.
+_page_tiers.register("/llms-small.txt", os.environ.get("LLMS_SMALL_TIER"))
+_page_tiers.register("/llms-full.txt", os.environ.get("LLMS_FULL_TIER"))
 
 ACCESS_ENABLED = _access.configure()
 

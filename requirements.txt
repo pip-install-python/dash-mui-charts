@@ -36,12 +36,13 @@ requests>=2.27.1              # 2plot.dev ad-network client (lib/ad_client.py)
 mistune>=3.0.0
 # markdown2dash==0.1.2        <- installed --no-deps, see above
 
-# AI/LLM Integration & SEO. 2.3.4 is the network standard: below it
-# `resolve_site_title` does not exist and this site's published identity
-# (the /llms.txt H1, the llms viewer's brand chip) silently degrades to
-# `app.title`. NOTE: dimll pins dash<5,>=4.1 — this is what makes the SITE's
-# Dash floor higher than the package's.
-dash-improve-my-llms>=2.3.4
+# AI/LLM Integration & SEO. 2.5.1 is the network standard (the Tier-B SEO
+# pass): per-page title/image/schema type reach the crawler document, and
+# the prerender no longer clobbers the browser's per-page <title>. The
+# [flask] extra pins the bot-middleware deps for this site's backend.
+# NOTE: dimll pins dash<5,>=4.1 — this is what makes the SITE's Dash floor
+# higher than the package's.
+dash-improve-my-llms[flask]>=2.5.1
 
 # Clerk satellite auth for the HOSTED docs site only (lib/auth.py) — fully
 # dormant without the CLERK_* env keys. Not on PyPI; vendored like the

@@ -71,7 +71,7 @@ def app_key() -> str:
     """This app's key in the hub's network directory.
 
     Deliberately NOT chained to ``AD_APP_ID``, even though on THIS app the two
-    now agree ("boilerplate" in both). A fork is free to use a long ad
+    now agree ("muicharts" in both). A fork is free to use a long ad
     identifier against a short directory key — leaflet.2plot.dev runs
     ``AD_APP_ID=dash-leaflet2`` with directory key "leaflet" — and setting one
     for ads must never silently re-key its analytics series off the directory.

@@ -41,5 +41,5 @@ def register_health_route(app, backend: str) -> None:
         def _healthz():
             return jsonify(payload)
 
-    print(f"[boilerplate] /healthz registered ({backend}) — "
+    print(f"[muicharts] /healthz registered ({backend}) — "
           "the 2plot.ai hourly health sweep probes this path.")
