@@ -232,11 +232,33 @@ def main() -> int:
 
     print("\n[network]")
     reqs = (ROOT / "requirements.txt").read_text()
-    floor = re.search(r"dash-improve-my-llms>=([\d.]+)", reqs)
+    # The requirement carries an extras marker — `dash-improve-my-llms[flask]
+    # >=2.5.1` — and a regex that did not step over `[flask]` read a correctly
+    # pinned requirements.txt as "not pinned" and failed the release. Anchored
+    # to line start for the same reason as gunicorn below: the surrounding
+    # comment quotes the package's own `dash<5,>=4.1` pin.
+    floor = re.search(r"^dash-improve-my-llms(?:\[[^\]]*\])?>=([\d.]+)",
+                      reqs, re.M)
+    # The floor itself is NOT restated here. run.py refuses to boot below
+    # LLMS_PKG_FLOOR (below it the crawler document drops this site's
+    # per-page identity), so that constant is the single source: a
+    # requirements floor under it would ship an image that dies at import.
+    # 2.3.4 is the fallback, not the standard — if that constant is ever
+    # renamed this degrades to the network minimum instead of a traceback.
+    boot = re.search(r"^LLMS_PKG_FLOOR\s*=\s*\(([^)]*)\)",
+                     (ROOT / "run.py").read_text(), re.M)
+    if boot is None:
+        notes.append(
+            "run.py declares no LLMS_PKG_FLOOR — the requirements floor was "
+            "checked against the 2.3.4 network minimum instead."
+        )
+    boot_floor = (tuple(int(n) for n in re.findall(r"\d+", boot.group(1)))
+                  if boot else (2, 3, 4))
     ok_floor = floor is not None and tuple(
         int(x) for x in floor.group(1).split(".")
-    ) >= (2, 3, 4)
-    check("dash-improve-my-llms floor >= 2.3.4", ok_floor,
+    ) >= boot_floor
+    check("dash-improve-my-llms floor >= "
+          + ".".join(str(n) for n in boot_floor), ok_floor,
           f">={floor.group(1)}" if floor else "not pinned in requirements.txt")
     # Anchored to line start: the requirements COMMENT quotes markdown2dash's
     # spurious `gunicorn>=21.2.0,<22` pin, which a bare search matches first.

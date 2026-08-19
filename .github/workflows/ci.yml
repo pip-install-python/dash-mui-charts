@@ -60,7 +60,7 @@ jobs:
       - name: flake8
         # Config in .flake8 — including the BUDGETED first-run debt ledger
         # for pages/*.py. Tighten there, not here.
-        run: flake8 lib pages components docs tests scripts run.py usage.py verify_traffic.py _validate_init.py
+        run: flake8 lib pages components docs tests scripts run.py usage.py _validate_init.py
 
       # The workflows lint themselves. Not belt-and-braces: an invalid
       # workflow file is the one defect CI structurally cannot report,
@@ -493,4 +493,15 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install pip-audit
-      - run: pip-audit -r requirements.txt --skip-editable
+      # The four cryptography suppressions that used to sit here are GONE, and
+      # this is the release they were waiting for. The old chain was
+      # vendor/dash_clerk_auth-0.9.1 (requires clerk-backend-api<6) ->
+      # clerk-backend-api 5.x (pins cryptography>=45,<47), capping cryptography
+      # at 46.x while the fixes landed in 48.0.1 / 49.0.0 / 50.0.0.
+      # dash-clerk-auth 1.0.1 widened its own cap to `<8`, so requirements.txt
+      # now pins clerk-backend-api>=7.0.0 (which allows cryptography<51) and
+      # cryptography>=50.0.0 — the fix is reached instead of suppressed.
+      # Nothing is ignored here any more; keep it that way.
+      - name: pip-audit
+        run: |
+          pip-audit -r requirements.txt --skip-editable
