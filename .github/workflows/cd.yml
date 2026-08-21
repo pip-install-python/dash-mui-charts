@@ -88,7 +88,16 @@ jobs:
   verify:
     name: verify the live site
     needs: [deploy]
-    if: always() && needs.deploy.result != 'cancelled'
+    # `always()` so a deploy that FAILED still gets its live site checked —
+    # a partially-applied deploy is exactly when you want the battery. But
+    # NOT when deploy was SKIPPED: that means CI rejected the commit and
+    # nothing shipped, so this job would grade the previous release against
+    # the new checkout's battery. That is not a hypothetical — the gate
+    # wave's first CD run failed CI, deploy skipped, and this job then
+    # reported "Live verification failed" because production had not yet
+    # been given the /api/agent-key route the new battery probes for. Two
+    # red jobs, one real cause, and the loud one was the wrong one.
+    if: always() && needs.deploy.result != 'cancelled' && needs.deploy.result != 'skipped'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
