@@ -28,6 +28,7 @@ Exit code 0 when clean, 1 otherwise.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import subprocess
@@ -267,9 +268,47 @@ def main() -> int:
           gunicorn_floor is not None
           and int(gunicorn_floor.group(1).split(".")[0]) >= 23,
           f">={gunicorn_floor.group(1)}" if gunicorn_floor else "not pinned")
+    # The clerk-backend-api floor is the OTHER half of the cryptography one:
+    # 5.x caps cryptography below the fixes for four advisories, so pinning
+    # cryptography alone returns ResolutionImpossible rather than a fix.
+    sdk_floor = re.search(r"^clerk-backend-api>=(\d+)", reqs, re.M)
+    check("clerk-backend-api floor >= 7 (unblocks cryptography)",
+          sdk_floor is not None and int(sdk_floor.group(1)) >= 7,
+          f">={sdk_floor.group(1)}" if sdk_floor else "not pinned")
+    crypto_floor = re.search(r"^cryptography>=(\d+)", reqs, re.M)
+    check("cryptography floor >= 50 (PYSEC-2026-3552 et al)",
+          crypto_floor is not None and int(crypto_floor.group(1)) >= 50,
+          f">={crypto_floor.group(1)}" if crypto_floor else "not pinned")
+
+    # THE VENDORED CLERK TARBALL, BY SHA. Twice in one week an early build of
+    # a dash-clerk-auth release went stale on sdist-shipped doc edits, and
+    # the stale and good tarballs are indistinguishable by name, size or
+    # date. requirements.txt records the sha it means; this proves the bytes
+    # in vendor/ are those bytes, so "vendored 1.0.5" is a measurement.
+    vendored = re.search(r"^\./vendor/(dash_clerk_auth-[\d.]+\.tar\.gz)",
+                         reqs, re.M)
+    recorded = re.search(r"sha256\s+([0-9a-f]{64})", reqs)
+    if vendored and recorded:
+        tarball = ROOT / "vendor" / vendored.group(1)
+        actual = (hashlib.sha256(tarball.read_bytes()).hexdigest()
+                  if tarball.exists() else "")
+        check(f"vendor/{vendored.group(1)} matches its recorded sha256",
+              actual == recorded.group(1),
+              "bytes verified" if actual == recorded.group(1)
+              else (f"MISMATCH: {actual[:12] or 'file missing'} != "
+                    f"{recorded.group(1)[:12]}"))
+    else:
+        check("requirements records the vendored tarball + its sha256",
+              False, "no `./vendor/...tar.gz` line, or no `sha256 <hex>` note")
+
     for mod in ("constants", "analytics_tracker", "satellite_reporter",
                 "traffic_rollup", "ad_client", "bulletin",
-                "network_directory"):
+                "network_directory",
+                # The gate wave's enforcement stack. A missing file here is
+                # not a crash — pages/markdown.py imports them at startup —
+                # but it is a satellite that silently cannot be gated.
+                "access", "page_tiers", "page_visibility", "gate_layouts",
+                "agent_key", "auth", "auth_demos"):
         check(f"lib/{mod}.py present", (ROOT / "lib" / f"{mod}.py").exists())
 
     render_yaml = (ROOT / "render.yaml").read_text()

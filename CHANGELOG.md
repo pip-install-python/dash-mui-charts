@@ -7,7 +7,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Nothing yet.
+### Gate wave — the sign-in gate, the control board, one stable icon
+
+The docs site's half of the network's gate wave (batch 1: template sync +
+the Clerk env block). **Ships DARK**: `PAGE_DEFAULT_TIER=public`, so every
+page reads exactly as before and the flip to `auth` is one environment
+variable, no code change, no redeploy. The component library is untouched —
+no wheel change, no version bump.
+
+- **The interactive gate** (`lib/gate_layouts.py`, `lib/access.py`,
+  `lib/page_tiers.py`): every markdown page's layout is wrapped in a
+  per-render verdict. With all tiers public the verdict is a dict lookup
+  that always allows, so nothing changes until the env says so.
+  `scripts/route_parity.py` measures the wrap as invisible: 195 chart
+  mounts and 41 page trees identical, byte for byte.
+- **The control board** (`/admin/control-board`, `lib/page_visibility.py`):
+  flip any page between public/auth/admin/hidden and toggle its llms.txt,
+  live, no redeploy. Fails CLOSED without Clerk, is excluded from the
+  sidebar and both search fields, and its own Admin nav link is hidden
+  until the server recognises an allowlisted account.
+- **`/api/agent-key`** (`lib/agent_key.py`): the person→agent handoff — a
+  signed-in reader's "copy llms.txt link" now carries a key that works when
+  pasted into an assistant with no cookie. 204 for everyone until Clerk and
+  the hub are configured.
+- **Presence beacon**: `lib/satellite_reporter.py` gains the ~60s
+  `{app, active}` ping the hub board's "live now" column reads. Display-only
+  and ephemeral; the daily rollup stays the source of the numbers.
+- **ONE stable identity for crawlers.** The per-load area/bar favicon
+  randomizer stays for browser tabs — but `configure_seo(icons=[...])`, the
+  head links and `assets/favicon/site.webmanifest` now all declare the same
+  generated area-chart set, and `tests/test_seo_icons.py` pins that dimll
+  2.6's autodiscovery finds exactly that set. The duplicate
+  `favicon_areachart.ico` is gone; `apple-touch-icon_areachart.png` is the
+  master everything regenerates from.
+- **Floors**: dash-improve-my-llms >= 2.6.0 (sitemap `<lastmod>` is emitted
+  verbatim or omitted — never invented), dash-mantine-components >= 2.8.0
+  (below it the mobile drawer renders as a floating card), vendored
+  dash-clerk-auth 1.0.5, sha-verified in `scripts/check_release.py`.
+- **pip-audit now GATES** (`continue-on-error` removed): with
+  clerk-backend-api >= 7 and cryptography >= 50 the baseline is quiet, so a
+  red audit means something new instead of the same four capped advisories.
+- Accessibility: every icon-only control carries an `aria-label`
+  (`create_link` now requires one). `aria-label`, never `title=` — DMC 2.8
+  raises on `title` during app construction.
 
 ## [1.4.0] - 2026-08-03
 

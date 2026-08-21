@@ -9,8 +9,12 @@
 dash>=4.4.0
 flask>=3.0.0
 
-# UI stack for the documentation app
-dash-mantine-components>=2.7.0
+# UI stack for the documentation app. DMC 2.8.0 is a FLOOR, not a
+# preference: on 2.7.0 the network-standard mobile drawer renders as a
+# floating card from byte-identical props (measured fleet-wide during the
+# gate wave), and 2.8's ActionIcon/Anchor reject `title=` outright — this
+# app uses `aria-label` + dmc.Tooltip everywhere, which is correct on both.
+dash-mantine-components>=2.8.0
 dash-iconify>=0.1.2
 
 # Documentation & utilities
@@ -36,20 +40,46 @@ requests>=2.27.1              # 2plot.dev ad-network client (lib/ad_client.py)
 mistune>=3.0.0
 # markdown2dash==0.1.2        <- installed --no-deps, see above
 
-# AI/LLM Integration & SEO. 2.5.1 is the network standard (the Tier-B SEO
-# pass): per-page title/image/schema type reach the crawler document, and
-# the prerender no longer clobbers the browser's per-page <title>. The
-# [flask] extra pins the bot-middleware deps for this site's backend.
+# AI/LLM Integration & SEO. 2.6.0 is the network floor as of the gate wave.
+# 2.5.1 was the Tier-B SEO standard (per-page title/image/schema type reach
+# the crawler document; the prerender no longer clobbers the browser's
+# per-page <title>); 2.6.0 adds the honesty standard on top: sitemap
+# <lastmod> is emitted verbatim from register_page_metadata(lastmod=) and
+# OMITTED when unset, instead of being swallowed into **kwargs while the
+# sitemap swears every page changed at build time. Also 2.6.0: icon
+# AUTODISCOVERY over app assets — which is why this repo's favicon pixels
+# had to land first (the ordering rule: discovery would otherwise cement
+# whatever art it found), JSON-LD publisher.logo, and viewer banner de-dup.
+# The [flask] extra pins the bot-middleware deps for this site's backend.
 # NOTE: dimll pins dash<5,>=4.1 — this is what makes the SITE's Dash floor
 # higher than the package's.
-dash-improve-my-llms[flask]>=2.5.1
+dash-improve-my-llms[flask]>=2.6.0
 
 # Clerk satellite auth for the HOSTED docs site only (lib/auth.py) — fully
 # dormant without the CLERK_* env keys. Not on PyPI; vendored like the
-# other satellites'. 1.0.2 floor: 0.9.0 ships a dead avatar on satellites, and
-# 1.0.2 fixes a second one — the menu could paint signed-out over a valid
-# session for the whole life of the page.
-./vendor/dash_clerk_auth-1.0.2.tar.gz
+# other satellites'.
+#
+# 1.0.5 is the gate-wave floor, and every release between it and 0.9.x
+# closed a way for the signed-in state to lie:
+#   0.9.x  a dead avatar on satellites, and a menu that could paint
+#          signed-out over a valid session for the whole life of the page.
+#   1.0.3  Sign Out finally reaches the server (1.0.2 never called its own
+#          /api/auth/signout, so the signed __dca_identity cookie kept
+#          serving gated pages for up to 7 days after a "sign out").
+#   1.0.4  FastAPI auth endpoints callable at all (inert here on Flask),
+#          plus the ghost-cookie fresh-load reconciliation.
+#   1.0.5  the RETURN TRIP, which is this site's own happy path: sign in
+#          from a satellite, come back to the auth page you started on,
+#          and the first server render happens before __dca_identity is
+#          minted — the gate card used to persist until a manual refresh.
+#
+# PROVENANCE — the dist/ tarball IS the release; there is no PyPI copy:
+#   sha256  a2f9062e15a69fc79deeaf76fcf1380907a961978db558b2aa227572cb2b74f3
+# Twice-proven rule: early builds go stale on sdist-shipped doc edits and
+# are NOT distinguishable by name, size or date. Only the recorded sha
+# admits a tarball here — vendor from Dash-Clerk-Auth-Hook/dist/ and
+# verify before every copy. (Reject 1.0.4's 22117b20… stale first build.)
+./vendor/dash_clerk_auth-1.0.5.tar.gz
 # SECURITY floor. clerk-backend-api 5.x declares cryptography>=45.0.0,<47.0.0,
 # holding cryptography on 46.0.7 — below the fix for GHSA-537c-gmf6-5ccf
 # (48.0.1), PYSEC-2026-3554 and PYSEC-2026-3553 (49.0.0), and PYSEC-2026-3552

@@ -98,6 +98,7 @@ jobs:
         run: |
           python - <<'PY'
           import dash, dash_improve_my_llms as pkg, gunicorn
+          import dash_mantine_components as dmc
 
           def parts(v):
               return tuple(int(x) for x in v.split(".")[:3] if x.isdigit())
@@ -105,14 +106,21 @@ jobs:
           # The SITE floor: dash-improve-my-llms pins dash>=4.1, so this is
           # what requirements.txt actually resolves to in production.
           assert parts(dash.__version__)[:2] >= (4, 1), dash.__version__
-          # 2.3.4 is the network standard: below it resolve_site_title does
-          # not exist and this site's published identity degrades to app.title.
-          assert parts(pkg.__version__) >= (2, 3, 4), pkg.__version__
+          # 2.6.0 is the gate-wave floor and run.py REFUSES TO BOOT below it:
+          # pre-2.6 swallows `lastmod=` into **kwargs, so the sitemap goes
+          # back to inventing dates. (2.5.1 brought configure_seo and the
+          # per-page crawler identity; 2.3.4 resolve_site_title.) Asserted
+          # here so a stale resolve fails the matrix instead of the deploy.
+          assert parts(pkg.__version__) >= (2, 6, 0), pkg.__version__
+          # 2.8.0 is a floor, not a preference: on 2.7 the network-standard
+          # mobile drawer renders as a floating card from identical props.
+          assert parts(dmc.__version__)[:2] >= (2, 8), dmc.__version__
           # 21.x carried two request-smuggling CVEs (CVE-2024-6827,
           # CVE-2024-1135); the requirements floor is >=23.
           assert parts(gunicorn.__version__)[:2] >= (23, 0), gunicorn.__version__
           print(f"dash {dash.__version__}, dash-improve-my-llms "
-                f"{pkg.__version__}, gunicorn {gunicorn.__version__}")
+                f"{pkg.__version__}, dash-mantine-components {dmc.__version__}, "
+                f"gunicorn {gunicorn.__version__}")
           PY
 
       # No MUI_PRO_API_KEY, no CROSS_APP_WEBHOOK_SECRET, no
@@ -175,7 +183,20 @@ jobs:
 
           v = version('dash-improve-my-llms')
           print('dash-improve-my-llms', v)
-          assert parts(v) >= (2, 3, 4), f'expected >=2.3.4 (resolve_site_title), image has {v}'
+          assert parts(v) >= (2, 6, 0), f'expected >=2.6.0 (verbatim sitemap lastmod), image has {v}'
+
+          v = version('dash-mantine-components')
+          print('dash-mantine-components', v)
+          assert parts(v)[:2] >= (2, 8), f'expected dmc>=2.8 (mobile drawer renders as a card below it), image has {v}'
+
+          # The vendored Clerk package: the image must carry the sha-verified
+          # 1.0.5 tarball, not whatever an older vendor/ left behind. Below
+          # 1.0.3 Sign Out never reaches the server and a signed cookie keeps
+          # serving gated pages for days; 1.0.5 is what ends the return-trip
+          # stale gate.
+          v = version('dash-clerk-auth')
+          print('dash-clerk-auth', v)
+          assert parts(v) >= (1, 0, 5), f'expected dash-clerk-auth>=1.0.5, image has {v}'
 
           v = version('gunicorn')
           print('gunicorn', v)
@@ -480,13 +501,18 @@ jobs:
           for f in assets/*.js; do node --check "$f"; done
 
   pip-audit:
-    name: pip-audit (advisory)
+    name: pip-audit
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    # Advisory on purpose. A CVE in a transitive dependency of a docs site
-    # is worth knowing about the day it lands, and worth nobody's broken
-    # build at 2am. The report is the value.
-    continue-on-error: true
+    # GATING as of the gate wave, and that is a deliberate promotion. It was
+    # advisory (continue-on-error) for as long as the audit had a permanent
+    # red line in it: clerk-backend-api 5.x capped cryptography below four
+    # fixes, so the step reported the same four advisories on every run and
+    # a fifth, actionable one would have scrolled past unnoticed. With the
+    # 1.0.5 vendor bump the chain reaches cryptography>=50 and the baseline
+    # is QUIET — which is the network's condition for flipping this on. A
+    # red pip-audit now means something new landed. Keep it that way: fix
+    # the dependency, don't re-add continue-on-error or --ignore-vuln.
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

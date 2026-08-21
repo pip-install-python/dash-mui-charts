@@ -1,25 +1,32 @@
 """Cross-host directory for the 2plot network — one definition, every satellite.
 
+Why this file exists
+--------------------
 Search engines follow links between hosts weakly; agents don't follow them at
-all. Landing on muicharts.2plot.dev a model sees one library, with nothing in
-the markup saying the other hosts exist — sitemap.xml cannot fix that, being
-scoped to its own origin by design. dash-improve-my-llms emits an explicit
-machine-readable directory instead: ``<link rel="related">`` tags in
-``<head>``, a ``## Network`` section in ``/llms.txt``, and followed links in
-the prerendered body.
+all. A model answering "what does this ecosystem provide?" fetches one or two
+URLs and reasons from what came back. Landing on ``leaflet.2plot.dev`` it sees
+one library, with nothing in the markup saying the other eleven hosts exist.
+``sitemap.xml`` cannot fix that — a sitemap is scoped to its own origin by
+design — so ``dash-improve-my-llms`` 2.1 emits an explicit machine-readable
+directory instead: ``<link rel="related">`` tags in ``<head>``, a ``## Network``
+section in ``/llms.txt``, and followed links in the prerendered body.
 
-The canonical copy lives in the boilerplate; satellites copy it and note any
-deliberate divergence. This copy is based on dash-email's (whose peer list
-was verified host-by-host on 2026-07-31, dropping two NXDOMAIN entries the
-boilerplate still lists) with two changes of its own:
+Keep the definition **here**, in the template, and import it. Twelve
+hand-maintained copies of the same peer list will drift, and a directory that
+disagrees with itself across hosts is worse than no directory at all.
 
-- dash-mui-charts (muicharts.2plot.dev) is ADDED — this is the change that
-  ships it; ``peers_for()`` drops it from this host's own peer list, and
-  every other satellite's copy should gain it via the boilerplate.
-- MUI X (mui.com/x) joins EXTERNAL: it is the upstream library all 13 of
-  this site's components wrap, referenced on nearly every page.
+Three tiers, and the distinction is load-bearing:
 
-Usage in app.py, before ``add_llms_routes(app)``::
+``PEERS``
+    Same network, same operator. These build the cross-host graph you own.
+``AFFILIATED``
+    Yours, on unrelated domains. Findable when asked "what else did you
+    build?" without being swept into "what is the 2plot network?".
+``EXTERNAL``
+    Third-party docs you reference but don't own. Emitted ``rel="nofollow"``
+    — references, not endorsements.
+
+Usage in a satellite's ``run.py``, before ``add_llms_routes(app)``::
 
     from lib.constants import BASE_URL
     from lib import network_directory
@@ -32,6 +39,14 @@ from __future__ import annotations
 
 from typing import Any, Dict, List
 
+# Only list hosts that are actually live. A directory entry pointing at a
+# subdomain with no site is a dead link an agent will follow once and then
+# distrust the rest of the list for. The full docs fleet went live on paid
+# hosting 2026-08-19/20 — muicharts, flexlayout and llms joined in that
+# window (the drift sweep of 2026-08-20 found seven different versions of
+# this list across nine repos; this copy is the canonical one and the fleet
+# syncs FROM here, verbatim). Still deliberately absent until they deploy:
+# excalidraw.2plot.dev and modelviewer.2plot.dev.
 PEERS: List[Dict[str, str]] = [
     {
         "name": "2plot.ai",
@@ -64,9 +79,9 @@ PEERS: List[Dict[str, str]] = [
         "description": "MUI X charts, tree views and time pickers for Dash.",
     },
     {
-        "name": "dash-flows",
-        "url": "https://flows.2plot.dev",
-        "description": "Node-graph editors built on React Flow.",
+        "name": "flexlayout-dash",
+        "url": "https://flexlayout.2plot.dev",
+        "description": "IDE-style dockable, resizable and floatable window panels.",
     },
     {
         "name": "dash-improve-my-llms",
@@ -74,21 +89,33 @@ PEERS: List[Dict[str, str]] = [
         "description": "The AI/LLM and SEO package every site in this network is built on.",
     },
     {
+        "name": "dash-flows",
+        "url": "https://flows.2plot.dev",
+        "description": "Node-graph editors built on React Flow.",
+    },
+    {
+        "name": "dash-pannellum",
+        "url": "https://pannellum.2plot.dev",
+        "description": "360° panorama and virtual-tour viewer.",
+    },
+    {
+        "name": "dash-emoji-mart",
+        "url": "https://emojimart.2plot.dev",
+        "description": "Emoji picker component.",
+    },
+    {
         "name": "dash-email",
         "url": "https://email.2plot.dev",
         "description": "Email composition and delivery components.",
     },
-    # dash-pannellum (pannellum.2plot.dev) and dash-emoji-mart
-    # (emojimart.2plot.dev) belong here the day their DNS resolves. Both were
-    # NXDOMAIN as of 2026-07-31 (dash-email's verified sweep).
 ]
 
+# pip-install-python.com is deliberately NOT here: the domain is retired
+# network-wide (the fleet's retire-pip-install-python-domain sweep), and
+# leaflet's test_social_card pins its absence. A directory that keeps
+# pointing agents at a retired origin re-teaches them the identity the
+# network spent a release unlearning.
 AFFILIATED: List[Dict[str, str]] = [
-    {
-        "name": "Pip Install Python",
-        "url": "https://pip-install-python.com",
-        "description": "The original component documentation site.",
-    },
     {
         "name": "Pirate's Bargain",
         "url": "https://piratesbargain.com",
@@ -102,11 +129,6 @@ AFFILIATED: List[Dict[str, str]] = [
 ]
 
 EXTERNAL: List[Dict[str, Any]] = [
-    {
-        "name": "MUI X Charts",
-        "url": "https://mui.com/x/react-charts/",
-        "description": "The upstream React charting library these components wrap.",
-    },
     {
         "name": "Dash Mantine Components",
         "url": "https://www.dash-mantine-components.com",
@@ -129,9 +151,17 @@ NETWORK_DESCRIPTION = (
 HUB_URL = "https://2plot.dev"
 
 # The mark drawn in the header of the rendered llms.txt view: "2" + morse
-# encoding of "plot" + "ai". Defined here rather than per-app because this
-# module is copied verbatim into every satellite — that is what keeps one
-# mark across the network instead of twelve slightly different ones.
+# encoding of "plot" + "ai", as columns of dots and dashes.
+#
+# No period glyph between the halves — the morse block already separates them,
+# and a literal "." next to it reads as punctuation dropped into a graphic.
+# The renderer turns a suffix ending in "i" into an upward flourish, so "ai"
+# draws as "a" plus that mark; `label` carries the real domain for screen
+# readers and the SVG <title>, which is the only place the dot belongs.
+#
+# Defined here rather than per-app because this module is copied verbatim into
+# every satellite — that is what keeps one mark across the network instead of
+# twelve slightly different ones.
 WORDMARK = {
     "morse": "plot",
     "prefix": "2",
@@ -153,9 +183,15 @@ def peers_for(app_url: str) -> List[Dict[str, str]]:
 def apply(app_url: str) -> None:
     """Publish the directory for the app served at ``app_url``.
 
-    Degrades rather than fails on older releases of the package: losing the
-    directory, or losing the wordmark, is a degradation — refusing to start
-    is not.
+    Degrades rather than fails on older releases of the package. A satellite
+    pinned behind this file should still boot: losing the directory, or losing
+    the wordmark, is a degradation — refusing to start is not.
+
+    That matters during a staged rollout, when this module reaches satellites
+    before the new package does. ``register_network`` arrived in 2.1 and its
+    ``wordmark`` argument in 2.2, and Python raises ``TypeError`` on an unknown
+    keyword, so the argument is only passed when the installed signature
+    actually accepts it.
     """
     try:
         from dash_improve_my_llms import register_network

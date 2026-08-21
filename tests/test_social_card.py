@@ -252,8 +252,20 @@ def test_the_apple_touch_icon_is_declared_and_resolves(client):
 def test_both_favicon_variants_resolve(client):
     """The random favicon swapper flips between the area-chart and bar-chart
     icon sets per load (brand quirk, kept deliberately). Both halves of each
-    pair must exist or half the loads 404 their icon."""
-    for suffix in ("areachart", "barchart"):
-        for asset in (f"/assets/favicon_{suffix}.ico",
-                      f"/assets/apple-touch-icon_{suffix}.png"):
-            assert client.get(asset).ok, f"{asset} does not resolve"
+    pair must exist or half the loads 404 their icon.
+
+    The AREA-CHART half is the canonical generated set (assets/favicon/*,
+    root assets/favicon.ico) — the same files configure_seo declares and
+    2.6's discovery finds — because one mark living in two places is how a
+    tab icon and a search-result icon drift apart unnoticed. Only the
+    bar-chart alternate still has standalone files.
+    """
+    for asset in (
+        # area-chart: the declared identity
+        "/assets/favicon.ico",
+        "/assets/favicon/apple-touch-icon.png",
+        # bar-chart: the browser-only alternate
+        "/assets/favicon_barchart.ico",
+        "/assets/apple-touch-icon_barchart.png",
+    ):
+        assert client.get(asset).ok, f"{asset} does not resolve"

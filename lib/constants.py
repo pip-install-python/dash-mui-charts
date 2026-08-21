@@ -81,6 +81,22 @@ OG_IMAGE_TYPE = "image/png"
 OG_IMAGE_ALT = SITE_BRAND
 
 # ---------------------------------------------------------------------------
+# Publisher identity for the crawler document's JSON-LD
+# ---------------------------------------------------------------------------
+# `configure_seo(publisher=, same_as=)` puts these in the crawler page's
+# JSON-LD. For a docs satellite `same_as` should name the documented
+# package's GitHub repo and its PyPI project: three URLs pointing at each
+# other is the strongest available statement of which host is this package's
+# canonical documentation home. The other half of that loop — PyPI
+# project_urls and the GitHub README pointing back at muicharts.2plot.dev —
+# is a per-package checklist item, not code.
+PUBLISHER = "Pip Install Python LLC"
+SAME_AS = [
+    "https://github.com/pip-install-python/dash-mui-charts",
+    "https://pypi.org/project/dash-mui-charts/",
+]
+
+# ---------------------------------------------------------------------------
 # The network's internal-traffic contract
 # ---------------------------------------------------------------------------
 # Any request whose User-Agent contains INTERNAL_UA_TOKEN is 2plot network

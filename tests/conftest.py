@@ -37,10 +37,21 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
 # --- 1. Neutralise every secret (must precede any import of run.py) ---------
+# The CLERK_*/SESSION_SECRET block joined at the gate wave: with no Clerk keys
+# the interactive gate must fall OPEN on public and auth pages and still deny
+# admin/hidden, and that zero-secret boot is what every fail-closed assertion
+# in tests/test_access.py rests on. A developer's local .env holding real keys
+# would otherwise flip the suite into a configured posture and quietly stop
+# proving the degraded one.
 SECRET_ENV_KEYS = (
     "MUI_PRO_API_KEY",
     "CROSS_APP_WEBHOOK_SECRET",
     "NETWORK_BULLETIN_URL",
+    "CLERK_SECRET_KEY", "CLERK_PUBLISHABLE_KEY", "CLERK_SIGN_IN_URL",
+    "CLERK_SIGN_UP_URL", "CLERK_FRONTEND_API", "CLERK_WEBHOOK_SECRET",
+    "CLERK_IS_SATELLITE", "CLERK_SATELLITE_DOMAIN",
+    "CLERK_SATELLITE_SIGN_IN_REDIRECT",
+    "SESSION_SECRET", "FLASK_SECRET_KEY",
 )
 for _key in SECRET_ENV_KEYS:
     os.environ[_key] = ""
@@ -49,6 +60,11 @@ for _key in SECRET_ENV_KEYS:
 _TMP_STATE = tempfile.mkdtemp(prefix="muicharts-tests-")
 os.environ["TRAFFIC_ANALYTICS_FILE"] = os.path.join(
     _TMP_STATE, "visitor_analytics.json")
+# Same reason for the control board's override store — and pointing it at a
+# tmp path also keeps the import-time [visibility] boot warning quiet, which
+# is the very warning the deploy log is read for.
+os.environ["PAGE_VISIBILITY_FILE"] = os.path.join(
+    _TMP_STATE, "page_visibility.json")
 # Keep the suite offline: no ip-api.com lookups for synthetic visitors.
 os.environ["ANALYTICS_GEO_LOOKUP"] = "0"
 # A dev .env pointing APP_BASE_URL elsewhere must not change what the suite
@@ -149,10 +165,22 @@ def tmp_state_dir():
 
 @pytest.fixture(scope="session")
 def pages(app_module):
-    """Every registered page as (path, entry), sorted by path."""
+    """Every CRAWLABLE page as (path, entry), sorted by path.
+
+    /admin/* is excluded on purpose: the control board fails CLOSED to
+    anonymous renders (its crawler body is deliberately empty, and dimll's
+    `mark_hidden` keeps it out of the sitemap), so every prose-substance
+    and route-200 sweep in this suite would flag exactly the behaviour the
+    board is supposed to have. tests/test_control_board.py owns that page's
+    assertions, and it addresses it by path rather than through this
+    fixture — which is also why EXPECTED_ROUTES stayed put when the board
+    arrived. Same exclusion, same reason, as the boilerplate's conftest.
+    """
     import dash
 
-    return sorted(((entry["path"], entry) for entry in dash.page_registry.values()),
+    return sorted(((entry["path"], entry)
+                   for entry in dash.page_registry.values()
+                   if not entry["path"].startswith("/admin/")),
                   key=lambda item: item[0])
 
 

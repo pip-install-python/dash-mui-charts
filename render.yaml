@@ -35,12 +35,94 @@ services:
       # declared so the identity is visible here.
       - key: SATELLITE_APP_KEY
         value: "muicharts"
+      # 15 minutes, not the code default of hourly: the fleet is on paid
+      # instances now and the hub board reads near-real-time. The live
+      # "active now" number rides the separate presence beacon
+      # (SATELLITE_PRESENCE_INTERVAL_S, default 60s, 0 disables) — this knob
+      # only paces the daily rollup.
+      - key: SATELLITE_REPORT_INTERVAL_S
+        value: "900"
       # The hub takes the LAST report for a given (app, date). On an
       # ephemeral filesystem a mid-day deploy wipes the ledger and the next
       # hourly report overwrites the day's real total with whatever accrued
       # since the restart. The disk below is what stops that.
       - key: TRAFFIC_ANALYTICS_FILE
         value: "/var/data/visitor_analytics.json"
+      # Control-board overrides (/admin/control-board) persist here — on the
+      # same disk, so toggles survive deploys. TWICE on the pilot host this
+      # row rode render.yaml without reaching the live service (Blueprint env
+      # applies only on a sync) and every toggle silently reset per deploy;
+      # the boot now prints a [visibility] WARNING when the variable is
+      # missing OR when /var/data is not actually a mounted disk. The absence
+      # of that warning in a deploy log is the acceptance check.
+      - key: PAGE_VISIBILITY_FILE
+        value: "/var/data/page_visibility.json"
+
+      # --- The interactive gate (lib/gate_layouts.py) ---------------------
+      # THE per-host gate switch: flip to `auth` and every docs page whose
+      # frontmatter doesn't pin a tier shows the sign-in card to anonymous
+      # browsers. Rollback is flipping it back — env only, no code revert.
+      # SHIPS DARK: `public` here is the whole point of the dark launch —
+      # the verdict plumbing, the gate cards and /api/agent-key all go live
+      # and change nothing a visitor sees, so the flip is measured against a
+      # host already proven healthy. The funnel's front door (`/`) and the
+      # corpus pseudo-paths are pinned public in run.py and never inherit it.
+      - key: PAGE_DEFAULT_TIER
+        value: public
+      # The second axis, and the phase-4 agent flip: while "1", machine
+      # surfaces (llms.txt family, crawler HTML, the prerender) stay open on
+      # auth pages so the crawl-demand window keeps measuring. "0" gates
+      # anonymous machine fetches too (keyed agents still pass). Do not flip
+      # before the window closes — see kickoff/fleet/KICKOFF-fleet-check.md.
+      - key: LLMS_PUBLIC_DEFAULT
+        value: "1"
+
+      # --- Clerk satellite auth (lib/auth.py) -----------------------------
+      # All OPTIONAL: absent, the site runs fully public and admin surfaces
+      # fail CLOSED (lib.auth.admin_access_open). Set the two secret keys to
+      # turn auth on. Values below mirror leaflet.2plot.dev, the pilot host.
+      - key: CLERK_SECRET_KEY
+        sync: false
+      - key: CLERK_PUBLISHABLE_KEY
+        sync: false
+      # The 2plot.ai PRIMARY on its production Clerk instance (Account
+      # Portal + Frontend API custom domains — not *.accounts.dev).
+      - key: CLERK_SIGN_IN_URL
+        value: https://accounts.2plot.ai/sign-in
+      - key: CLERK_SIGN_UP_URL
+        value: https://accounts.2plot.ai/sign-up
+      # Where the primary sends a satellite visitor AFTER sign-in. Unset,
+      # an authenticated user is stranded on 2plot.ai, silently — they
+      # signed in successfully and simply never came back.
+      # A DESTINATION, not a flag: the value is concatenated as
+      # `<value>?returnTo=<here>`, so `true` or a bare host resolves against
+      # THIS site and the button 404s — worse than unset. lib/auth.py warns
+      # at boot for both mistakes; the absence of those warnings is the
+      # deploy acceptance check.
+      - key: CLERK_SATELLITE_SIGN_IN_REDIRECT
+        value: https://2plot.ai/onboarding
+      # REQUIRED in satellite mode; a production custom-domain instance
+      # cannot derive it from CLERK_SIGN_IN_URL.
+      - key: CLERK_FRONTEND_API
+        value: https://clerk.2plot.ai
+      # The REGISTERED SATELLITE DOMAIN — deliberately NOT the host this app
+      # is served on. Every *.2plot.dev docs host is an ALLOWED SUBDOMAIN of
+      # the 2plot.dev satellite; clerk.muicharts.2plot.dev is NXDOMAIN and
+      # setting it here hangs sign-in. Session cookies are scoped to
+      # .2plot.dev, which is exactly what the allowlist enables.
+      - key: CLERK_SATELLITE_DOMAIN
+        value: 2plot.dev
+      - key: CLERK_IS_SATELLITE
+        value: "true"
+      # Signs the session + __dca_identity cookies. Without it
+      # dash-clerk-auth falls back to a PUBLIC dev default string. UNIQUE
+      # per service — never copied between hosts.
+      - key: SESSION_SECRET
+        generateValue: true
+      # Admin allowlist for admin-tier pages and /admin/control-board
+      # (lib.auth.is_admin_user).
+      - key: ADMIN_EMAILS
+        sync: false
       # Access tiers for the tiered corpus documents (/llms-small.txt,
       # /llms-full.txt — dash-improve-my-llms >= 2.4.0). Deliberately set to
       # the default so the knob is visible: the 402 experiment tightens the
