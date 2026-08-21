@@ -3,7 +3,7 @@
 
 ci.yml runs it across the supported Dash range (the matrix installs
 `dash==X` first, then requirements). It answers the question the version
-matrix exists for: with this exact Dash resolved, do all 41 pages
+matrix exists for: with this exact Dash resolved, do all 42 pages
 register, do their layouts construct, does every route serve 200, and is the
 component bundle the browser will load syntactically whole?
 
@@ -35,7 +35,14 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO))
 
-EXPECTED_ROUTES = 41  # 40 originals + /api
+# 40 originals + /api (M5) + /admin/control-board (the gate wave). The board
+# is COUNTED here on purpose, unlike in tests/conftest.py where the `pages`
+# fixture excludes /admin/* — the two gates ask different questions. There,
+# "which pages must carry crawlable prose"; here, "which page modules must
+# import and render under this exact Dash version", and an admin page that
+# explodes on Dash 4.1 is exactly the kind of thing this matrix exists to
+# catch. It renders its fail-closed layout with no Clerk and serves 200.
+EXPECTED_ROUTES = 42
 # dash_mui_charts component instances across all pages: 194 on 2026-08-02,
 # with and without a Pro key (Pro pages mount their charts unlicensed and add
 # a banner). The floor has slack for demo edits but fails on "a whole
