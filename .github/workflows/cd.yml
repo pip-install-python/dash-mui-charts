@@ -38,11 +38,12 @@ jobs:
     name: deploy to render
     needs: [test]
     runs-on: ubuntu-latest
-    # Long enough for the wait loop below (a 120s settle plus up to 40 x 15s)
-    # and no longer. Without it the job inherits GitHub's six-hour default,
-    # which is how a platform that never comes back healthy holds the
-    # `cd-production` concurrency group all day.
-    timeout-minutes: 20
+    # Long enough for the wait loop below (up to 60 x 15s on the commit path,
+    # or a 120s settle plus 40 x 15s on the fallback) and no longer. Without
+    # it the job inherits GitHub's six-hour default, which is how a platform
+    # that never comes back healthy holds the `cd-production` concurrency
+    # group all day.
+    timeout-minutes: 25
     environment:
       name: production
       url: https://muicharts.2plot.dev
@@ -55,35 +56,72 @@ jobs:
           HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
         run: |
           if [ -z "$HOOK" ]; then
-            echo "::notice::RENDER_DEPLOY_HOOK_URL is not set. Skipping the deploy trigger and verifying whatever is currently live."
+            echo "::notice::RENDER_DEPLOY_HOOK_URL is not set — this push deploys through render.yaml's autoDeploy instead. The wait below still holds until the new build is live, so verification is unaffected."
             echo "deployed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           curl -fsS -X POST "$HOOK" > /dev/null
           echo "deployed=true" >> "$GITHUB_OUTPUT"
 
+      # DELIBERATELY not gated on the hook. render.yaml sets
+      # `autoDeploy: true`, so a push to main deploys with or without
+      # RENDER_DEPLOY_HOOK_URL — but this step used to run only when the
+      # hook fired, which meant a repo without that secret waited ZERO
+      # seconds and handed `verify` the PREVIOUS release to grade. It looked
+      # green for as long as no change added a surface the battery probes;
+      # the gate wave added /api/agent-key and the deploy "succeeded" while
+      # verification failed against a build that did not have the route yet.
       - name: Wait for the new build to serve traffic
-        if: steps.hook.outputs.deployed == 'true'
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
         run: |
-          # Render swaps instances rather than restarting in place, so the
-          # old build answers /healthz throughout. Waiting for one 200
-          # proves nothing (LESSONS §16); give the build time, then require
-          # sustained health.
-          sleep 120
-          ok=0
-          for _ in $(seq 1 40); do
-            if curl -fsS "$SITE_URL/healthz" > /dev/null; then
-              ok=$((ok + 1))
-              [ "$ok" -ge 5 ] && break
-            else
-              ok=0
+          # Waiting on a STATUS CODE proves nothing: Render keeps the old
+          # instance answering while the new one builds (LESSONS §16), and a
+          # disk-backed service restarts with a blip instead of overlapping.
+          # So wait on the ARTIFACT — /healthz reports the commit the running
+          # instance was built from (lib/health.py, from RENDER_GIT_COMMIT).
+          live_commit() {
+            curl -fsS --max-time 20 "$SITE_URL/healthz" 2>/dev/null \
+              | python3 -c 'import json,sys; print((json.load(sys.stdin) or {}).get("commit") or "")' 2>/dev/null \
+              || true
+          }
+
+          # The first deploy carrying this change is served by a build that
+          # predates the commit field, so there is nothing to match against;
+          # fall back to the old sustained-health wait and say so. Every
+          # deploy after it gets the exact check.
+          if [ -z "$(live_commit)" ]; then
+            echo "::warning::/healthz reports no commit field — the running build predates it. Falling back to sustained-health waiting, which cannot tell the new build from the old one."
+            sleep 120
+            ok=0
+            for _ in $(seq 1 40); do
+              if curl -fsS "$SITE_URL/healthz" > /dev/null; then
+                ok=$((ok + 1))
+                [ "$ok" -ge 5 ] && break
+              else
+                ok=0
+              fi
+              sleep 15
+            done
+            if [ "$ok" -lt 5 ]; then
+              echo "::error::$SITE_URL never became reliably healthy"
+              exit 1
             fi
+            exit 0
+          fi
+
+          echo "waiting for $SITE_URL to serve commit $EXPECTED_SHA"
+          for i in $(seq 1 60); do
+            live=$(live_commit)
+            if [ "$live" = "$EXPECTED_SHA" ]; then
+              echo "live after ~$((i * 15))s"
+              exit 0
+            fi
+            echo "  [$i/60] serving ${live:-<unreachable>}"
             sleep 15
           done
-          if [ "$ok" -lt 5 ]; then
-            echo "::error::$SITE_URL never became reliably healthy"
-            exit 1
-          fi
+          echo "::error::$SITE_URL never reported commit $EXPECTED_SHA — the build failed, or the platform is still rolling it out. Nothing was verified against the new artifact."
+          exit 1
 
   verify:
     name: verify the live site
