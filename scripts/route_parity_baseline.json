@@ -1,5 +1,5 @@
 {
- "callback_count": 117,
+ "callback_count": 118,
  "chart_callbacks": [
   {
    "chart_refs": [
@@ -501,6 +501,7 @@
  },
  "route_statuses": {
   "/": 200,
+  "/admin/control-board": 200,
   "/api": 200,
   "/barchart-basic": 200,
   "/barchart-dataset": 200,
@@ -555,6 +556,19 @@
     "dash_mantine_components.Stack": 1,
     "dash_mantine_components.Text": 21,
     "dash_mantine_components.Title": 8
+   },
+   "ids": [],
+   "mui_ids": [],
+   "mui_mounts": 0
+  },
+  "/admin/control-board": {
+   "components": {
+    "dash_iconify.DashIconify": 1,
+    "dash_mantine_components.Center": 1,
+    "dash_mantine_components.Paper": 1,
+    "dash_mantine_components.Stack": 1,
+    "dash_mantine_components.Text": 1,
+    "dash_mantine_components.Title": 1
    },
    "ids": [],
    "mui_ids": [],
@@ -3045,11 +3059,11 @@
  "shell": {
   "components": {
    "dash_core_components.Location": 2,
-   "dash_core_components.Store": 4,
-   "dash_html_components.Div": 3,
-   "dash_iconify.DashIconify": 100,
+   "dash_core_components.Store": 3,
+   "dash_html_components.Div": 5,
+   "dash_iconify.DashIconify": 102,
    "dash_mantine_components.ActionIcon": 4,
-   "dash_mantine_components.Anchor": 95,
+   "dash_mantine_components.Anchor": 97,
    "dash_mantine_components.AppShell": 1,
    "dash_mantine_components.AppShellHeader": 1,
    "dash_mantine_components.AppShellMain": 1,
@@ -3058,15 +3072,15 @@
    "dash_mantine_components.Badge": 2,
    "dash_mantine_components.Box": 4,
    "dash_mantine_components.Burger": 1,
-   "dash_mantine_components.Divider": 7,
+   "dash_mantine_components.Divider": 9,
    "dash_mantine_components.Drawer": 1,
-   "dash_mantine_components.Group": 96,
+   "dash_mantine_components.Group": 98,
    "dash_mantine_components.MantineProvider": 1,
    "dash_mantine_components.NotificationContainer": 1,
    "dash_mantine_components.ScrollArea": 2,
    "dash_mantine_components.Select": 2,
-   "dash_mantine_components.Stack": 59,
-   "dash_mantine_components.Text": 121,
+   "dash_mantine_components.Stack": 65,
+   "dash_mantine_components.Text": 125,
    "dash_mantine_components.Tooltip": 1
   },
   "ids": [
@@ -3074,7 +3088,6 @@
    "_pages_dummy",
    "_pages_location",
    "_pages_store",
-   "analytics-sink",
    "color-scheme-storage",
    "color-scheme-toggle",
    "components-navbar-drawer",
@@ -3089,7 +3102,9 @@
    "m2d-mantine-provider",
    "mobile-select-component",
    "select-component",
-   "url"
+   "url",
+   "{\"loc\": \"drawer\", \"type\": \"admin-nav-section\"}",
+   "{\"loc\": \"navbar\", \"type\": \"admin-nav-section\"}"
   ],
   "mui_ids": [],
   "mui_mounts": 0

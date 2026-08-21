@@ -112,16 +112,54 @@
     </script>
 
     <!-- ========================================================================
-         FAVICON — randomly area-chart or bar-chart per load (brand quirk, kept)
+         FAVICON — ONE stable declared identity, one browser-only quirk.
+
+         The declared set below is the area-chart mark at every size, and it
+         is what crawlers, the manifest and run.py's configure_seo(icons=[…])
+         all name — the three must agree, and tests/test_seo_icons.py pins
+         that they do. dash-improve-my-llms 2.6 ALSO autodiscovers icons from
+         app assets, which is exactly why the declaration and the pixels had
+         to land together: discovery finding one mark while the head declared
+         another is the identity drift this pass exists to end.
+
+         The per-load area/bar randomizer underneath is a browser-only brand
+         quirk, deliberately kept. It reassigns the two ids below AFTER the
+         document is parsed, so a crawler (which does not execute it) always
+         records the stable area-chart mark, while a human sometimes gets the
+         bar-chart tab. Google's icon and the tab icon are allowed to differ;
+         Google's icon changing per crawl is not.
          ======================================================================== -->
-    <link id="favicon" rel="icon" type="image/x-icon" href="/assets/favicon_areachart.ico">
-    <link id="apple-touch-icon" rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon_areachart.png">
+    <link id="favicon" rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/assets/favicon/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/assets/favicon/android-chrome-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/assets/favicon/android-chrome-512x512.png">
+    <link id="apple-touch-icon" rel="apple-touch-icon" sizes="180x180" href="/assets/favicon/apple-touch-icon.png">
+    <!-- The manifest is what turns this into an installable app rather than a
+         bookmarkable page; a browser silently declines to offer installation
+         if `name` is empty, so assets/favicon/site.webmanifest carries this
+         app's own name/short_name/description, not the template's. -->
+    <link rel="manifest" href="/assets/favicon/site.webmanifest">
+    <meta name="apple-mobile-web-app-title" content="dash-mui-charts">
+    <meta name="msapplication-TileColor" content="#1976d2">
+    <meta name="msapplication-TileImage" content="/assets/favicon/android-chrome-192x192.png">
     <script>
         (function() {
             var useBar = Math.random() < 0.5;
             var suffix = useBar ? 'barchart' : 'areachart';
-            document.getElementById('favicon').href = '/assets/favicon_' + suffix + '.ico';
-            document.getElementById('apple-touch-icon').href = '/assets/apple-touch-icon_' + suffix + '.png';
+            // The AREACHART state is the site's declared identity, so it
+            // points at the canonical generated set rather than at a second
+            // copy of the same art: two files holding one mark stay
+            // byte-identical right up until somebody regenerates one of them,
+            // and then the tab and Google disagree with nothing to show it.
+            // Only the bar-chart alternate keeps standalone files.
+            var ico = useBar ? '/assets/favicon_barchart.ico' : '/assets/favicon.ico';
+            var touch = useBar
+                ? '/assets/apple-touch-icon_barchart.png'
+                : '/assets/favicon/apple-touch-icon.png';
+            document.getElementById('favicon').href = ico;
+            document.getElementById('apple-touch-icon').href = touch;
             // The header avatar is rendered by React after this runs. Retry
             // BOUNDED (5s worth) rather than forever: the unbounded loop this
             // replaces would spin for the whole session on any page where the
@@ -131,7 +169,7 @@
             function syncAvatar() {
                 var img = document.querySelector('#header-avatar img');
                 if (img) {
-                    img.src = '/assets/favicon_' + suffix + '.ico';
+                    img.src = ico;
                 } else if (attempts++ < 25) {
                     setTimeout(syncAvatar, 200);
                 }

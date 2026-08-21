@@ -3,7 +3,7 @@ from dash import Output, Input, clientside_callback, dcc, page_container, State
 
 from components.header import create_header
 from components.navbar import create_navbar, create_navbar_drawer
-from lib.constants import PRIMARY_COLOR
+from lib.constants import PRIMARY_COLOR, HEADER_HEIGHT
 
 
 def create_appshell(data):
@@ -183,11 +183,16 @@ def create_appshell(data):
                     create_navbar_drawer(data),
                     dmc.AppShellMain(
                         children=page_container,
-                        style={"minHeight": "calc(100vh - 70px)"}  # Full height minus header
+                        # dvh, not vh: on mobile Safari/Chrome the URL bar is
+                        # part of `vh`, so a 100vh shell is taller than the
+                        # visible viewport and the page starts life scrolled.
+                        # HEADER_HEIGHT rather than 70 — the header, the
+                        # navbar drawer offset and this all read one number.
+                        style={"minHeight": f"calc(100dvh - {HEADER_HEIGHT}px)"}
                     ),
                 ],
                 id="m2d-appshell",
-                header={"height": 70},
+                header={"height": HEADER_HEIGHT},
                 padding="xl",
                 navbar={
                     "width": 280,

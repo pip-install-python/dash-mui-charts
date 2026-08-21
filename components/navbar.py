@@ -1,5 +1,5 @@
 import dash_mantine_components as dmc
-from dash import Input, Output, clientside_callback
+from dash import ALL, Input, Output, callback, ctx, html
 from dash_iconify import DashIconify
 
 from lib.constants import HEADER_HEIGHT
@@ -106,6 +106,85 @@ FAMILIES = [
 TOP_LINKS = [("/", "Home", "material-symbols:home-outline"),
              ("/changelog", "Changelog", "material-symbols:history")]
 
+# Admin surfaces are not documentation, so they never join the family
+# sections OR the "Other" safety net — without this line the control board
+# arrived in the sidebar as "Other → Control Board" for every anonymous
+# reader (measured by scripts/route_parity.py the day it landed). It gets
+# its own section below instead: hidden by default, revealed server-side.
+EXCLUDED_LINKS = {"/admin/control-board"}
+
+# The control board's nav entry. Rendered into BOTH the desktop navbar and
+# the mobile drawer, so its id is pattern-matched: two components may not
+# share a plain string id, and one callback has to reach both.
+ADMIN_NAV_ID = "admin-nav-section"
+_HIDDEN = {"display": "none"}
+
+
+def create_admin_section(loc):
+    """The owner-only Control Board link, hidden until the server says otherwise.
+
+    Hidden by DEFAULT and revealed by `_reveal_admin_nav` below rather than
+    by anything the browser knows: any client-side store lives in the page
+    and a determined visitor can put whatever they like in it, so the
+    decision is made server-side against the real session.
+
+    Even so, this link is COSMETIC. /admin/control-board gates itself twice
+    — pages/control_board.layout() re-checks on every render and the
+    mutating callback re-checks before it will change anything — and it
+    fails CLOSED when Clerk is unavailable. Revealing this link grants
+    nothing; hiding it stops the board being advertised to readers it would
+    only reject. Ported from leaflet.2plot.dev, the gate pilot.
+    """
+    return html.Div(
+        id={"type": ADMIN_NAV_ID, "loc": loc},
+        style=_HIDDEN,
+        children=dmc.Stack(
+            [
+                dmc.Divider(mt="md", mb="sm"),
+                create_nav_section(
+                    "Admin",
+                    [
+                        create_nav_link(
+                            "material-symbols:tune",
+                            "Control Board",
+                            "/admin/control-board",
+                        )
+                    ],
+                ),
+            ],
+            gap="xs",
+        ),
+    )
+
+
+@callback(
+    Output({"type": ADMIN_NAV_ID, "loc": ALL}, "style"),
+    Input("url", "pathname"),
+    # The app sets `prevent_initial_callbacks=True` globally, so without this
+    # the section would stay hidden until the visitor navigated somewhere —
+    # including for the owner, on the page they signed in to.
+    prevent_initial_call=False,
+)
+def _reveal_admin_nav(_pathname):
+    """Show the Admin section only to accounts the control board would admit.
+
+    Deliberately the SAME predicate the page itself uses (`is_admin_user`,
+    or `admin_access_open` when Clerk is off) rather than a bare comparison
+    against one address: a nav that used a narrower rule would hide the
+    board from an ADMIN_EMAILS account that can still open it by URL, and a
+    link that lies about access is worse than no link.
+
+    `url.pathname` is the trigger rather than any Clerk store because that
+    store only exists when Clerk is running, and a callback with a missing
+    Input never fires — which would silently disable this everywhere Clerk
+    is off. Satellite sign-in round-trips through Clerk's hosted pages and
+    returns as a full page load, so this re-evaluates at the right moment.
+    """
+    from lib.auth import admin_access_open, clerk_enabled, is_admin_user
+
+    visible = is_admin_user() if clerk_enabled() else admin_access_open()
+    return [{} if visible else _HIDDEN] * len(ctx.outputs_list)
+
 
 def create_nav_link(icon, text, href, external=False):
     """Create a styled navigation link with icon"""
@@ -142,10 +221,16 @@ def create_nav_section(title, links):
     )
 
 
-def create_content(data):
+def create_content(data, loc="navbar"):
     """Navbar content: Home/Changelog, one section per component family,
-    then the network's standing sections."""
-    by_path = {entry["path"]: entry for entry in data}
+    then the network's standing sections and the hidden Admin section.
+
+    ``loc`` distinguishes the desktop navbar from the mobile drawer — both
+    render this tree, so the Admin section's id has to be pattern-matched
+    rather than a plain string.
+    """
+    by_path = {entry["path"]: entry for entry in data
+               if entry["path"] not in EXCLUDED_LINKS}
 
     placed = set()
     sections = []
@@ -232,6 +317,9 @@ def create_content(data):
                         ),
                     ],
                 ),
+
+                # Last, and invisible to everyone the board would reject.
+                create_admin_section(loc),
             ],
             gap="xs",
             p="md",
@@ -260,6 +348,7 @@ def create_mobile_content(data):
                         {"label": component["name"], "value": component["path"]}
                         for component in data
                         if component["name"] not in ["Home", "Not found 404"]
+                        and component["path"] not in EXCLUDED_LINKS
                     ],
                     comboboxProps={"zIndex": 2000},
                 ),
@@ -268,7 +357,8 @@ def create_mobile_content(data):
             ),
             dmc.Divider(),
             # flex/minHeight give the ScrollArea a definite box to scroll inside.
-            dmc.Box(create_content(data), style={"flex": 1, "minHeight": 0}),
+            dmc.Box(create_content(data, loc="drawer"),
+                    style={"flex": 1, "minHeight": 0}),
         ],
         gap=0,
         className="mobile-nav",
@@ -279,7 +369,7 @@ def create_mobile_content(data):
 def create_navbar(data):
     """Create the main application navbar"""
     return dmc.AppShellNavbar(
-        children=create_content(data),
+        children=create_content(data, loc="navbar"),
         style={"borderRight": "1px solid var(--mantine-color-gray-3)"}
     )
 
@@ -323,18 +413,8 @@ def create_navbar_drawer(data):
         },
     )
 
-
-# Mobile drawer search → navigate (the header Select is hidden below `sm`).
-clientside_callback(
-    """
-    function(value) {
-        if (value) {
-            return value
-        }
-        return window.dash_clientside.no_update;
-    }
-    """,
-    Output("url", "href", allow_duplicate=True),
-    Input("mobile-select-component", "value"),
-    prevent_initial_call=True,
-)
+# The mobile drawer search → navigate callback used to live here. It now sits
+# in components/header.py beside the drawer's own open/close callback, where
+# the template keeps it — one file owns the drawer's behaviour, and two copies
+# of a clientside callback writing the same Output is a bug waiting for the
+# next person who edits only one of them.

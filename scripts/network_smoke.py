@@ -76,11 +76,13 @@ DEFAULT_BASE_URL = "http://localhost:8550"
 PROSE_DOC_PATH = "/sparkline/llms.txt"
 
 # Owner-only surfaces that must 404 their llms.txt to an anonymous reader.
-# This app ships no hidden pages, so the list is a canary rather than a
-# census: `/admin` is what would be added first, and `mark_hidden("/admin")`
-# has to keep working. Add real paths here in the same change that marks
-# them hidden.
+# `/admin/control-board` is the real one as of the gate wave — the board can
+# hide any page on this site, and `mark_hidden` in pages/control_board.py is
+# what keeps it out of the sitemap, the llms.txt family, MCP and the
+# prerender. The other two are canaries for surfaces this app does not have
+# yet. Add real paths here in the same change that marks them hidden.
 HIDDEN_DOC_PATHS = (
+    "/admin/control-board/llms.txt",
     "/admin/llms.txt",
     "/analytics/llms.txt",
 )
@@ -253,8 +255,34 @@ def satellite_checks(base: str) -> None:
                    f"no Vary: Accept on the {label} variant — a shared cache "
                    "may serve it to everyone")
 
+    def corpus_documents_are_public():
+        # The gate wave's first acceptance line: the llms.txt FAMILY answers
+        # 200 with prose to an anonymous agent. run.py pins these three
+        # pseudo-paths public explicitly, precisely so that flipping
+        # PAGE_DEFAULT_TIER to gate the interactive site cannot take the
+        # corpus documents with it — this is the check that would catch it.
+        for path in ("/llms.txt", "/llms-small.txt", "/llms-full.txt"):
+            status, headers, text = get(path)
+            expect(status == 200, f"{path} {status}")
+            ct = headers.get("content-type", "")
+            expect(ct.startswith("text/markdown"), f"{path} content-type {ct!r}")
+            expect(len(text) > 200 and STUB_MARKER not in text,
+                   f"{path} served {len(text)}b — a stub, not prose")
+
+    def agent_key_is_mounted_and_anonymous_gets_nothing():
+        # The person→agent handoff (lib/agent_key.py). Mounted always, so a
+        # 404 here means the route never registered and every copied
+        # llms.txt link silently loses its key. 204 is the anonymous
+        # answer; a 200 to a caller with no session would be a key leak.
+        status, _, text = get("/api/agent-key")
+        expect(status == 204, f"/api/agent-key {status} for an anonymous caller")
+        expect(not text.strip(), f"anonymous body was not empty: {text[:80]!r}")
+
     for name, fn in (
         ("healthz_ok", healthz_ok),
+        ("corpus_documents_are_public", corpus_documents_are_public),
+        ("agent_key_is_mounted_and_anonymous_gets_nothing",
+         agent_key_is_mounted_and_anonymous_gets_nothing),
         ("llms_txt_identity", llms_txt_identity),
         ("llms_txt_names_the_hub", llms_txt_names_the_hub),
         ("page_llms_nav", page_llms_nav),

@@ -49,11 +49,16 @@ def _version(text: str) -> tuple:
 
 DASH_VERSION = _version(dash.__version__)
 
-# AI/LLM Integration & SEO — dash-improve-my-llms >= 2.5.1 from PyPI.
-# 2.5.1 is the Tier-B SEO standard: per-page `title`/`image_url`/
-# `schema_type` actually reaching the crawler document, the crawler <title>
-# carrying the site name, and a prerender that no longer clobbers the
-# browser's per-page <title>. (2.4.0 brought the tiered corpus docs
+# AI/LLM Integration & SEO — dash-improve-my-llms >= 2.6.0 from PyPI.
+# 2.5.1 was the Tier-B SEO standard: per-page `title`/`image_url`/
+# `schema_type` actually reaching the crawler document, `configure_seo`
+# (icons, social card, publisher/sameAs), /favicon.ico answered with a
+# redirect instead of the app shell, the crawler <title> carrying the site
+# name, and a prerender that no longer clobbers the browser's per-page
+# <title>. 2.6.0 adds the honesty standard: sitemap <lastmod> emitted
+# verbatim from `register_page_metadata(lastmod=)` and OMITTED when unset,
+# icon AUTODISCOVERY over app assets, JSON-LD publisher.logo, and the llms
+# viewer's banner de-dup. (2.4.0 brought the tiered corpus docs
 # /llms-small.txt + /llms-full.txt; 2.3.4 brought `resolve_site_title`,
 # which carries SITE_BRAND into the /llms.txt H1 and the viewer's brand
 # chip.)
@@ -65,7 +70,11 @@ from dash_improve_my_llms import (  # noqa: E402
     register_page_metadata,
 )
 
-LLMS_PKG_FLOOR = (2, 5, 1)
+# The floor is load-bearing for HONESTY here, not for crash avoidance:
+# pre-2.6 packages take `lastmod=` into **kwargs and silently ignore it, so
+# below this line every date a page declares is swallowed and the sitemap
+# goes back to swearing everything changed at build time.
+LLMS_PKG_FLOOR = (2, 6, 0)
 
 from dash_mui_charts import __version__ as _COMPONENT_VERSION  # noqa: E402
 
@@ -82,7 +91,13 @@ from lib.analytics_tracker import tracker  # noqa: E402
 from lib.constants import (  # noqa: E402
     APP_TITLE,
     BASE_URL,
+    OG_IMAGE_ALT,
+    OG_IMAGE_HEIGHT,
+    OG_IMAGE_URL,
+    OG_IMAGE_WIDTH,
     ORIGIN_PLACEHOLDER,
+    PUBLISHER,
+    SAME_AS,
     SITE_BRAND,
     SITE_DESCRIPTION,
     require_owned_base_url,
@@ -139,11 +154,29 @@ if LLMS_PKG_FLOOR > _version(LLMS_PKG_VERSION):
     _dependency_floor(
         f"dash-improve-my-llms {LLMS_PKG_VERSION} is below the "
         f"{'.'.join(str(n) for n in LLMS_PKG_FLOOR)} floor in "
-        "requirements.txt. Below 2.5.1 the crawler document drops this "
-        "site's per-page identity (title/image/schema type); below 2.3.4 "
-        "the published identity itself degrades to `app.title`.",
+        "requirements.txt. Below 2.6.0 the sitemap goes back to lying: "
+        "`lastmod=` is accepted into **kwargs and SILENTLY IGNORED, so "
+        "every date a page declares is swallowed and <lastmod> reverts to "
+        "invented build dates. Below 2.5.1 the crawler document drops this "
+        "site's per-page identity (title/image/schema type) and "
+        "`configure_seo` does not exist at all — the root icons and the "
+        "publisher block below stop being emitted; below 2.3.4 the "
+        "published identity itself degrades to `app.title`.",
         fatal=True,
     )
+
+# Imported after the floor on purpose: on a pre-2.5.0 package this name does
+# not exist, and the floor's diagnosis above beats a bare ImportError. The
+# fallback exists only for ALLOW_STALE_DEPS=1 — the floor is fatal otherwise.
+try:
+    from dash_improve_my_llms import configure_seo  # noqa: E402
+except ImportError:  # pragma: no cover — ALLOW_STALE_DEPS on a pre-2.5.0 pkg
+
+    def configure_seo(**_kwargs) -> None:
+        print(
+            "[muicharts] WARNING: configure_seo unavailable (pre-2.5.0 "
+            "package) — crawler identity tags and root icons not emitted."
+        )
 
 if DASH_VERSION < (4, 4):
     _dependency_floor(
@@ -287,6 +320,46 @@ app._robots_config = RobotsConfig(
     disallowed_paths=[],
 )
 
+# ============================================================================
+# Site identity for the CRAWLER document (dash-improve-my-llms 2.5.0+).
+# Until 2.5.0 the generated crawler HTML carried the page's content signals
+# and none of its identity: browsers got the icon links, og:image and the
+# twitter card from templates/index.html while Googlebot got none of them,
+# on every host in the network — so search showed the generic globe. One
+# declaration covers every crawler surface, and it also claims /favicon.ico
+# (Google's fallback), which Dash's page catch-all was answering with the
+# app shell.
+#
+# THE ICON LIST IS THIS SITE'S STABLE IDENTITY. templates/index.html
+# additionally runs a per-load area/bar randomizer for browser tabs — a
+# brand quirk, and browsers are allowed that. Crawlers are not: the mark
+# below never changes between fetches. The paths are the area-chart set,
+# generated from assets/apple-touch-icon_areachart.png (the master; also
+# the artwork scripts/make_social_card.py builds the card from) via
+# `python scripts/make_favicons.py assets/apple-touch-icon_areachart.png`.
+# Re-run that after ANY change to the master, or the tab and the search
+# result quietly stop agreeing. Declaration is authoritative today and
+# stays correct under 2.6's autodiscovery, which finds this same set.
+# ============================================================================
+configure_seo(
+    icons=[
+        "/assets/favicon/favicon.ico",
+        {"href": "/assets/favicon/favicon-32x32.png", "sizes": "32x32"},
+        {"href": "/assets/favicon/favicon-16x16.png", "sizes": "16x16"},
+        {"href": "/assets/favicon/favicon-96x96.png", "sizes": "96x96"},
+        {"href": "/assets/favicon/android-chrome-192x192.png", "sizes": "192x192"},
+        {"href": "/assets/favicon/android-chrome-512x512.png", "sizes": "512x512"},
+        {"href": "/assets/favicon/apple-touch-icon.png",
+         "rel": "apple-touch-icon", "sizes": "180x180"},
+    ],
+    social_image=OG_IMAGE_URL,
+    social_image_alt=OG_IMAGE_ALT,
+    social_image_width=OG_IMAGE_WIDTH,
+    social_image_height=OG_IMAGE_HEIGHT,
+    publisher=PUBLISHER,
+    same_as=SAME_AS,
+)
+
 # `name` here is NOT a nav label — resolve_site_title reads it first, so it
 # is the /llms.txt H1 and the llms viewer's brand chip. Markdown-driven
 # pages register their own LLMS_DOC inside pages/markdown.py.
@@ -316,24 +389,67 @@ print(
 # page declares a non-public tier.
 from lib import access as _access  # noqa: E402
 from lib import page_tiers as _page_tiers  # noqa: E402
+from lib import page_visibility as _page_visibility  # noqa: E402
 
 # Tiered corpus documents (dash-improve-my-llms >= 2.4.0). Pseudo-paths:
 # they never enter dash.page_registry, so they cannot leak into listings —
 # registering them here lets this satellite tier its compact briefing and
-# full corpus via env (LLMS_SMALL_TIER / LLMS_FULL_TIER; unset = the
-# default tier, i.e. public), and the hub can tighten either network-wide
-# through its page-tier ceilings with no redeploy here. Inert on older
-# package versions.
-_page_tiers.register("/llms-small.txt", os.environ.get("LLMS_SMALL_TIER"))
-_page_tiers.register("/llms-full.txt", os.environ.get("LLMS_FULL_TIER"))
+# full corpus via env (LLMS_SMALL_TIER / LLMS_FULL_TIER), and the hub can
+# tighten either network-wide through its page-tier ceilings with no
+# redeploy here. The explicit `or "public"` matters: these registered under
+# the PAGE_DEFAULT_TIER fallback before, which meant flipping that env to
+# gate the *interactive* site would silently gate the corpus documents too.
+# Their tier is now always a deliberate setting, never an ambient default.
+_page_tiers.register("/llms-small.txt",
+                     os.environ.get("LLMS_SMALL_TIER") or "public")
+_page_tiers.register("/llms-full.txt",
+                     os.environ.get("LLMS_FULL_TIER") or "public")
 
-ACCESS_ENABLED = _access.configure()
+# The home page registers via pages/home.py, not pages/markdown.py, so no
+# frontmatter ever declares its tier — under PAGE_DEFAULT_TIER=auth it would
+# silently inherit the gate. The funnel's front door stays public, always.
+_page_tiers.register("/", "public")
+
+# force= when either gate env is present: with every tier still public the
+# auto-detect would skip the wiring, but a host that flips by env needs the
+# verdict plumbing (and the prerender's use of it) live during the dark
+# launch, not on the flip.
+ACCESS_ENABLED = _access.configure(
+    force=bool(os.environ.get("PAGE_DEFAULT_TIER")
+               or os.environ.get("LLMS_PUBLIC_DEFAULT"))
+)
 
 add_llms_routes(app, LLMSConfig(warn_missing_llms_doc=True))
 
 # ============================================================================
 
 app.layout = create_appshell(dash.page_registry.values())
+
+# ============================================================================
+# The person→agent handoff: /api/agent-key turns the browser's Clerk session
+# into a portable ?key= for copied llms.txt URLs (lib/agent_key.py). 204 for
+# everyone until Clerk and the hub are configured — safe to mount always.
+# ============================================================================
+
+from lib.agent_key import register_agent_key_route  # noqa: E402
+
+register_agent_key_route(app, BACKEND)
+
+# The gate's own boot line. Read it in the deploy log with the two warnings
+# that must NOT be there ([visibility] = the /var/data disk never mounted,
+# [auth] = the sign-in redirect is unset or not a URL): three absences and
+# one presence is this host's acceptance check.
+_non_public = sum(1 for t in _page_tiers.registered().values() if t != "public")
+print(
+    f"[muicharts] interactive gate: default tier "
+    f"'{os.environ.get('PAGE_DEFAULT_TIER') or 'public'}', "
+    f"{_non_public} non-public page(s), machine surfaces "
+    f"{'GATED' if not _page_tiers.get_llms_public('/__probe__') else 'open'} "
+    f"by default (LLMS_PUBLIC_DEFAULT), access wiring "
+    f"{'ON' if ACCESS_ENABLED else 'off'}, control board at "
+    f"/admin/control-board ({_page_visibility.override_count()} live "
+    f"override(s))."
+)
 
 
 if __name__ == "__main__":
