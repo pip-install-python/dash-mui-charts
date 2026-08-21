@@ -255,3 +255,32 @@ def test_the_liquid_glass_styles_exist():
     """Two pages (TimeClock Lab among them) die silently without these."""
     for name in ("liquid_glass.css", "liquid_glass_clock.css"):
         assert (REPO_ROOT / "assets" / name).exists(), f"assets/{name} missing"
+
+
+def test_healthz_reports_the_running_commit_when_the_platform_says_so(
+    monkeypatch,
+):
+    """The field CD waits on before it will verify a deploy.
+
+    `deploy to render` polls /healthz until `commit` equals the SHA that
+    triggered the run — the only way to tell the new build from the old one
+    when the platform keeps the previous instance answering throughout
+    (and when, as here, deploys come from render.yaml's autoDeploy rather
+    than a deploy hook). Absent it, verification grades whatever happens to
+    be serving, which is reliably the PREVIOUS release.
+
+    It stays OPTIONAL: local runs and any platform that exports none of
+    these variables omit the key entirely, leaving the payload the shape
+    every other satellite reports.
+    """
+    from lib import health
+
+    for key in health._COMMIT_ENV_KEYS:
+        monkeypatch.delenv(key, raising=False)
+    assert "commit" not in health.health_payload("flask")
+
+    monkeypatch.setenv("RENDER_GIT_COMMIT", "db1da57cafe")
+    payload = health.health_payload("flask")
+    assert payload["commit"] == "db1da57cafe"
+    # The shape the fleet's probe contract depends on is untouched.
+    assert payload["ok"] is True and payload["backend"] == "flask"
