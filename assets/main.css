@@ -218,24 +218,60 @@ input:invalid {
     background: color-mix(in srgb, var(--mantine-color-gray-5), transparent 80%);
 }
 
-div .m_46b77525 {
-    margin-top: calc(0.5rem* var(--mantine-scale)) !important;
+/* Markdown tables scroll in their own box instead of dragging the page
+   sideways on phones. A <table> is min-content sized: with overflow
+   visible it refuses to shrink below its widest row and pushes the whole
+   document wide, so every paragraph on the page can be swiped off-screen
+   (a fork measured 105px of horizontal drag at 414px from one prop
+   table). This is GitHub's markdown recipe: content-width, capped at the
+   container, scrollable past it — a no-op for tables that already fit.
+   Element+class selector so it outranks Mantine's own width rule
+   regardless of stylesheet load order.
+
+   TWO selectors, and the second is this site's own finding. markdown2dash
+   derives each class from the renderer that emitted it
+   (`create_class_name`, src/utils.py: "m2d-" + the method name), so a
+   markdown table is `m2d-table` but the `.. kwargs::` directive's output
+   is `m2d-block-kwargs`. The template's single-selector version is
+   therefore a NO-OP on exactly this site's widest content: /api is 13
+   generated prop tables, all of them m2d-block-kwargs, and not one of
+   them is an m2d-table. Measured against the real layout tree, not
+   assumed. The same gap exists upstream — the kwargs directive is the
+   boilerplate's — so this belongs back in the template. */
+table.m2d-table,
+table.m2d-block-kwargs {
+    display: block;
+    width: max-content;
+    max-width: 100%;
+    overflow-x: auto;
 }
 
-.m_5caae85b {
-    position: absolute !important;
-    top: calc(0.3125rem* var(--mantine-scale));
-    inset-inline-end: calc(0.3125rem* var(--mantine-scale));
-    z-index: 1;
-}
+/* NEVER style Mantine's hashed m_* classes — they are private internals,
+   version-coupled by construction. A rule that stops matching after a
+   dependency bump fails silently; one that starts matching applies
+   geometry to the wrong component. Three fossils from the dmc-docs fork
+   era lived here until 2026-08-22, each audited against the INSTALLED
+   DMC 2.8 bundle before deletion:
 
-.m_9cdde9a {
-    inset-inline-end: 0;
-    width: var(--app-shell-aside-width);
-    transform: var(--app-shell-aside-transform);
-    z-index: var(--app-shell-aside-z-index);
-    margin-top: 15px;
-}
+     m_46b77525  Input.Wrapper's root (still live in 2.8, where Mantine
+                 gives it only `line-height`). The rule here added an
+                 !important top margin to EVERY input wrapper in every
+                 docs example — including both props playgrounds.
+     m_5caae85b  ZERO occurrences in the 2.8 bundle. Dead: it matched
+                 nothing, and had not for at least two minor versions.
+     m_9cdde9a   AppShell's `aside` (confirmed via the bundle's own class
+                 map, aside:"m_9cdde9a"). Four of its five declarations
+                 were a verbatim restatement of Mantine's own rule for
+                 that class — inset-inline-end, width, transform,
+                 z-index — around ONE intentful pixel, the TOC's
+                 breathing gap, rescued onto the static selector below.
+
+   Hashes are named here WITHOUT the leading dot on purpose: the guard
+   test strips comments before matching, but `grep '\.m_'` over assets/
+   should find live selectors only, never this tombstone.
+   tests/test_css_hygiene.py fails on any hashed selector; style the
+   static mantine-<Component>-<part> classes, like the rule below, or use
+   the DMC Styles API. */
 
 /* Rank the AppShell sections: the aside under the header, always.
    The Clerk avatar dropdown renders INSIDE the header, so no z-index on the
@@ -253,6 +289,11 @@ div .m_46b77525 {
    10 keeps the aside above page content and below every piece of chrome. */
 aside.mantine-AppShell-aside {
     z-index: 10 !important;
+    /* Rescued from the retired m_9cdde9a fossil: the one intentful pixel
+       in that copied block was this breathing gap between the header line
+       and the top of the Table of Contents. The other four declarations
+       it carried were Mantine's own, restated. */
+    margin-top: 15px;
 }
 
 :root[data-mantine-color-scheme="dark"] {
