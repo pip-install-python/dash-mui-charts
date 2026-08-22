@@ -57,13 +57,21 @@ def test_the_header_badge_derives_from_the_package(app):
 
 
 def test_the_served_html_carries_the_real_version(client):
-    """JSON-LD and the noscript block — both substituted from
-    __APP_VERSION__ at boot. The JSON-LD carried a hardcoded 1.2.1 two
-    releases after it stopped being true."""
+    """The JSON-LD version, substituted from __APP_VERSION__ at boot. It
+    carried a hardcoded 1.2.1 two releases after it stopped being true.
+
+    This used to assert a second copy, `v{version}`, from the hand-written
+    <noscript> block. That block was retired with the dash-improve-my-llms
+    2.6.1 pickup (2026-08-22) — the package's own per-page prerender is
+    visible now, and it carries each page's prose rather than one
+    duplicated site-level paragraph. The version is a SITE fact, not page
+    prose, so it did not move into the prerender: its surfaces are this
+    JSON-LD and the header badge, and the badge has its own test above
+    (which reads the layout, not the served HTML).
+    """
     html = client.get("/").text
     version = _package_version()
     assert f'"version": "{version}"' in html, "JSON-LD version drifted"
-    assert f"v{version}" in html, "noscript version drifted"
     assert "__APP_VERSION__" not in html, "the substitution did not run"
 
 
@@ -102,9 +110,29 @@ def test_the_site_description_counts_thirteen():
         assert name in SITE_DESCRIPTION, f"{name} missing from SITE_DESCRIPTION"
 
 
-def test_the_noscript_surface_counts_thirteen(client):
+def test_the_non_js_surface_counts_thirteen(client):
+    """The component count as a NON-JS reader sees it.
+
+    Was `test_the_noscript_surface_counts_thirteen`: the count lived in the
+    hand-written <noscript> block, which shipped the same catalogue on all
+    42 routes. That block is retired (dimll 2.6.1); the count now reaches a
+    non-JS reader through the home page's own prose inside the visible
+    prerender — which is where a claim about this library belongs, and
+    which is why /pie no longer tells anyone about SparklineChart.
+
+    Asserted INSIDE the prerender block, case-insensitively: the prose says
+    "13 components" in a sentence, and pinning the exact casing of a
+    sentence is how a test starts failing on a copy-edit that broke
+    nothing.
+    """
     html = client.get("/").text
-    assert f"{COMPONENT_COUNT} Components" in html
+    assert 'id="dimll-prerender"' in html, "no prerender block on the home page"
+    block = html.split('id="dimll-prerender"', 1)[1]
+    assert re.search(rf"\b{COMPONENT_COUNT}\s+components?\b", block, re.I), (
+        f"the home page's visible prose no longer says {COMPONENT_COUNT} "
+        "components — the one place a non-JS reader learns the size of this "
+        "library"
+    )
 
 
 def test_no_surface_still_claims_nine_components():

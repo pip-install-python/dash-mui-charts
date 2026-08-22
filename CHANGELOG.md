@@ -7,6 +7,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Round 2 — the prerender becomes readable, and stops repeating itself
+
+- **dash-improve-my-llms floor 2.6.0 → 2.6.1**, and the floor is
+  load-bearing: below it the injected prerender div carries a literal
+  `hidden` attribute, so every visibility-respecting consumer — html-to-text
+  extractors, text browsers, arguably crawler content weighting — read
+  "Loading..." and nothing else. 2.6.1 serves the block visible and hides it
+  with a synchronous inline script only JS browsers run (React's mount wipes
+  the pair, so nothing changes for a human). The floor moved in all four
+  places it lives: requirements.txt with its commented backend extras,
+  run.py's `LLMS_PKG_FLOOR` and its boot message, and both CI assertions
+  including the one inside the built image.
+- **The hand-written `<noscript>` block is retired** — 175 words, and the
+  same 175 on all 42 routes. `/pie` told a non-JS reader about
+  SparklineChart and never said what a Pie Chart is; an outside SEO audit
+  read that duplication as this host being the only one in the fleet that
+  prerendered. It goes in the SAME deploy that brings 2.6.1, deliberately:
+  no window exists where a non-JS reader loses the noscript without gaining
+  the visible prerender. Its two tests moved with it rather than being
+  deleted — the component count is now asserted inside the home page's
+  visible prose, and `tests/test_prerender.py` pins the div's shape (present
+  for a PLAIN client, no `hidden`, marked hide script, `<main>` prose) plus
+  the thing the block was mistaken for: two different routes must not
+  prerender the same paragraph.
+- **`lib/network_directory.py` re-copied verbatim** from the template
+  (1.6.6): modelviewer.2plot.dev and excalidraw.2plot.dev joined the
+  canonical directory when they went live in the gate wave. 18 peers.
+- **The apple-touch icon is opaque.** The gate wave generated the favicon
+  set with the pre-fix `make_favicons.py`, so this site shipped an RGBA
+  apple-touch icon for a day — iOS composites alpha onto its own background,
+  black on some surfaces and white on others, so it rendered differently
+  everywhere it appeared. The template fixed the script at the source; it is
+  re-copied, the icon regenerated (it was the only one of the eight that
+  changed), and `tests/test_seo_icons.py` now reads the PNG colour type out
+  of the header to pin it.
+- Discord/WidgetBot: **nothing to remove.** The crate was deleted in the
+  1.4.0-era pass (run.py, requirements, render.yaml); this sweep confirms
+  zero references in any code, config, template or asset. The README's
+  Discord links are community links, not the retired integration.
+
 ### Gate wave — the sign-in gate, the control board, one stable icon
 
 The docs site's half of the network's gate wave (batch 1: template sync +

@@ -49,7 +49,7 @@ def _version(text: str) -> tuple:
 
 DASH_VERSION = _version(dash.__version__)
 
-# AI/LLM Integration & SEO — dash-improve-my-llms >= 2.6.0 from PyPI.
+# AI/LLM Integration & SEO — dash-improve-my-llms >= 2.6.1 from PyPI.
 # 2.5.1 was the Tier-B SEO standard: per-page `title`/`image_url`/
 # `schema_type` actually reaching the crawler document, `configure_seo`
 # (icons, social card, publisher/sameAs), /favicon.ico answered with a
@@ -58,10 +58,13 @@ DASH_VERSION = _version(dash.__version__)
 # <title>. 2.6.0 adds the honesty standard: sitemap <lastmod> emitted
 # verbatim from `register_page_metadata(lastmod=)` and OMITTED when unset,
 # icon AUTODISCOVERY over app assets, JSON-LD publisher.logo, and the llms
-# viewer's banner de-dup. (2.4.0 brought the tiered corpus docs
-# /llms-small.txt + /llms-full.txt; 2.3.4 brought `resolve_site_title`,
-# which carries SITE_BRAND into the /llms.txt H1 and the viewer's brand
-# chip.)
+# viewer's banner de-dup. 2.6.1 makes the universal prerender VISIBLE:
+# below it the injected div carries a literal `hidden` attribute, so a
+# non-JS reader — an html-to-text extractor, a text browser, arguably
+# crawler content weighting — got "Loading..." and nothing else. (2.4.0
+# brought the tiered corpus docs /llms-small.txt + /llms-full.txt; 2.3.4
+# brought `resolve_site_title`, which carries SITE_BRAND into the /llms.txt
+# H1 and the viewer's brand chip.)
 from dash_improve_my_llms import (  # noqa: E402
     __version__ as LLMS_PKG_VERSION,
     add_llms_routes,
@@ -70,11 +73,14 @@ from dash_improve_my_llms import (  # noqa: E402
     register_page_metadata,
 )
 
-# The floor is load-bearing for HONESTY here, not for crash avoidance:
-# pre-2.6 packages take `lastmod=` into **kwargs and silently ignore it, so
-# below this line every date a page declares is swallowed and the sitemap
-# goes back to swearing everything changed at build time.
-LLMS_PKG_FLOOR = (2, 6, 0)
+# The floor is load-bearing for what a NON-JS READER GETS, and for honesty,
+# not for crash avoidance. Below 2.6.1 the prerender div ships `hidden` and
+# this site has no hand-written <noscript> to fall back on any more — the
+# block was retired in the same deploy that brought 2.6.1, deliberately, so
+# that no window exists where a non-JS reader has neither. Below 2.6.0,
+# `lastmod=` is additionally swallowed into **kwargs and the sitemap goes
+# back to swearing everything changed at build time.
+LLMS_PKG_FLOOR = (2, 6, 1)
 
 from dash_mui_charts import __version__ as _COMPONENT_VERSION  # noqa: E402
 
@@ -154,10 +160,15 @@ if LLMS_PKG_FLOOR > _version(LLMS_PKG_VERSION):
     _dependency_floor(
         f"dash-improve-my-llms {LLMS_PKG_VERSION} is below the "
         f"{'.'.join(str(n) for n in LLMS_PKG_FLOOR)} floor in "
-        "requirements.txt. Below 2.6.0 the sitemap goes back to lying: "
-        "`lastmod=` is accepted into **kwargs and SILENTLY IGNORED, so "
-        "every date a page declares is swallowed and <lastmod> reverts to "
-        "invented build dates. Below 2.5.1 the crawler document drops this "
+        "requirements.txt. Below 2.6.1 the prerender div ships with a "
+        "literal `hidden` attribute, so every non-JS reader sees "
+        "'Loading...' and nothing else — and this site retired its "
+        "hand-written <noscript> block when it took 2.6.1, so there is no "
+        "longer a fallback underneath. Below 2.6.0 the sitemap additionally "
+        "goes back to lying: `lastmod=` is accepted into **kwargs and "
+        "SILENTLY IGNORED, so every date a page declares is swallowed and "
+        "<lastmod> reverts to invented build dates. Below 2.5.1 the "
+        "crawler document drops this "
         "site's per-page identity (title/image/schema type) and "
         "`configure_seo` does not exist at all — the root icons and the "
         "publisher block below stop being emitted; below 2.3.4 the "
