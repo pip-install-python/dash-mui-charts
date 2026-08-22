@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Round 3 — hashed selectors extinct, wide tables contained
+
+- **The three hashed `m_*` fossils are gone from `assets/main.css`**, each
+  audited against the INSTALLED DMC 2.8 bundle first rather than on the
+  template's say-so: `m_46b77525` is Input.Wrapper's root (live in 2.8,
+  where Mantine gives it only `line-height`) and this rule added an
+  `!important` top margin to all 77 Input-family components across 7
+  routes; `m_5caae85b` has **zero** occurrences in 2.8 — dead, matching
+  nothing; `m_9cdde9a` is AppShell's `aside` (confirmed from the bundle's
+  own class map) and four of its five declarations restated Mantine's own
+  rule verbatim. The fifth — a 15px breathing gap above the Table of
+  Contents — was real intent and moved to the static
+  `aside.mantine-AppShell-aside` rule beside the z-index override. A
+  tombstone names all three hashes **without** the leading dot, so
+  `grep '\.m_'` over `assets/` finds live selectors only.
+- **`tests/test_css_hygiene.py`** ported byte-identical from the template:
+  it strips comments (tombstones may name hashes) and fails on any hashed
+  selector in `assets/*.css`. Verified to have teeth against a planted
+  `.m_deadbeef`.
+- **Wide tables scroll in their own box** (`display: block; width:
+  max-content; max-width: 100%; overflow-x: auto` — GitHub's recipe, a
+  no-op for tables that already fit). The template's `table.m2d-table`
+  selector would have been a **no-op on this site's widest content**:
+  markdown2dash derives each class from the renderer that emitted it, so
+  the `.. kwargs::` directive's output is `m2d-block-kwargs`, and /api is
+  13 generated prop tables of which not one is an `m2d-table`. The rule
+  covers both classes here; measured against the real layout trees, 14 of
+  the site's 25 tables now match. The other 11 are hand-authored demo
+  tables inside example modules with no class at all — deliberately left
+  alone, since `display: block` would restyle demo content.
+
 ### Round 2 — the prerender becomes readable, and stops repeating itself
 
 - **dash-improve-my-llms floor 2.6.0 → 2.6.1**, and the floor is
