@@ -49,7 +49,7 @@ def _version(text: str) -> tuple:
 
 DASH_VERSION = _version(dash.__version__)
 
-# AI/LLM Integration & SEO — dash-improve-my-llms >= 2.6.1 from PyPI.
+# AI/LLM Integration & SEO — dash-improve-my-llms >= 2.7.1 from PyPI.
 # 2.5.1 was the Tier-B SEO standard: per-page `title`/`image_url`/
 # `schema_type` actually reaching the crawler document, `configure_seo`
 # (icons, social card, publisher/sameAs), /favicon.ico answered with a
@@ -61,7 +61,11 @@ DASH_VERSION = _version(dash.__version__)
 # viewer's banner de-dup. 2.6.1 makes the universal prerender VISIBLE:
 # below it the injected div carries a literal `hidden` attribute, so a
 # non-JS reader — an html-to-text extractor, a text browser, arguably
-# crawler content weighting — got "Loading..." and nothing else. (2.4.0
+# crawler content weighting — got "Loading..." and nothing else. 2.7.0
+# dedups what that now-visible block says (one H1 per page, one footer
+# llms.txt link) and hardens the idempotency probe; 2.7.1 adds the
+# llms.txt v2 discovery relations + Link headers, the text/plain Accept
+# ramp, and the representation digest. (2.4.0
 # brought the tiered corpus docs /llms-small.txt + /llms-full.txt; 2.3.4
 # brought `resolve_site_title`, which carries SITE_BRAND into the /llms.txt
 # H1 and the viewer's brand chip.)
@@ -74,13 +78,22 @@ from dash_improve_my_llms import (  # noqa: E402
 )
 
 # The floor is load-bearing for what a NON-JS READER GETS, and for honesty,
-# not for crash avoidance. Below 2.6.1 the prerender div ships `hidden` and
+# not for crash avoidance. Below 2.7.1 this host loses the llms.txt v2
+# discovery relations and Link headers, the text/plain Accept ramp and the
+# representation digest; below 2.7.0 every page serves TWO h1s to a generic
+# client (the injected prerender header plus the doc body's own — a
+# duplicate-H1 page in every crawler's eyes) and the home footer prints its
+# /llms.txt link twice. Below 2.6.1 the prerender div ships `hidden` and
 # this site has no hand-written <noscript> to fall back on any more — the
 # block was retired in the same deploy that brought 2.6.1, deliberately, so
 # that no window exists where a non-JS reader has neither. Below 2.6.0,
 # `lastmod=` is additionally swallowed into **kwargs and the sitemap goes
 # back to swearing everything changed at build time.
-LLMS_PKG_FLOOR = (2, 6, 1)
+#
+# Moving this tuple is HALF the job: the requirements.txt line is what
+# busts the Docker dependency layer and actually delivers the release. A
+# floor raised here alone would refuse to boot the image it was shipped in.
+LLMS_PKG_FLOOR = (2, 7, 1)
 
 from dash_mui_charts import __version__ as _COMPONENT_VERSION  # noqa: E402
 
@@ -160,7 +173,12 @@ if LLMS_PKG_FLOOR > _version(LLMS_PKG_VERSION):
     _dependency_floor(
         f"dash-improve-my-llms {LLMS_PKG_VERSION} is below the "
         f"{'.'.join(str(n) for n in LLMS_PKG_FLOOR)} floor in "
-        "requirements.txt. Below 2.6.1 the prerender div ships with a "
+        "requirements.txt. Below 2.7.1 this host loses the llms.txt v2 "
+        "discovery relations and Link headers, the text/plain Accept ramp "
+        "and the representation digest. Below 2.7.0 every page serves TWO "
+        "h1s to a generic client — the injected prerender header plus the "
+        "doc body's own — and the home footer prints its /llms.txt link "
+        "twice. Below 2.6.1 the prerender div ships with a "
         "literal `hidden` attribute, so every non-JS reader sees "
         "'Loading...' and nothing else — and this site retired its "
         "hand-written <noscript> block when it took 2.6.1, so there is no "

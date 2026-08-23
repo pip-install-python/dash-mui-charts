@@ -40,7 +40,7 @@ requests>=2.27.1              # 2plot.dev ad-network client (lib/ad_client.py)
 mistune>=3.0.0
 # markdown2dash==0.1.2        <- installed --no-deps, see above
 
-# AI/LLM Integration & SEO. 2.6.1 is the network floor as of round 2.
+# AI/LLM Integration & SEO. 2.7.1 is the network floor as of the floor round.
 # 2.5.1 was the Tier-B SEO standard (per-page title/image/schema type reach
 # the crawler document; the prerender no longer clobbers the browser's
 # per-page <title>); 2.6.0 adds the honesty standard on top: sitemap
@@ -54,17 +54,28 @@ mistune>=3.0.0
 # NOTE: dimll pins dash<5,>=4.1 — this is what makes the SITE's Dash floor
 # higher than the package's.
 #
-# 2.6.1 raises it again, and this floor is LOAD-BEARING rather than
-# aspirational: below it the injected prerender div carries a literal
-# `hidden` attribute, so every visibility-respecting consumer — html-to-text
-# extractors, arguably crawler content weighting — read "Loading..." and
-# nothing else. This site removed its hand-written <noscript> block in the
-# same deploy that brought 2.6.1 precisely so no window exists where a
-# non-JS reader has neither. Dropping back to 2.6.0 reopens that window.
-dash-improve-my-llms[flask]>=2.6.1
-# dash-improve-my-llms[fastapi]>=2.6.1   # Dash 4.4+ FastAPI backend
-# dash-improve-my-llms[quart]>=2.6.1     # Dash 4.4+ Quart backend
-# dash-improve-my-llms[all]>=2.6.1       # all three
+# 2.6.1 made the prerender LOAD-BEARING here: below it the injected div
+# carries a literal `hidden` attribute, so every visibility-respecting
+# consumer — html-to-text extractors, arguably crawler content weighting —
+# read "Loading..." and nothing else. This site removed its hand-written
+# <noscript> block in the same deploy that brought 2.6.1, precisely so no
+# window exists where a non-JS reader has neither.
+#
+# 2.7.0 then dedups what that visible block SAYS: one H1 per page instead
+# of the injected header plus the doc body's own (a duplicate-H1 page in
+# every crawler's eyes), the home footer's doubled /llms.txt link, and a
+# hardened idempotency probe. 2.7.1 adds the llms.txt v2 discovery
+# relations + Link headers, the text/plain Accept ramp, and the
+# representation digest.
+#
+# THIS LINE IS THE DOCKER CACHE BUST. The image's dependency layer re-runs
+# only when requirements.txt bytes change, so a code-only commit can never
+# pull a new release — the floor moving is the mechanism that delivers it,
+# not a side effect of describing it.
+dash-improve-my-llms[flask]>=2.7.1
+# dash-improve-my-llms[fastapi]>=2.7.1   # Dash 4.4+ FastAPI backend
+# dash-improve-my-llms[quart]>=2.7.1     # Dash 4.4+ Quart backend
+# dash-improve-my-llms[all]>=2.7.1       # all three
 
 # Clerk satellite auth for the HOSTED docs site only (lib/auth.py) — fully
 # dormant without the CLERK_* env keys. Not on PyPI; vendored like the

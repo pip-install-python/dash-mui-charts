@@ -50,7 +50,8 @@ def test_the_prerender_is_present_and_visible_for_a_plain_client(client, path):
     assert "hidden" not in div.group(0), (
         f"{path}: the prerender div carries `hidden` again — "
         "visibility-respecting consumers are back to reading 'Loading...'; "
-        "the dimll floor is >=2.6.1 for exactly this"
+        "the floor first moved (to 2.6.1) for exactly this, and sits at "
+        ">=2.7.1 now"
     )
     assert 'data-dimll-prerender="1">document.getElementById' in html, (
         f"{path}: the marked synchronous hide script is missing — JS "
@@ -91,3 +92,75 @@ def test_two_routes_do_not_share_one_prerendered_paragraph(client):
         f"{ROUTES[0]} and {ROUTES[1]} prerender identical prose — a "
         "site-level block is standing in for per-page content again"
     )
+
+
+def test_prerender_single_h1_and_deduped_footer_llms_links(client, page_paths):
+    """What the >=2.7.1 floor buys, pinned from the app's side, EVERY page.
+
+    Below dimll 2.7.0 every page served TWO h1s to a generic client — the
+    injected prerender header plus the doc body's own markdown H1, a
+    duplicate-H1 page in every crawler's eyes (the 2026-08-22 SEO-audit
+    finding) — and the home footer printed its /llms.txt link twice (on
+    "/" the per-page link equals the root's; subpages legitimately carry
+    both, DISTINCT).
+
+    The sweep also catches APP-side H1 pollution, which is why it runs over
+    every route rather than a sample: on the template its first run found a
+    tutorial page's machine lane serving five h1s, because the source
+    expansion rewrote a `.. source::` example inside a teaching fence
+    (fixed fence-aware, and ported here).
+
+    HTML comments are stripped before counting — templates/index.html
+    legitimately discusses markup inside comments, and a comment that
+    quotes what a test asserts on is how an assertion passes for the wrong
+    reason (this repo has already paid for that once).
+    """
+    for path in page_paths:
+        html = client.get(path).text  # default UA — the universal lane
+        stripped = re.sub(r"<!--.*?-->", "", html, flags=re.S)
+
+        h1s = re.findall(r"<h1[\s>]", stripped)
+        assert len(h1s) == 1, (
+            f"{path}: {len(h1s)} h1 elements in the generic-lane document — "
+            "either the pre-2.7.0 prerender-header duplicate or app-side "
+            "markdown leaking headings (the fence-expansion class)"
+        )
+
+        footer = re.search(r"<footer.*?</footer>", stripped, re.S)
+        assert footer, f"{path}: no prerender footer in the generic-lane document"
+        llms_links = re.findall(r'href="([^"]*llms\.txt)"', footer.group(0))
+        assert len(llms_links) == len(set(llms_links)), (
+            f"{path}: duplicate llms.txt links in the prerender footer "
+            f"({llms_links}) — 2.7.0 dedups the per-page link when it "
+            "equals the root"
+        )
+        if path == "/":
+            assert llms_links == ["/llms.txt"], (
+                f"home footer llms links {llms_links} — expected exactly the "
+                "root link once"
+            )
+
+
+def test_source_expansion_is_fence_aware(app):
+    """A `.. source::` inside a fenced block is documentation, not a directive.
+
+    Expanding one injects a ```python fence inside the already-open fence,
+    which closes it early — from there the inlined file renders as markdown
+    on the machine lane and every `# comment` line becomes an <h1>. No page
+    here teaches the directive today, so this pin is what keeps the first
+    one that does from reintroducing it. The app fixture is requested only
+    so pages/markdown.py is already imported with the repo root as CWD.
+    """
+    import sys
+
+    expand = sys.modules["pages.markdown"]._expand_source_directives
+
+    expanded = expand(".. source::requirements.txt")
+    assert "# File: requirements.txt" in expanded, "real directive not expanded"
+    assert "```" in expanded, "expansion lost its fence"
+
+    taught = "```markdown\n.. source::requirements.txt\n```"
+    assert expand(taught) == taught, "a fenced example was expanded"
+
+    tilde = "~~~\n.. source::requirements.txt\n~~~"
+    assert expand(tilde) == tilde, "a tilde-fenced example was expanded"

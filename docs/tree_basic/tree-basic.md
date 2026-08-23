@@ -15,8 +15,7 @@ icon: mdi:file-tree
 
 TreeView basics for Dash: data-driven items, defaultExpandedItems, click and focus tracking, and custom getItemId/getItemLabel accessors.
 
-\
-# TreeView
+### TreeView
 
 TreeView is the data-driven tree component in dash-mui-charts (Community
 license — no key needed). It wraps MUI X `RichTreeView`: you pass one nested

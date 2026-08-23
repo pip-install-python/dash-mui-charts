@@ -15,8 +15,7 @@ icon: mdi:view-list-outline
 
 SimpleTreeView examples: itemId/label items, checkbox multi-select, per-item disabled flags, custom icons, and the iconContainer expansion trigger.
 
-\
-# SimpleTreeView
+### SimpleTreeView
 
 SimpleTreeView is the lightweight, JSX-driven tree in dash-mui-charts
 (Community license — no key needed). Unlike the data-driven `TreeView`
