@@ -6,7 +6,7 @@
 
 # Core Dash 4.x — the boilerplate docs stack's floor (run.py enforces it at
 # boot, warning-level on Flask). Production runs the Flask backend.
-dash>=4.4.0
+dash>=4.4.1
 flask>=3.0.0
 
 # UI stack for the documentation app. DMC 2.8.0 is a FLOOR, not a
