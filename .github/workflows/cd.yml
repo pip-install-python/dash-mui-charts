@@ -38,7 +38,7 @@ jobs:
     name: deploy to render
     needs: [test]
     runs-on: ubuntu-latest
-    # Long enough for the wait loop below (up to 60 x 15s on the commit path,
+    # Long enough for the wait loop below (up to 60 x 15s on the build path,
     # or a 120s settle plus 40 x 15s on the fallback) and no longer. Without
     # it the job inherits GitHub's six-hour default, which is how a platform
     # that never comes back healthy holds the `cd-production` concurrency
@@ -80,18 +80,22 @@ jobs:
           # disk-backed service restarts with a blip instead of overlapping.
           # So wait on the ARTIFACT — /healthz reports the commit the running
           # instance was built from (lib/health.py, from RENDER_GIT_COMMIT).
-          live_commit() {
+          # The key is `build`: this repo shipped it as `commit` first, and
+          # the template adopted the idea under the fleet's name, so it moved
+          # here in the 2.7.1 floor round. The fallback below covers the one
+          # deploy where the running build still answers the old name.
+          live_build() {
             curl -fsS --max-time 20 "$SITE_URL/healthz" 2>/dev/null \
-              | python3 -c 'import json,sys; print((json.load(sys.stdin) or {}).get("commit") or "")' 2>/dev/null \
+              | python3 -c 'import json,sys; print((json.load(sys.stdin) or {}).get("build") or "")' 2>/dev/null \
               || true
           }
 
           # The first deploy carrying this change is served by a build that
-          # predates the commit field, so there is nothing to match against;
+          # predates the `build` field, so there is nothing to match against;
           # fall back to the old sustained-health wait and say so. Every
           # deploy after it gets the exact check.
-          if [ -z "$(live_commit)" ]; then
-            echo "::warning::/healthz reports no commit field — the running build predates it. Falling back to sustained-health waiting, which cannot tell the new build from the old one."
+          if [ -z "$(live_build)" ]; then
+            echo "::warning::/healthz reports no build field — the running build predates it. Falling back to sustained-health waiting, which cannot tell the new build from the old one."
             sleep 120
             ok=0
             for _ in $(seq 1 40); do
@@ -110,9 +114,9 @@ jobs:
             exit 0
           fi
 
-          echo "waiting for $SITE_URL to serve commit $EXPECTED_SHA"
+          echo "waiting for $SITE_URL to serve build $EXPECTED_SHA"
           for i in $(seq 1 60); do
-            live=$(live_commit)
+            live=$(live_build)
             if [ "$live" = "$EXPECTED_SHA" ]; then
               echo "live after ~$((i * 15))s"
               exit 0
@@ -120,7 +124,7 @@ jobs:
             echo "  [$i/60] serving ${live:-<unreachable>}"
             sleep 15
           done
-          echo "::error::$SITE_URL never reported commit $EXPECTED_SHA — the build failed, or the platform is still rolling it out. Nothing was verified against the new artifact."
+          echo "::error::$SITE_URL never reported build $EXPECTED_SHA — the build failed, or the platform is still rolling it out. Nothing was verified against the new artifact."
           exit 1
 
   verify:

@@ -15,8 +15,7 @@ icon: mdi:diamond-outline
 
 TreeViewPro (MUI X Pro): drag-and-drop reordering, reorderable subsets, and per-item 0-100 sliders plus kebab action menus wired to Dash callbacks.
 
-\
-# TreeViewPro
+### TreeViewPro
 
 TreeViewPro extends `TreeView` with MUI X Pro features — it requires an
 MUI X Pro license key, passed as the `licenseKey` prop (this demo reads it

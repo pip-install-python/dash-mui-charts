@@ -257,30 +257,84 @@ def test_the_liquid_glass_styles_exist():
         assert (REPO_ROOT / "assets" / name).exists(), f"assets/{name} missing"
 
 
-def test_healthz_reports_the_running_commit_when_the_platform_says_so(
-    monkeypatch,
-):
-    """The field CD waits on before it will verify a deploy.
+def test_healthz_identity_fields(monkeypatch):
+    """`build` says which commit answered, `app` says which satellite —
+    different questions on a fleet where every host shares one template and
+    a hostname can be repointed between services.
 
-    `deploy to render` polls /healthz until `commit` equals the SHA that
-    triggered the run — the only way to tell the new build from the old one
-    when the platform keeps the previous instance answering throughout
-    (and when, as here, deploys come from render.yaml's autoDeploy rather
-    than a deploy hook). Absent it, verification grades whatever happens to
-    be serving, which is reliably the PREVIOUS release.
+    `build` is what cd.yml's wait polls before it will verify a deploy: the
+    platform keeps the previous instance answering throughout a build, and
+    a disk-backed service restarts with a blip rather than overlapping, so
+    a bare 200 proves nothing about WHICH build answered. This repo shipped
+    the field as `commit` in the CD fix of 2026-08-21; the template adopted
+    the idea under the fleet's name, and the floor round moved it here.
 
-    It stays OPTIONAL: local runs and any platform that exports none of
-    these variables omit the key entirely, leaving the payload the shape
-    every other satellite reports.
+    Both stay OPTIONAL in the sense that matters: with no platform variable
+    `build` is omitted entirely, and `app` degrades to "unknown" rather
+    than disappearing — the payload never grows an error flag for a host
+    that simply predates a diagnostic.
     """
-    from lib import health
+    from lib.health import health_payload
 
-    for key in health._COMMIT_ENV_KEYS:
-        monkeypatch.delenv(key, raising=False)
-    assert "commit" not in health.health_payload("flask")
-
-    monkeypatch.setenv("RENDER_GIT_COMMIT", "db1da57cafe")
-    payload = health.health_payload("flask")
-    assert payload["commit"] == "db1da57cafe"
+    monkeypatch.setenv("RENDER_GIT_COMMIT", "cafebabe")
+    monkeypatch.setenv("SATELLITE_APP_KEY", "muicharts")
+    payload = health_payload("flask")
+    assert payload["build"] == "cafebabe"
+    assert payload["app"] == "muicharts"
     # The shape the fleet's probe contract depends on is untouched.
     assert payload["ok"] is True and payload["backend"] == "flask"
+
+    monkeypatch.delenv("SATELLITE_APP_KEY")
+    assert health_payload("flask")["app"] == "unknown"
+
+    monkeypatch.delenv("RENDER_GIT_COMMIT")
+    assert "build" not in health_payload("flask")
+
+
+def test_healthz_is_live_not_a_snapshot(monkeypatch):
+    """The payload must be built per request, not closed over at registration.
+
+    A snapshot was harmless while every field was static and silently wrong
+    the moment one is not: on llms-2plot-dev the route is registered before
+    configure_geo runs, so a snapshot reported the geo guardrail
+    unconfigured on a host where it IS configured — the diagnostic lying in
+    exactly the situation it exists for (found 2026-08-23, fixed fork-side
+    first, then upstream in template 1.6.10).
+    """
+    from types import SimpleNamespace
+
+    from flask import Flask
+
+    from lib.health import register_health_route
+
+    monkeypatch.setenv("SATELLITE_APP_KEY", "before")
+    stub = SimpleNamespace(server=Flask("healthz_snapshot_pin"))
+    register_health_route(stub, "flask")
+    probe = stub.server.test_client()
+    assert probe.get("/healthz").get_json()["app"] == "before"
+
+    monkeypatch.setenv("SATELLITE_APP_KEY", "after")
+    assert probe.get("/healthz").get_json()["app"] == "after"
+
+
+def test_healthz_geo_block_is_counts_not_codes():
+    """Present on dash-improve-my-llms >= 2.7.0 (counts and flags only — a
+    health endpoint is not where anyone learns policy), OMITTED on older
+    packages rather than error-flagged: a host on an older floor is not
+    broken, it predates the diagnostic.
+
+    Its ABSENCE in production is also the fleet's stale-image alarm: a host
+    that deployed but kept a cached dependency layer answers without a geo
+    block, which says the floor bump never reached the image.
+    """
+    from lib.health import health_payload
+
+    payload = health_payload("flask")
+    try:
+        from dash_improve_my_llms import geo  # noqa: F401
+    except ImportError:
+        assert "geo" not in payload
+    else:
+        block = payload["geo"]
+        assert isinstance(block["configured"], bool)
+        assert isinstance(block["denied"], int), "counts, never country codes"

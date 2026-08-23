@@ -14,6 +14,20 @@ ENV PYTHONUNBUFFERED=1
 WORKDIR /app
 
 # dash-clerk-auth is not on PyPI; requirements.txt installs it from ./vendor.
+#
+# CACHE SEMANTICS (the round-2 fleet lesson, found by pannellum
+# 2026-08-22): this layer re-runs ONLY when vendor/ or requirements.txt
+# bytes change. A `>=` floor can NEVER pull a newer release through a
+# cache hit — a code-only commit rebuilds the app layers below while pip
+# silently keeps whatever version the image was first built with. Ship
+# every dependency upgrade as a floor bump in requirements.txt (grep the
+# number — it also lives in run.py's boot floor and the tests): the bump
+# IS the cache bust, and the boot floor turns a stale image from a
+# silent downgrade into a loud refusal to start.
+#
+# The fleet's outside check for this is /healthz: no `geo` block means a
+# pre-2.7 package is serving, which means the floor bump never reached
+# the image no matter what the commit says.
 COPY vendor ./vendor
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt

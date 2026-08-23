@@ -106,13 +106,15 @@ jobs:
           # The SITE floor: dash-improve-my-llms pins dash>=4.1, so this is
           # what requirements.txt actually resolves to in production.
           assert parts(dash.__version__)[:2] >= (4, 1), dash.__version__
-          # 2.6.1 is the round-2 floor and run.py REFUSES TO BOOT below it:
-          # pre-2.6.1 ships the prerender div `hidden`, and this site has no
-          # <noscript> fallback any more. (2.6.0 stopped the sitemap
-          # inventing lastmod dates; 2.5.1 brought configure_seo and the
-          # per-page crawler identity; 2.3.4 resolve_site_title.) Asserted
-          # here so a stale resolve fails the matrix instead of the deploy.
-          assert parts(pkg.__version__) >= (2, 6, 1), pkg.__version__
+          # 2.7.1 is the floor-round floor and run.py REFUSES TO BOOT
+          # below it. (2.7.0 dedups the prerender's H1 and the home
+          # footer's llms.txt link; 2.6.1 made the prerender visible rather
+          # than `hidden`, which this site has no <noscript> fallback
+          # under; 2.6.0 stopped the sitemap inventing lastmod dates;
+          # 2.5.1 brought configure_seo and the per-page crawler identity;
+          # 2.3.4 resolve_site_title.) Asserted here so a stale resolve
+          # fails the matrix instead of the deploy.
+          assert parts(pkg.__version__) >= (2, 7, 1), pkg.__version__
           # 2.8.0 is a floor, not a preference: on 2.7 the network-standard
           # mobile drawer renders as a floating card from identical props.
           assert parts(dmc.__version__)[:2] >= (2, 8), dmc.__version__
@@ -184,7 +186,7 @@ jobs:
 
           v = version('dash-improve-my-llms')
           print('dash-improve-my-llms', v)
-          assert parts(v) >= (2, 6, 1), f'expected >=2.6.1 (the prerender is visible, not hidden), image has {v}'
+          assert parts(v) >= (2, 7, 1), f'expected >=2.7.1 (llms.txt v2 relations; one H1 per page), image has {v}'
 
           v = version('dash-mantine-components')
           print('dash-mantine-components', v)

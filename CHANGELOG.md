@@ -7,6 +7,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Floor round — dimll >=2.7.1, healthz tells the truth, one h1 per page
+
+- **dash-improve-my-llms floor 2.6.1 → 2.7.1**, moved in every encoding:
+  requirements.txt (with its three commented backend extras), run.py's
+  `LLMS_PKG_FLOOR` tuple and the boot-floor message ladder, and both CI
+  asserts including the one inside the built image. The requirements line
+  changing **is** the Docker cache bust — the dependency layer re-runs only
+  when those bytes change, so a code-only commit can never pull a new
+  release. What it buys: 2.7.0 dedups the prerender's H1 and the home
+  footer's doubled /llms.txt link and hardens the idempotency probe; 2.7.1
+  adds the llms.txt v2 discovery relations + Link headers, the text/plain
+  Accept ramp, and the representation digest.
+- **`/healthz` is built per request and says who answered** (template
+  1.6.10): `app` (SATELLITE_APP_KEY, else "unknown"), `build` (the running
+  commit), and — on dimll >=2.7.0 — `geo` {configured, denied, resolved},
+  counts and flags only, never the denylist's country codes. The key is
+  omitted on older packages rather than error-flagged, which makes its
+  ABSENCE in production the fleet's stale-image alarm. The payload used to
+  be a snapshot closed over at registration: harmless while every field was
+  static, and wrong the moment one is not.
+- **`build` replaces this repo's `commit`.** The CD build-match wait
+  (2026-08-21) shipped here first under the name `commit`; the template
+  adopted the idea under the fleet's name, so cd.yml moves with it. The
+  wait's one-time fallback covers the deploy where the running build still
+  answers the old key.
+- **Every page serves exactly one `<h1>`**, pinned across all 41 routes on
+  the generic lane. The pin found three: `/tree-basic`, `/tree-pro` and
+  `/tree-simple` each carried a body-level `# TreeView`-style heading
+  duplicating the page title, preceded by a stray `\` that rendered as a
+  literal backslash paragraph. Demoted to `###` — matching every other
+  heading on those pages, and now carrying a TOC anchor like the rest.
+- **The source expansion is fence-aware** (template 1.6.11): a
+  `.. source::` inside a fenced block is documentation, not a directive.
+  Preventive here — no page teaches the directive today, measured — but the
+  first one that did would have closed the fence early and rendered an
+  inlined Python file as markdown on the machine lane.
+- **Dependabot config added** (the template's, verbatim): pip
+  version-updates restricted to `dash*`/`plotly*`/`markdown2dash`, the
+  network drift alarm, without the floor-raise noise on every other pin.
+- The Dockerfile gains the cache-semantics comment block. It has never had
+  a Node layer to drop — the component bundle is committed.
+
 ### Round 3 — hashed selectors extinct, wide tables contained
 
 - **The three hashed `m_*` fossils are gone from `assets/main.css`**, each
