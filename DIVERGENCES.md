@@ -140,6 +140,16 @@ template 1.6.15 — including the title, which names the template. That is
 the file's own rule: identity derives from the repo (`BASE_URL`,
 `SATELLITE_APP_KEY`, this file), never from `CLAUDE.md`.
 
+One nuance the kit's host pin inherits from this fork: `tests/conftest.py`
+hardcodes `APP_BASE_URL` (so a developer's `.env` cannot change what the
+suite measures — a deliberate pin from the identity round), while
+`tests/test_claude_kit.py` derives its expected host from
+`lib.constants.BASE_URL`. Here that reads conftest's constant rather than
+`DEFAULT_BASE_URL`. The pin still fires on the case it exists for — a fork
+that leaves the template's host in `settings.json` — but a genuine host
+move must update three files, not two. Upstream has no conftest pin and
+does not have this.
+
 ---
 
 ## Checked, and NOT divergent
