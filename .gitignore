@@ -68,10 +68,35 @@ htmlcov/
 visitor_analytics.json
 visitor_analytics.json.lock
 visitor_analytics.json.tmp
+# The control board's override store falls back to the app directory when
+# PAGE_VISIBILITY_FILE is unset — running the board locally must never write
+# a real page-visibility policy into the checkout (same reason as the ledger
+# above). Template 1.6.8 added these; the gate-wave port missed them.
+page_visibility.json
+page_visibility.json.lock
+page_visibility.json.tmp
 # Reporter lease — which worker POSTed the last hourly rollup to 2plot.ai.
 .satellite_report.lease
 # Legacy Gen-0 hit-log directory (pre-retrofit) — may linger on dev boxes.
 analytics/
 
-# Project-local Claude working files (plans, screenshots, session notes)
-.claude/
+# Session working documents are LOCAL BY CONVENTION, network-wide: sync
+# reports, handoffs, and kickoff briefs name hosts, topology, and process.
+# Two public fleet repos were caught tracking theirs (2026-08-24). This repo
+# kept X402-SYNC-REPORT.md out through .git/info/exclude, which is per-clone
+# and invisible to everyone else — the rule belongs here, where it ships.
+X402-SYNC-REPORT.md
+HANDOFF-*.md
+KICKOFF-*.md
+
+# The .claude/ development kit IS shipped — it is how every fork inherits
+# the network's behavioral contract, skills, and settings (the F1 fabric
+# build, template 1.6.15). Everything else in .claude/ stays local: session
+# scratch, screenshots, settings.local.json (per-seat model overrides), the
+# component-library agent notes, and .claude/worktrees/ (a real git worktree
+# lives there). Allow-list, not blanket ignore — a dir-level ignore cannot
+# be re-included beneath, hence the /* form.
+.claude/*
+!.claude/CLAUDE.md
+!.claude/settings.json
+!.claude/skills/
