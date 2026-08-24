@@ -295,3 +295,26 @@ def test_the_admin_nav_section_is_hidden_until_the_server_says_otherwise(
     assert sections[0].style == {"display": "none"}, (
         "the admin nav section is visible before the server has decided"
     )
+
+
+def test_every_excluded_link_is_machine_hidden(app_module):
+    """The llms-2plot-dev footgun, pinned on this fork's seam.
+
+    Upstream the navbar itself marks every excluded path hidden through
+    dimll at import; here the one excluded path hides itself inside
+    pages/control_board.py. Same contract, different seam — so pin it over
+    the SET rather than the single path (the test above does that one).
+    A second entry added to EXCLUDED_LINKS would otherwise vanish from the
+    sidebar while still publishing to the sitemap, the llms.txt family and
+    the prerender: hidden from a reader, wide open to every crawler.
+    """
+    from dash_improve_my_llms import is_hidden
+
+    from components.navbar import EXCLUDED_LINKS
+
+    not_hidden = sorted(p for p in EXCLUDED_LINKS if not is_hidden(p))
+    assert not_hidden == [], (
+        f"excluded from the sidebar but NOT from the machine surfaces: "
+        f"{not_hidden} — mark_hidden() is missing wherever these pages are "
+        "registered, so they publish to every crawler while looking hidden."
+    )

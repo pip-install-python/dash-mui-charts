@@ -138,7 +138,10 @@ def test_the_non_js_surface_counts_thirteen(client):
 def test_no_surface_still_claims_nine_components():
     """The stale count survived in three places at once. The sweep is scoped
     to reader-facing files IN the repo — git history legitimately remembers,
-    and .claude/ is untracked local state a CI checkout does not have."""
+    and the shipped part of .claude/ (the development kit, template 1.6.15)
+    deliberately states no versions or counts at all: it points at
+    requirements.txt and CHANGELOG.md instead, precisely so it cannot go
+    stale. The rest of .claude/ stays local and never reaches a checkout."""
     offenders = []
     for path in ("README.md", "templates/index.html", "lib/constants.py"):
         text = (REPO_ROOT / path).read_text()
