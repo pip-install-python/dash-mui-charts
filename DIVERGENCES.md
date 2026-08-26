@@ -207,8 +207,12 @@ a decision this fork made.
   Flask lane, so it is cosmetic here — sync it rather than diverge.
 - `Dockerfile`: template 1.6.14's shell-form
   `CMD gunicorn ... ${PORT:-8550}` and the curl `HEALTHCHECK` are not
-  here. The exec-form `CMD` hardcodes 8550 and works only because Render
-  port-detects.
+  here. The exec-form `CMD` hardcodes 8550. Correction to the earlier
+  wording, which said it "works only because Render port-detects":
+  Render never runs this image at all — `render.yaml` line 4 declares
+  `runtime: python`. The Dockerfile's only consumer is CI's
+  `docker image · boot · battery` job, which is also why the missing
+  `HEALTHCHECK` costs a real check (see the CI verdict entry below).
 - `.github/workflows/cd.yml`: template 1.6.13 widened the build-match
   wait to 100 × 15s with a 30-minute job timeout, sized for the
   cache-busted builds a floor bump forces, and made the hookless case a
@@ -224,13 +228,21 @@ tree; only SYNC-1.6.17-1.6.21 item 1 was applied):
   card, the one endpoint in `DEMOS`. The loudest of these findings:
   every other item here is machinery, this one is a promise to a
   visitor.
-- **Three Pythons, none of them the fleet's** (SYNC-1.6.22-1.6.27
-  item 5). `Dockerfile` says `python:3.11-slim`, `render.yaml`
-  `PYTHON_VERSION` says `3.11.12`, `ci.yml` runs its singletons on
-  `3.12`; the fleet Python is 3.14 and the item wants a MINOR tag
-  (a `3.X.Y` image never receives 3.X security releases). Neither
-  the image/render disagreement with CI nor the patch pin is visible
-  on the wire — `/healthz` has no `python` field here yet.
+- **Three Pythons, and the one that serves production is the oldest**
+  (SYNC-1.6.22-1.6.27 item 5). The image half landed on its own while
+  this pass was running: PR #3 (dependabot, owner-merged as `d473482`)
+  took `Dockerfile` to `python:3.14-slim`, which is byte-equivalent to
+  the item's FROM line — minor tag, fleet minor — and CI proved it
+  (`docker image · boot · battery` green, run 32671687289). Nothing
+  else moved. `render.yaml` still declares `PYTHON_VERSION: "3.11.12"`
+  and `ci.yml` still runs its singletons on `3.12`.
+  The trap specific to this fork: `render.yaml` line 4 says
+  `runtime: python`, NOT Docker. The image is a CI artifact here — it
+  is not what serves traffic. So the bump widened the gap rather than
+  closing it: CI now certifies the app on 3.14 while production runs
+  3.11.12, and `/healthz` has no `python` field, so nothing on the
+  wire can say so. Whoever takes item 5 here should start from that
+  line, not from the Dockerfile.
 - **healthz has no CF-IPCountry pin, and the resolver still reads the
   Flask context** (SYNC-1.6.10-1.6.16 item 1). Extends the
   `lib/health.py` entry above: `_resolved_country()` takes no
@@ -293,6 +305,17 @@ its bytes are the template's (verified identical at 1.6.27). This
 fork's `.github/dependabot.yml` differs from the template's only by
 being BEHIND 1.6.24 — drift, not a decision, so the machine should
 overwrite it. `tests/test_auth_demos.py` is not here to own yet.
+
+The heuristic this fence replaces cost a real delivery here, which is
+worth recording while the evidence is fresh. The F3b fan-out ran
+against this repo as PR #6 (`f4812a8`, spec @ `16d61ce`) and shipped
+ONE of the two block files whose bytes differed: it copied
+`.claude/skills/sync-template/SKILL.md` and withheld
+`tests/test_claude_kit.py` — the path section 7 mentions. Conservative
+and correct by its own rules, and still the wrong answer: those bytes
+were the template's, and the file it withheld was the one carrying the
+pin for this very fence. With the block below present, that path is
+mechanical again.
 
 `.claude/settings.json` is the one real byte-level divergence on the
 kit surface (section 7's two extra domains) and is deliberately NOT
