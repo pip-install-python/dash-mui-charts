@@ -143,3 +143,12 @@ they win.
   the same sha — key on the workflow path (cd.yml) instead.
 - The browser lane and the machine lane are different documents;
   a fix proven on one is unproven on the other.
+- A bot-merged PR — any GITHUB_TOKEN merge — lands with ZERO
+  workflow runs on the merge sha (anti-recursion) yet still reaches
+  production: the deploy hook builds branch HEAD, so an in-flight
+  CD run ships the merge while its own build-match wait holds out
+  for the superseded release sha. Observed live on 4a1d430
+  (2026-08-25). Since 1.6.25 the wait fails FAST on this (live
+  build a descendant of the wanted sha, via the compare API)
+  instead of going red at timeout, and the remedy is policy —
+  actions PRs: human merge when green; never a bot actor on main.
