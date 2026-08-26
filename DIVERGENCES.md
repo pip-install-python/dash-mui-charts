@@ -5,8 +5,12 @@ this fork and the template, with the reason. `.claude/CLAUDE.md` clause 5
 is the rule it serves — a sync must never "restore" anything written
 here, and an unrecorded difference is treated as drift.
 
-Template baseline for this pass: **1.6.15** (`1638528`, the .claude kit).
-Anything the template changed after that is unreviewed here.
+Template baseline for this pass: **1.6.27** (`055363e`). The kit
+surface is at those bytes; every item in the three sync specs
+(1.6.10-16, 1.6.17-21, 1.6.22-27) has had its **detect** run against
+this tree and its disposition reported. Only SYNC-1.6.17-1.6.21 item 1
+was applied — what the detects found and did not fix is the drift list
+at the foot of this file, not a decision recorded above it.
 
 How to use it in a sync: read this file before the work list. If a
 template change collides with an entry below, port the change's
@@ -135,10 +139,14 @@ and `permissions.allow`. The library half wraps MUI X Charts; its API
 documentation is the reference a session here actually needs, and
 `settings.local.json` (which held them) is per-seat and never ships.
 
-`.claude/CLAUDE.md` and the three skills are **byte-verbatim** from
-template 1.6.15 — including the title, which names the template. That is
-the file's own rule: identity derives from the repo (`BASE_URL`,
-`SATELLITE_APP_KEY`, this file), never from `CLAUDE.md`.
+`.claude/CLAUDE.md` and the three skills are **byte-verbatim** from the
+template and TRACK it — verified identical at 1.6.27 (`055363e`),
+including the title, which names the template. That is the file's own
+rule: identity derives from the repo (`BASE_URL`, `SATELLITE_APP_KEY`,
+this file), never from `CLAUDE.md`. Those bytes are the template's to
+update mechanically, which is why none of them appears in the
+byte-owned fence below; `settings.json` is the exception, and the
+fence's own prose says why it is still not listed.
 
 One nuance the kit's host pin inherits from this fork: `tests/conftest.py`
 hardcodes `APP_BASE_URL` (so a developer's `.env` cannot change what the
@@ -151,6 +159,25 @@ move must update three files, not two. Upstream has no conftest pin and
 does not have this.
 
 ---
+
+## 8. The home lane states versions by import, not by substitution
+
+SYNC-1.6.22-1.6.27 item 4's contract is "whatever the docs lane
+substitutes, the home lane substitutes too", because upstream
+`/llms.txt` serves `home.md`'s text and a `{{VERSION:...}}` token
+there would ship raw.
+
+There is no `home.md` here. `pages/home.py` is hand-written Dash — it
+carries its own `LLMS_DOC` string and renders the version badge from
+`from dash_mui_charts import __version__`, the live package the docs
+image installs from this same tree (section 1). `pages/markdown.py`
+does call `substitute_versions`, for the pages that are markdown.
+
+So the item's failure mode cannot occur on this fork's home lane, and
+its source pin (both modules call `substitute_versions`) would pin a
+call that must not exist. The contract is met by construction: an
+imported `__version__` cannot go stale the way a token can. Wire check
+run 2026-08-26 — `/llms.txt` carries no `{{` token.
 
 ## Checked, and NOT divergent
 
@@ -186,6 +213,51 @@ a decision this fork made.
   wait to 100 × 15s with a 30-minute job timeout, sized for the
   cache-busted builds a floor bump forces, and made the hookless case a
   `::warning`. This repo is still at 60 × 15s / 25 / `::notice`.
+Found by the 2026-08-26 detect sweep (all three specs run against this
+tree; only SYNC-1.6.17-1.6.21 item 1 was applied):
+
+- **The gate card promises an AI assistant this site does not ship**
+  (SYNC-1.6.10-1.6.16 item 9). `lib/gate_layouts.py:75` — the
+  demo-present intro string still ends "…the complete API reference,
+  and the AI assistant." Nothing named "AI assistant" exists anywhere
+  else in this tree, and that string renders live on `/pie`'s sign-in
+  card, the one endpoint in `DEMOS`. The loudest of these findings:
+  every other item here is machinery, this one is a promise to a
+  visitor.
+- **Three Pythons, none of them the fleet's** (SYNC-1.6.22-1.6.27
+  item 5). `Dockerfile` says `python:3.11-slim`, `render.yaml`
+  `PYTHON_VERSION` says `3.11.12`, `ci.yml` runs its singletons on
+  `3.12`; the fleet Python is 3.14 and the item wants a MINOR tag
+  (a `3.X.Y` image never receives 3.X security releases). Neither
+  the image/render disagreement with CI nor the patch pin is visible
+  on the wire — `/healthz` has no `python` field here yet.
+- **healthz has no CF-IPCountry pin, and the resolver still reads the
+  Flask context** (SYNC-1.6.10-1.6.16 item 1). Extends the
+  `lib/health.py` entry above: `_resolved_country()` takes no
+  arguments, so the item's context-free
+  `_resolved_country({"CF-IPCountry": "DE"})` pin — the only one that
+  can fail from inside a Flask suite — cannot be written until the
+  signature moves. The wire half passes (geo block present, resolved
+  `US (via cf-ipcountry)`), and `tests/test_pages_smoke.py:327` pins
+  the block's shape, but no test spoofs a country.
+- **The smoke-live SSL source pin is absent** (SYNC-1.6.10-1.6.16
+  item 7). The BEHAVIOR is here — `scripts/smoke_live.py:140` is the
+  file's only `urlopen` and it carries `context=SSL_CONTEXT`, and
+  there is no `post()` to fix. Only the pin that holds it is missing,
+  and CI on Linux is blind to the defect it guards.
+- **CI checks that the container RUNS, not that Docker calls it
+  healthy** (SYNC-1.6.17-1.6.21 item 2). `ci.yml:231` inspects
+  `{{.State.Running}}`; the item wants `{{.State.Health.Status}}`
+  polled to `healthy` and failing on `none`. Paired with the
+  `Dockerfile` entry above — with no `HEALTHCHECK` instruction the
+  verdict here would be `none`, which is the point of failing on it.
+- **`tests/test_auth_demos.py` is absent** (SYNC-1.6.22-1.6.27 item
+  3). The CONTRACT is already satisfied and deliberately so — `DEMOS`
+  holds one entry, `/pie`, chosen for being license-free (see the
+  comment in `lib/auth_demos.py`), and it resolves: `/pie` is a
+  registered page and `docs.pie.interactive_example` imports with a
+  module-level `component`. Only the byte-verbatim test that would
+  hold it is missing; it rides SYNC-1.6.22-1.6.27's block.
 - Template test modules with no counterpart here:
   `test_network_directory`, `test_bulletin`, `test_proxy_scheme`,
   `test_runtime_imports`, `test_auth_wiring`, `test_llms_routes`,
@@ -197,3 +269,38 @@ a decision this fork made.
   handling look genuinely unpinned. Each needs a keep / port /
   not-applicable call — the M0 migration ported a subset and never
   recorded which.
+
+## Byte-owned paths
+
+Paths this fork owns byte-for-byte. The F3b fan-out never overwrites
+a path listed here; everything else in the spec's `sync-verbatim`
+block is the template's to update mechanically. Prose above explains
+divergences; this block is the machine answer.
+
+Repo-relative paths, one per line, `#` comments, no `..`; exactly one
+block. An EMPTY block means "the template owns every sync-verbatim
+path here" — present so the absence is a statement. When the block
+exists it is authoritative; a fork without it gets the conservative
+mention heuristic (over-flags, never restores).
+
+Empty here, and audited to be: the union of the `sync-verbatim`
+blocks in SYNC-1.6.10-1.6.16, SYNC-1.6.17-1.6.21 and
+SYNC-1.6.22-1.6.27 is the three skills, `tests/test_claude_kit.py`,
+`.github/dependabot.yml` and `tests/test_auth_demos.py`. Section 7's
+host-pin nuance NAMES `tests/test_claude_kit.py` while describing how
+the pin READS — that is the mention the fence exists to retire, and
+its bytes are the template's (verified identical at 1.6.27). This
+fork's `.github/dependabot.yml` differs from the template's only by
+being BEHIND 1.6.24 — drift, not a decision, so the machine should
+overwrite it. `tests/test_auth_demos.py` is not here to own yet.
+
+`.claude/settings.json` is the one real byte-level divergence on the
+kit surface (section 7's two extra domains) and is deliberately NOT
+listed: no shipped spec carries it as a `- path` entry — it appears
+only as a `# requires:` adoption gate, which the fan-out reads and
+never copies. Should a release ever intend a fleet-wide settings
+change, this fork's entry belongs here on that day, not before.
+
+```yaml byte-owned
+# Empty by audit, 2026-08-26 (template 1.6.27, 055363e). See above.
+```
