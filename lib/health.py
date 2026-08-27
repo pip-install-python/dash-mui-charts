@@ -15,6 +15,7 @@ reported back as this app being slow.
 from __future__ import annotations
 
 import os
+import platform
 
 import dash
 
@@ -43,7 +44,20 @@ def _resolved_country() -> str:
 
 
 def health_payload(backend: str) -> dict:
-    payload = {"ok": True, "backend": backend, "dash_version": dash.__version__}
+    payload = {
+        "ok": True,
+        "backend": backend,
+        "dash_version": dash.__version__,
+        # WHICH interpreter is actually serving (SYNC-1.6.22-1.6.29 item 5).
+        # This fork is the reason the field is worth having: `render.yaml`
+        # line 4 says `runtime: python`, so the Dockerfile is a CI artifact
+        # and NOT what serves traffic — for two days the image said 3.14,
+        # the CI matrix said 3.12 and the platform ran 3.11.12, and nothing
+        # on the wire could contradict any of the three.
+        # scripts/network_smoke.py holds this minor against the Dockerfile's
+        # FROM tag, so image and declaration cannot part ways silently again.
+        "python": platform.python_version(),
+    }
     # Which commit the RUNNING instance was built from. This is what lets CD
     # verify the artifact it shipped rather than whichever build happens to
     # be serving: a Render service with a disk restarts with a blip instead

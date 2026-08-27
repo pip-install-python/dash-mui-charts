@@ -1,4 +1,15 @@
-# dash-mui-charts docs — production image (Render docker runtime).
+# dash-mui-charts docs — the CI image. NOT what serves production.
+#
+# `render.yaml` line 4 declares `runtime: python`: Render's NATIVE runtime
+# builds this service from requirements.txt and never reads this file. The
+# only consumer is ci.yml's `docker image · boot · battery` job. The header
+# here said "Render docker runtime" until 2026-08-26, which is how a
+# 3.14 image and a 3.11.12 platform coexisted for two days without anyone
+# reading the two lines as contradictory (SYNC-1.6.22-1.6.29 item 5).
+#
+# The FROM tag is still the fleet Python's single source — tests/
+# test_python_version.py reads it and holds render.yaml, ci.yml and cd.yml
+# to its minor, and scripts/network_smoke.py holds the live host to it.
 #
 # NO node toolchain: the dash_mui_charts component bundle + generated Python
 # wrappers are COMMITTED to git (dash_mui_charts/*.min.js + *.py), so

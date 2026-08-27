@@ -146,8 +146,21 @@ services:
       # value: the viewer shows one generic tip where the hub publishes more.
       - key: NETWORK_BULLETIN_URL
         value: "https://2plot.dev/api/network/bulletin"
+      # THE INTERPRETER THAT SERVES PRODUCTION. `runtime: python` above
+      # means Render's native runtime builds this service, reads this key
+      # at build time and ignores the Dockerfile entirely — so this line,
+      # not `FROM python:` , is what visitors run on. Full X.Y.Z is
+      # Render's encoding, not a choice; the MINOR must equal the fleet
+      # Python (SYNC-1.6.22-1.6.29 item 5), the patch is a human bump.
+      # Moved 3.11.12 -> 3.14.7 on 2026-08-26, closing a gap where CI
+      # certified the app on 3.14 while production ran 3.11.
+      #
+      # Blueprint env applies on a SYNC. If the dashboard's own
+      # PYTHON_VERSION still says 3.11.12 after this lands, the battery's
+      # python_matches_declared check goes red against /healthz — that red
+      # is the detect firing, and the fix is the dashboard, not the check.
       - key: PYTHON_VERSION
-        value: "3.11.12"
+        value: "3.14.7"
     # /healthz is the network liveness convention the hub's hourly sweep
     # polls; "/" would render the whole Dash index on every probe.
     healthCheckPath: /healthz

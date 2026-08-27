@@ -64,6 +64,17 @@ item below follows from that and is deliberate:
   `tests/test_pages_smoke.py` counts 41 crawlable pages (the control
   board is registered, not crawlable). Two independent gates on purpose:
   **adding a page moves both numbers.**
+- **TWO PYTHONS in one `ci.yml`**, which is why
+  `tests/test_python_version.py` here is job-scoped where the template's
+  reference implementation greps the whole file. The SITE lane (`lint`,
+  `docs-tests`, `docker`, `smoke`, `pip-audit`, `lint-js`) is held to the
+  fleet Python; the PACKAGE lane (`package`, `package-python-range`)
+  exercises the wheel's own `requires-python` window, 3.9-3.13, and
+  pinning it to a container base would break it the moment the image
+  moved. SYNC-1.6.22-1.6.29 item 5 names this split and tells a fork to
+  scope its greps; `_JOB_LANES` in that test is where this fork states
+  it, and `test_every_ci_job_is_assigned_a_lane` is what stops a new job
+  from escaping both lanes unnoticed.
 
 ## 2. CD refuses to verify a deploy that never ran
 
@@ -262,21 +273,27 @@ and a copied script with no fork-owned test is certified by nothing.
   card, the one endpoint in `DEMOS`. The loudest of these findings:
   every other item here is machinery, this one is a promise to a
   visitor.
-- **Three Pythons, and the one that serves production is the oldest**
-  (SYNC-1.6.22-1.6.27 item 5). The image half landed on its own while
-  this pass was running: PR #3 (dependabot, owner-merged as `d473482`)
-  took `Dockerfile` to `python:3.14-slim`, which is byte-equivalent to
-  the item's FROM line — minor tag, fleet minor — and CI proved it
-  (`docker image · boot · battery` green, run 32671687289). Nothing
-  else moved. `render.yaml` still declares `PYTHON_VERSION: "3.11.12"`
-  and `ci.yml` still runs its singletons on `3.12`.
-  The trap specific to this fork: `render.yaml` line 4 says
-  `runtime: python`, NOT Docker. The image is a CI artifact here — it
-  is not what serves traffic. So the bump widened the gap rather than
-  closing it: CI now certifies the app on 3.14 while production runs
-  3.11.12, and `/healthz` has no `python` field, so nothing on the
-  wire can say so. Whoever takes item 5 here should start from that
-  line, not from the Dockerfile.
+- ~~**Three Pythons, and the one that serves production is the
+  oldest**~~ (SYNC-1.6.22-1.6.29 item 5) — **APPLIED 2026-08-26.** The
+  image half had landed on its own via PR #3 (dependabot, owner-merged
+  as `d473482`), which took `Dockerfile` to `python:3.14-slim` and
+  widened the gap rather than closing it: `render.yaml` line 4 says
+  `runtime: python`, so Render's NATIVE runtime builds this service and
+  never reads that image. CI certified 3.14 while visitors ran
+  `PYTHON_VERSION: "3.11.12"`, and `/healthz` had no `python` field, so
+  nothing on the wire could say so. Closed in every encoding at once:
+  `render.yaml` -> `3.14.7`, the site lane in `ci.yml` and `cd.yml` ->
+  `3.14` with the window legs moved to the adjacent minors,
+  `lib/health.py` gains `python` from `platform.python_version()`, and
+  `tests/test_python_version.py` holds them to the Dockerfile's FROM
+  tag. The Dockerfile's own header said "Render docker runtime" until
+  this pass — a false line that is how two contradictory declarations
+  sat in the tree unread; it now says what the file actually is.
+  **This is the change that moved PRODUCTION off 3.11**, and the one
+  encoding no repo commit can reach is the Render dashboard's own
+  `PYTHON_VERSION`: Blueprint env applies on a sync, so if the wire
+  still reports 3.11 after this deploy, that is the owner's field, not
+  a defect in the check.
 - **healthz has no CF-IPCountry pin, and the resolver still reads the
   Flask context** (SYNC-1.6.10-1.6.16 item 1). Extends the
   `lib/health.py` entry above: `_resolved_country()` takes no

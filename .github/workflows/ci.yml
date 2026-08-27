@@ -54,7 +54,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.14"
           cache: pip
       - run: pip install flake8
       - name: flake8
@@ -81,7 +81,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.14"
           cache: pip
 
       - name: Install the docs site
@@ -259,14 +259,26 @@ jobs:
         # intermediate minors, and the current release. The package's own
         # dash>=3.3 floor is measured separately, in the `package` job.
         dash: ["4.1.0", "4.2.0", "4.3.0", "4.4.1"]
-        python: ["3.12"]
+        # THE SITE LANE's Python — the fleet minor, equal to the
+        # Dockerfile's FROM tag and render.yaml's PYTHON_VERSION minor
+        # (SYNC-1.6.22-1.6.29 item 5). The wheel's own supported range is
+        # a different question, measured in `package-python-range`.
+        python: ["3.14"]
         include:
-          # The docs-site Python range, against the current Dash. A full
-          # cross-product would be 12 jobs for very little extra signal.
-          - dash: "4.4.1"
-            python: "3.10"
+          # The compat window, against the current Dash: the fleet minor
+          # plus the two below it. A full cross-product would be 12 jobs
+          # for very little extra signal.
+          #
+          # These legs were 3.10 and 3.13 while the site lane sat on 3.12,
+          # which left a five-wide window with holes in it once the image
+          # moved to 3.14. Three wide and adjacent is what the item asks
+          # for, and 3.9-3.13 coverage did not disappear — it lives in
+          # `package-python-range`, where the wheel's requires-python
+          # claim is what is actually being tested.
           - dash: "4.4.1"
             python: "3.13"
+          - dash: "4.4.1"
+            python: "3.12"
     steps:
       - uses: actions/checkout@v4
 
@@ -520,7 +532,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.14"
       - run: pip install pip-audit
       # The four cryptography suppressions that used to sit here are GONE, and
       # this is the release they were waiting for. The old chain was
