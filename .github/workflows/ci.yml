@@ -51,8 +51,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.14"
           cache: pip
@@ -78,8 +78,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.14"
           cache: pip
@@ -155,14 +155,14 @@ jobs:
     timeout-minutes: 25
     needs: [docs-tests]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # The same build Render runs. This is where a dependency-resolution
       # failure surfaces — at CI time, not deploy time — and where a missing
       # COPY line dies loudly instead of at gunicorn boot (LESSONS §19).
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v4
       - name: Build the production image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           tags: dash-mui-charts-docs:ci
@@ -280,9 +280,9 @@ jobs:
           - dash: "4.4.1"
             python: "3.12"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python }}
           cache: pip
@@ -291,7 +291,7 @@ jobs:
       # component bundle and wrappers from source, so a broken webpack
       # config or a component that stopped generating fails HERE, per
       # supported environment, not on the next release.
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: "20"
 
@@ -328,7 +328,7 @@ jobs:
       - name: Smoke test
         run: python scripts/smoke_test.py --json smoke-${{ matrix.dash }}-py${{ matrix.python }}.json
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: smoke-${{ matrix.dash }}-py${{ matrix.python }}
@@ -340,14 +340,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           # check_release.py compares the git commit times of the bundle and
           # src/lib/components. A shallow clone can omit the commit that
           # last touched one of them, turning the check into a false
           # "no git history" skip.
           fetch-depth: 0
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
@@ -436,7 +436,7 @@ jobs:
           echo "package.json=$PY_VER  installed=$WHEEL_VER"
           test "$PY_VER" = "$WHEEL_VER"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: dist
           path: dist/
@@ -455,10 +455,10 @@ jobs:
         # package's floor is not the docs site's.
         python: ["3.9", "3.10", "3.11", "3.12", "3.13"]
     steps:
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python }}
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: dist
           path: dist/
@@ -497,8 +497,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: "20"
       # The committed bundle is what users actually load, and it is a build
@@ -529,8 +529,8 @@ jobs:
     # red pip-audit now means something new landed. Keep it that way: fix
     # the dependency, don't re-add continue-on-error or --ignore-vuln.
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.14"
       - run: pip install pip-audit
