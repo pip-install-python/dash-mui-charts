@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### The card X can read, and one fleet Python
+
+- **`twitter:card` is declared where a scraper can see it again.** Dash
+  emits the card type with `property=` (hardcoded in `dash/_pages.py`);
+  X's parser predates the Open Graph convention and reads `name=` only.
+  `templates/index.html` had been trimmed of the template's `name=` line
+  as a duplicate, so from 2026-08-24 to 2026-08-26 every page on this site
+  offered X no card type at all — the image, title and description were
+  all present and the card still could not render as a large image. The
+  same wrong rule was encoded in THREE places and all three had to move:
+  two assertions in `tests/test_social_card.py` (which is what required
+  the deletion), and `scripts/check_release.py`'s restated-tags gate
+  (which then blocked the fix from shipping). `twitter:title` and
+  `twitter:description` stay listed on purpose — X falls back to the
+  `og:*` set for those, and does read it. Only the card TYPE has no
+  fallback.
+- **`tests/test_smoke_live.py` exists.** The post-deploy battery has run
+  in CD for months with nothing exercising it locally, which is how a new
+  crawler/browser identity-parity check landed byte-perfect and found the
+  card defect on the wire instead of in the suite. The script now runs
+  against the in-process app on every test run; deleting the meta tag
+  reproduces all four production failures locally.
+- **Production moves off Python 3.11.** `render.yaml` declares
+  `runtime: python`, so Render's native runtime builds this service from
+  `requirements.txt` and never reads the Dockerfile — which meant the
+  3.14-slim image bump certified CI while visitors kept getting
+  `PYTHON_VERSION: "3.11.12"`, with a third opinion (3.12) in the CI site
+  lane. All four encodings now agree on 3.14: render.yaml `3.14.7`, the
+  site lane in `ci.yml`/`cd.yml`, and the image. `/healthz` gained a
+  `python` field so the serving interpreter is visible from outside for
+  the first time, and `tests/test_python_version.py` holds the encodings
+  to the Dockerfile's `FROM` tag. The wheel's own `requires-python`
+  window (3.9-3.13, in `package-python-range`) is a separate question and
+  is deliberately untouched.
+
 ### Floor round — dimll >=2.7.1, healthz tells the truth, one h1 per page
 
 - **dash-improve-my-llms floor 2.6.1 → 2.7.1**, moved in every encoding:
