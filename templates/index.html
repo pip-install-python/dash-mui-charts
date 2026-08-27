@@ -54,12 +54,26 @@
          auxiliaries Dash never emits remain. Keep them in step with
          lib/constants.OG_IMAGE_* — a declared size that disagrees with the
          real file is worse than none, because platforms reserve that box and
-         crop into it. -->
+         crop into it.
+
+         `twitter:card` IS one of those auxiliaries, however much it looks
+         like a duplicate: Dash emits it with `property=` (dash/_pages.py,
+         hardcoded), and Twitter/X's parser predates the OG convention and
+         reads `name=` only — so Dash's tag is invisible to the one platform
+         it exists for. The template carries this line for that reason; this
+         fork dropped it while trimming the block and shipped 2026-08-24
+         through 2026-08-26 declaring no card type any scraper could see.
+         Caught on the wire by smoke_live.py's crawler/browser identity
+         parity check (CD run 33002187234), because dash-improve-my-llms
+         writes the prerendered head with `name=` and the two lanes then
+         disagreed. Do NOT "de-duplicate" it against Dash's property= tag —
+         they are different tags to every consumer that matters. -->
     <meta property="og:image:secure_url" content="https://cdn.2plot.ai/github_assets/muicharts.2plot.dev.png">
     <meta property="og:image:type" content="image/png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:image:alt" content="dash-mui-charts — MUI X charts for Dash">
+    <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:image:alt" content="dash-mui-charts — MUI X charts for Dash">
 
     <!-- Keeps canonical / og:url / twitter:url correct across CLIENT-SIDE

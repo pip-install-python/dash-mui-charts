@@ -5,12 +5,13 @@ this fork and the template, with the reason. `.claude/CLAUDE.md` clause 5
 is the rule it serves — a sync must never "restore" anything written
 here, and an unrecorded difference is treated as drift.
 
-Template baseline for this pass: **1.6.27** (`055363e`). The kit
-surface is at those bytes; every item in the three sync specs
-(1.6.10-16, 1.6.17-21, 1.6.22-27) has had its **detect** run against
-this tree and its disposition reported. Only SYNC-1.6.17-1.6.21 item 1
-was applied — what the detects found and did not fix is the drift list
-at the foot of this file, not a decision recorded above it.
+Template baseline for this pass: **1.6.29** (`5589318`). The kit
+surface and every path in the three specs' `sync-verbatim` blocks are
+at those bytes — verified by md5, 2026-08-26. Every item in the three
+sync specs (1.6.10-16, 1.6.17-21, 1.6.22-29) has had its **detect**
+run against this tree and its disposition reported. What the detects
+found and did not fix is the drift list at the foot of this file, not
+a decision recorded above it.
 
 How to use it in a sync: read this file before the work list. If a
 template change collides with an entry below, port the change's
@@ -217,8 +218,41 @@ a decision this fork made.
   wait to 100 × 15s with a 30-minute job timeout, sized for the
   cache-busted builds a floor bump forces, and made the hookless case a
   `::warning`. This repo is still at 60 × 15s / 25 / `::notice`.
+
 Found by the 2026-08-26 detect sweep (all three specs run against this
-tree; only SYNC-1.6.17-1.6.21 item 1 was applied):
+tree):
+
+**RESOLVED the same day — the drift that reached production.** From
+`c746876` (2026-08-24) until the fix on 2026-08-26 this site declared
+no Twitter card type any scraper could read. `templates/index.html` had
+been trimmed of the template's
+`<meta name="twitter:card" content="summary_large_image">` on the
+reasoning that Dash already emits the tag — it does, but with
+`property=` (hardcoded in `dash/_pages.py`), and X's parser predates
+the OG convention and reads `name=` only. Two things then made the
+loss invisible:
+
+- `tests/test_social_card.py` asserted `twitter:card` appears exactly
+  ONCE and listed it among the tags Dash emits that must never be
+  restated. Those two assertions did not merely fail to catch the
+  deletion — they are the rule that *required* it. The template had
+  already carved out the exception (both tests there compare the SET
+  of values and pin `name="twitter:card"` separately); this fork was
+  running the pre-2.5.x version. Ported as contract, not copied: the
+  surrounding file is a fork rewrite and stays one.
+- Nothing here ran `scripts/smoke_live.py`. The 1.6.28 block copied in
+  a script with a new crawler/browser identity-parity check, the suite
+  went green because no test exercised it, and the check found the
+  defect on the WIRE instead — CD run `33002187234`, red at
+  "Smoke-test the deployment", four failures all reading
+  `crawler=['summary_large_image'] browser=[]`. `tests/test_smoke_live.py`
+  now exists (SYNC-1.6.22-1.6.29 item 6, fork-owned by class) and
+  reproduces those four lines exactly when the tag is removed —
+  verified by deleting it and watching the suite refuse.
+
+The general lesson, worth more than the tag: a fork-owned test that
+encodes a rule the template has since qualified will defend the bug,
+and a copied script with no fork-owned test is certified by nothing.
 
 - **The gate card promises an AI assistant this site does not ship**
   (SYNC-1.6.10-1.6.16 item 9). `lib/gate_layouts.py:75` — the
@@ -253,28 +287,35 @@ tree; only SYNC-1.6.17-1.6.21 item 1 was applied):
   `US (via cf-ipcountry)`), and `tests/test_pages_smoke.py:327` pins
   the block's shape, but no test spoofs a country.
 - **The smoke-live SSL source pin is absent** (SYNC-1.6.10-1.6.16
-  item 7). The BEHAVIOR is here — `scripts/smoke_live.py:140` is the
-  file's only `urlopen` and it carries `context=SSL_CONTEXT`, and
-  there is no `post()` to fix. Only the pin that holds it is missing,
-  and CI on Linux is blind to the defect it guards.
+  item 7; re-detected as SYNC-1.6.22-1.6.29 item 6, 2026-08-26).
+  The BEHAVIOR is complete: the 1.6.28 copy brought a `post()` for
+  the auth-wiring probe, so the file now has TWO `urlopen` calls and
+  both carry `context=SSL_CONTEXT` — the earlier wording here ("there
+  is no `post()` to fix") was true when written and is not any more.
+  Still missing is the SOURCE pin that holds it, which upstream lives
+  in `tests/test_auth_wiring.py` — a module this fork does not carry.
+  CI on Linux is blind to the defect it guards, so nothing here would
+  notice the context argument going away again.
 - **CI checks that the container RUNS, not that Docker calls it
   healthy** (SYNC-1.6.17-1.6.21 item 2). `ci.yml:231` inspects
   `{{.State.Running}}`; the item wants `{{.State.Health.Status}}`
   polled to `healthy` and failing on `none`. Paired with the
   `Dockerfile` entry above — with no `HEALTHCHECK` instruction the
   verdict here would be `none`, which is the point of failing on it.
-- **`tests/test_auth_demos.py` is absent** (SYNC-1.6.22-1.6.27 item
-  3). The CONTRACT is already satisfied and deliberately so — `DEMOS`
-  holds one entry, `/pie`, chosen for being license-free (see the
-  comment in `lib/auth_demos.py`), and it resolves: `/pie` is a
-  registered page and `docs.pie.interactive_example` imports with a
-  module-level `component`. Only the byte-verbatim test that would
-  hold it is missing; it rides SYNC-1.6.22-1.6.27's block.
+- ~~**`tests/test_auth_demos.py` is absent**~~ (SYNC-1.6.22-1.6.29
+  item 3) — **CLOSED 2026-08-26**: the F3b fan-out landed it byte-
+  verbatim in `ad0fc06` (PR #7) and it is green. The contract it
+  holds was already satisfied and deliberately so — `DEMOS` holds one
+  entry, `/pie`, chosen for being license-free (see the comment in
+  `lib/auth_demos.py`), and it resolves.
 - Template test modules with no counterpart here:
   `test_network_directory`, `test_bulletin`, `test_proxy_scheme`,
   `test_runtime_imports`, `test_auth_wiring`, `test_llms_routes`,
   `test_config`, `test_docs_content`, `test_pages`,
-  `test_network_smoke`, `test_smoke_live`, `test_excluded_links_hidden`.
+  `test_network_smoke`, `test_excluded_links_hidden`.
+  (`test_smoke_live` came off this list on 2026-08-26 — see the
+  RESOLVED entry above. It is the proof the list is worth working
+  through rather than admiring: that one absence cost a red CD.)
   Some subject matter is covered under this repo's own names
   (`test_pages_smoke`, `test_site_identity`, `test_access`,
   `test_prerender`); `network_directory`, `bulletin` and the proxy-scheme
@@ -295,16 +336,30 @@ path here" — present so the absence is a statement. When the block
 exists it is authoritative; a fork without it gets the conservative
 mention heuristic (over-flags, never restores).
 
-Empty here, and audited to be: the union of the `sync-verbatim`
-blocks in SYNC-1.6.10-1.6.16, SYNC-1.6.17-1.6.21 and
-SYNC-1.6.22-1.6.27 is the three skills, `tests/test_claude_kit.py`,
-`.github/dependabot.yml` and `tests/test_auth_demos.py`. Section 7's
-host-pin nuance NAMES `tests/test_claude_kit.py` while describing how
-the pin READS — that is the mention the fence exists to retire, and
-its bytes are the template's (verified identical at 1.6.27). This
-fork's `.github/dependabot.yml` differs from the template's only by
-being BEHIND 1.6.24 — drift, not a decision, so the machine should
-overwrite it. `tests/test_auth_demos.py` is not here to own yet.
+Empty here, and re-audited at 1.6.29 to still be: the union of the
+`sync-verbatim` blocks in SYNC-1.6.10-1.6.16, SYNC-1.6.17-1.6.21 and
+SYNC-1.6.22-1.6.29 is the three skills, `tests/test_claude_kit.py`,
+`.github/dependabot.yml` and `tests/test_auth_demos.py`. All six are
+byte-identical to template `5589318` (md5, 2026-08-26), so the fork
+owns none of them. Section 7's host-pin nuance NAMES
+`tests/test_claude_kit.py` while describing how the pin READS — that
+is the mention the fence exists to retire. `.github/dependabot.yml`
+and `tests/test_auth_demos.py`, both open questions in the 1.6.27
+audit, were settled mechanically by the fan-out in `ad0fc06`: the
+first is no longer behind 1.6.24, the second is here and green.
+
+**What an empty fence does and does not say — the 1.6.28 lesson.** It
+says the template owns these BYTES. It does not say a copy is safe.
+`scripts/smoke_live.py` rode the 1.6.28 block into this repo on that
+authority, byte-perfect and correct, and took production red the same
+day (see the RESOLVED entry above) — not because the bytes were
+wrong, but because nothing here exercised them and a check the file
+newly carried was right about this host. Template 1.6.29 drew the
+same conclusion and pulled the file back out of the block, reclassing
+it contract. The fence is the machine's half; the fork-owned test is
+the half that decides whether a copy can be trusted, and this repo
+had none. Nothing to add to the block for it: the file is not in the
+1.6.29 block at all, and its bytes here ARE the template's.
 
 The heuristic this fence replaces cost a real delivery here, which is
 worth recording while the evidence is fresh. The F3b fan-out ran
@@ -325,5 +380,6 @@ never copies. Should a release ever intend a fleet-wide settings
 change, this fork's entry belongs here on that day, not before.
 
 ```yaml byte-owned
-# Empty by audit, 2026-08-26 (template 1.6.27, 055363e). See above.
+# Empty by audit, 2026-08-26; re-audited by md5 at template 1.6.29
+# (5589318) the same day, still empty. See above.
 ```

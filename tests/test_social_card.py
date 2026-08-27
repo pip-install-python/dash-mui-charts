@@ -146,7 +146,18 @@ def test_the_declared_ratio_suits_a_large_image_card():
 
 
 def test_the_twitter_card_is_a_large_image(client):
-    assert _meta(client.get("/").text, "twitter:card") == ["summary_large_image"]
+    """Two declarations, one value, and the readable one present.
+
+    Twitter/X's parser predates the OG convention and reads `name=` only,
+    while Dash hardcodes `property="twitter:card"` (dash/_pages.py). So the
+    document carries two, and asserting a list of exactly one — as this fork
+    did until 2026-08-26 — is what deleted the `name=` tag from
+    templates/index.html and left the site declaring no card type any scraper
+    could see. Compare the SET of values and pin the readable spelling.
+    """
+    html = client.get("/").text
+    assert set(_meta(html, "twitter:card")) == {"summary_large_image"}
+    assert 'name="twitter:card"' in html
 
 
 # --------------------------------------------------- template division rules --
@@ -156,10 +167,17 @@ def test_no_meta_tag_dash_emits_is_also_declared_statically(client):
     """The rule the whole template rebuild was built on: Dash emits all of
     these per page. A static copy makes two of each, and the static one
     describes the SITE where Dash's describes the PAGE — redundant and the
-    less accurate of the two."""
+    less accurate of the two.
+
+    `twitter:card` is the deliberate exception, and is absent from the list
+    below for that reason: Dash declares it with `property=`, which Twitter
+    does not read, so index.html's `name=` copy is not a duplicate — it is
+    the only declaration a scraper can see. Both carry the same value, which
+    the test above pins.
+    """
     html = client.get("/").text
     for tag in ("description", "og:type", "og:title", "og:description",
-                "og:image", "twitter:card", "twitter:url", "twitter:title",
+                "og:image", "twitter:url", "twitter:title",
                 "twitter:description", "twitter:image"):
         found = _meta(html, tag)
         assert len(found) <= 1, f"{tag} is declared {len(found)} times: {found}"
