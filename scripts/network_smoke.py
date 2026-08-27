@@ -36,6 +36,8 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
+import ssl
 import sys
 import time
 import urllib.error
@@ -44,6 +46,37 @@ import urllib.request
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 TIMEOUT = 30
+
+
+def _ssl_context() -> ssl.SSLContext:
+    """Verify certificates via certifi when available.
+
+    macOS Python ships without OS trust-store integration, so bare urllib
+    fails every https fetch with CERTIFICATE_VERIFY_FAILED. This battery
+    had no context until 2026-08-26, which meant running it by hand against
+    production from a Mac reported ALL TWELVE checks failed — indis-
+    tinguishable from the site being down, on a host that was perfectly
+    healthy. CI runs on Linux and could never see it; nothing in tests/
+    exercises the transport.
+
+    Same fix, same reason as scripts/smoke_live.py's, and the same class as
+    SYNC-1.6.10-1.6.16 item 7 / SYNC-1.6.22-1.6.29 item 6 — which name
+    smoke_live.py in their file lists while item 6's contract sentence says
+    "whatever live tool a CD run certifies with". CD certifies with BOTH
+    scripts. Reported upstream as a template-class finding: the template's
+    own copy of this file has no context either.
+
+    Verification stays ON either way; certifi only supplies the CA bundle.
+    """
+    try:
+        import certifi
+
+        return ssl.create_default_context(cafile=certifi.where())
+    except ImportError:
+        return ssl.create_default_context()
+
+
+SSL_CONTEXT = _ssl_context()
 try:
     from lib.constants import INTERNAL_UA as _INTERNAL_UA
 except Exception:  # running outside a repo checkout — keep the token intact
@@ -123,7 +156,8 @@ def fetch(url: str, ua: str = UA, method: str = "GET",
         for k, v in (headers or {}).items():
             req.add_header(k, v)
         try:
-            with urllib.request.urlopen(req, timeout=timeout) as r:
+            with urllib.request.urlopen(
+                    req, timeout=timeout, context=SSL_CONTEXT) as r:
                 return (r.status, {k.lower(): v for k, v in r.headers.items()},
                         r.read().decode("utf-8", "replace"))
         except urllib.error.HTTPError as e:
@@ -158,6 +192,33 @@ def expect(cond: bool, msg: str) -> None:
 
 # ------------------------------------------------------------- the battery --
 
+def declared_python_minor():
+    """The fleet Python this checkout declares: the Dockerfile's FROM minor.
+
+    None when there is nothing to hold the host against — no Dockerfile
+    beside this script, or the seat itself is off-contract via
+    SMOKE_PYTHON_DECLARED=ignore. Nothing in this repo sets that today: the
+    two in-CI seats (the docs-tests boot and the docker container) both run
+    the fleet minor, and the site matrix legs never invoke this script. The
+    knob is here because the template's matrix does need it, and a fork that
+    later boots this battery on a window leg will need it too.
+    """
+    if os.environ.get("SMOKE_PYTHON_DECLARED") == "ignore":
+        return None
+    dockerfile = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "Dockerfile")
+    try:
+        with open(dockerfile, encoding="utf-8") as fh:
+            for line in fh:
+                m = re.match(r"FROM\s+python:(\d+\.\d+)", line)
+                if m:
+                    return m.group(1)
+    except OSError:
+        pass
+    return None
+
+
 def satellite_checks(base: str) -> None:
     get = lambda path, **kw: fetch(base + path, **kw)  # noqa: E731
 
@@ -165,6 +226,32 @@ def satellite_checks(base: str) -> None:
         status, _, text = get("/healthz")
         expect(status == 200, f"/healthz {status}")
         expect(json.loads(text).get("ok") is True, f"unexpected body {text[:120]!r}")
+
+    def python_matches_declared():
+        # WHICH interpreter serves, versus the one this repo declares
+        # (SYNC-1.6.22-1.6.29 item 5). This fork is the reason the check
+        # earns its place: `render.yaml` says `runtime: python`, so the
+        # Dockerfile is a CI artifact and NOT what serves traffic — the
+        # image reached 3.14 while production stayed on 3.11.12 and every
+        # gate in the tree was green, because nothing on the wire could
+        # contradict either number. /healthz's `python` field is the
+        # observability; this is the teeth.
+        #
+        # A red here after a render.yaml bump is the platform lagging the
+        # repo, not a broken check: Blueprint env applies on a sync, so the
+        # dashboard's own PYTHON_VERSION is the fix.
+        status, _, text = get("/healthz")
+        expect(status == 200, f"/healthz {status}")
+        served = json.loads(text).get("python") or ""
+        expect(bool(served), "/healthz carries no `python` field — the "
+               "serving interpreter is invisible from outside")
+        declared = declared_python_minor()
+        if declared is None:
+            return
+        served_minor = ".".join(served.split(".")[:2])
+        expect(served_minor == declared,
+               f"host serves Python {served}, repo declares {declared} — "
+               "a stale image, or a platform runtime nobody aligned")
 
     def llms_txt_identity():
         # The check this whole standard exists for. The H1 is what an agent
@@ -283,6 +370,7 @@ def satellite_checks(base: str) -> None:
 
     for name, fn in (
         ("healthz_ok", healthz_ok),
+        ("python_matches_declared", python_matches_declared),
         ("corpus_documents_are_public", corpus_documents_are_public),
         ("agent_key_is_mounted_and_anonymous_gets_nothing",
          agent_key_is_mounted_and_anonymous_gets_nothing),

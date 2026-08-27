@@ -289,11 +289,15 @@ and a copied script with no fork-owned test is certified by nothing.
   tag. The Dockerfile's own header said "Render docker runtime" until
   this pass — a false line that is how two contradictory declarations
   sat in the tree unread; it now says what the file actually is.
-  **This is the change that moved PRODUCTION off 3.11**, and the one
-  encoding no repo commit can reach is the Render dashboard's own
-  `PYTHON_VERSION`: Blueprint env applies on a sync, so if the wire
-  still reports 3.11 after this deploy, that is the owner's field, not
-  a defect in the check.
+  **This is the change that moved PRODUCTION off 3.11**, and it moved
+  it without a dashboard edit: `/healthz` on build `460d201` answers
+  `"python": "3.14.3"` where the previous build had no `python` key at
+  all, so Render's blueprint sync did carry `PYTHON_VERSION`. Note the
+  PATCH: the file asked for 3.14.7 and the platform resolved to 3.14.3,
+  its latest available 3.14. `render.yaml` was corrected to 3.14.3 —
+  declaring a patch nothing runs is the same defect class in miniature.
+  The pins compare the MINOR on purpose, so a future platform bump
+  inside 3.14 stays green.
 - **healthz has no CF-IPCountry pin, and the resolver still reads the
   Flask context** (SYNC-1.6.10-1.6.16 item 1). Extends the
   `lib/health.py` entry above: `_resolved_country()` takes no
@@ -313,6 +317,29 @@ and a copied script with no fork-owned test is certified by nothing.
   in `tests/test_auth_wiring.py` — a module this fork does not carry.
   CI on Linux is blind to the defect it guards, so nothing here would
   notice the context argument going away again.
+- **`scripts/network_smoke.py` had no SSL context — a
+  TEMPLATE-CLASS finding, fixed here 2026-08-26.** Running the fleet
+  battery by hand against production from a Mac reported ALL TWELVE
+  checks failed with `CERTIFICATE_VERIFY_FAILED` — indistinguishable
+  from "the site is down", on a host that was perfectly healthy. macOS
+  Python ships without OS trust-store integration; CI runs on Linux and
+  can never see it; nothing in `tests/` exercises the transport. Fixed
+  with the same certifi-backed `_ssl_context()` `smoke_live.py` already
+  carries. **The template's own copy has no context either** (checked at
+  `5589318`), so this belongs upstream: SYNC-1.6.10-1.6.16 item 7 and
+  SYNC-1.6.22-1.6.29 item 6 both name `smoke_live.py` in their file
+  lists, while item 6's contract sentence says "whatever live tool a CD
+  run certifies with" — and CD certifies with BOTH scripts. The file
+  list is narrower than the contract it states.
+- **The gate's CONFIGURED branch is certified by nothing**
+  (SYNC-1.6.22-1.6.29 item 7). `tests/conftest.py` blanks every
+  `CLERK_*` var before any import, so every gate card this suite renders
+  is the zero-secret branch; no test has ever rendered the ClerkJS
+  bootstrap branch with a fake publishable key. The detect fires here —
+  and it fires on the template too, which records its own adoption as
+  `open` and queues it for a runtime pass. Left open here for the same
+  reason: the reference implementation does not exist yet, and inventing
+  one fork-side is how two shapes end up in the fleet.
 - **CI checks that the container RUNS, not that Docker calls it
   healthy** (SYNC-1.6.17-1.6.21 item 2). `ci.yml:231` inspects
   `{{.State.Running}}`; the item wants `{{.State.Health.Status}}`

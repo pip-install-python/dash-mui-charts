@@ -152,15 +152,21 @@ services:
       # not `FROM python:` , is what visitors run on. Full X.Y.Z is
       # Render's encoding, not a choice; the MINOR must equal the fleet
       # Python (SYNC-1.6.22-1.6.29 item 5), the patch is a human bump.
-      # Moved 3.11.12 -> 3.14.7 on 2026-08-26, closing a gap where CI
-      # certified the app on 3.14 while production ran 3.11.
+      # Moved 3.11.12 -> 3.14 on 2026-08-26, closing a gap where CI
+      # certified the app on 3.14 while production ran 3.11. The blueprint
+      # sync DID carry it (measured: /healthz went from no `python` field
+      # to 3.14.3 on build 460d201), so no dashboard edit was needed.
       #
-      # Blueprint env applies on a SYNC. If the dashboard's own
-      # PYTHON_VERSION still says 3.11.12 after this lands, the battery's
-      # python_matches_declared check goes red against /healthz — that red
-      # is the detect firing, and the fix is the dashboard, not the check.
+      # THE PATCH IS WHAT RENDER ACTUALLY SERVES, not what we would like.
+      # This line asked for 3.14.7 and the platform resolved it to 3.14.3 —
+      # its latest available 3.14 — so the file was corrected to match the
+      # wire rather than left declaring a patch nothing runs. The pins hold
+      # the MINOR (tests/test_python_version.py, and the battery's
+      # python_matches_declared against /healthz); the patch here is
+      # documentation, and documentation that disagrees with the wire is
+      # the exact defect class item 5 exists to kill.
       - key: PYTHON_VERSION
-        value: "3.14.7"
+        value: "3.14.3"
     # /healthz is the network liveness convention the hub's hourly sweep
     # polls; "/" would render the whole Dash index on every probe.
     healthCheckPath: /healthz
