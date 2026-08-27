@@ -160,6 +160,33 @@ def test_the_twitter_card_is_a_large_image(client):
     assert 'name="twitter:card"' in html
 
 
+def test_the_release_gate_agrees_that_the_card_type_is_not_a_duplicate(client):
+    """The rule lived in THREE places, and all three had to be found.
+
+    `scripts/check_release.py` carries its own "template does not restate
+    per-page meta tags" list, and it is a gate the pytest suite does not
+    run — CI invokes it in the `package` job. On 2026-08-26 the two tests
+    above were fixed, the tag went back into templates/index.html, and that
+    third copy failed the release consistency check and skipped the deploy:
+    the fix could not ship because a fourth opinion still called it a
+    duplicate. Pin the agreement rather than trusting three files to drift
+    together.
+    """
+    gate = (REPO_ROOT / "scripts" / "check_release.py").read_text(encoding="utf-8")
+    marker = 'name="twitter:card"'
+    listed = [
+        ln for ln in gate.splitlines()
+        if marker in ln and not ln.lstrip().startswith("#")
+    ]
+    assert not listed, (
+        "scripts/check_release.py still treats the name= card type as a "
+        f"restated tag: {listed}"
+    )
+    # Non-vacuous: the tag really is in the template, so a gate that listed
+    # it really would fire.
+    assert marker in client.get("/").text
+
+
 # --------------------------------------------------- template division rules --
 
 

@@ -223,9 +223,22 @@ def main() -> int:
           '<link rel="canonical"' not in tpl_markup,
           "the package prerenders it per route")
     head = tpl.split("</head>")[0]
+    # `name="twitter:card"` was on this list until 2026-08-26 and is the
+    # reason it came off templates/index.html — the third encoding of one
+    # wrong rule, after the two in tests/test_social_card.py. Dash emits the
+    # card type with `property=` (dash/_pages.py, hardcoded) and X's parser
+    # reads `name=` only, so the two are different tags to every consumer
+    # that matters and the `name=` one is the only readable declaration.
+    # This gate blocked the RELEASE on restoring it; production meanwhile
+    # served no readable card type at all.
+    #
+    # twitter:title and twitter:description stay listed on purpose, and the
+    # asymmetry is deliberate rather than an oversight: X falls back to the
+    # og:* set for both, which it does read, so a `name=` copy of those
+    # genuinely is redundant. Only the card TYPE has no fallback.
     restated = [t for t in ('name="description"', 'property="og:title"',
                             'property="og:description"', 'property="og:type"',
-                            'name="twitter:card"', 'name="twitter:title"',
+                            'name="twitter:title"',
                             'name="twitter:description"')
                 if t in strip_html_comments(head)]
     check("template does not restate per-page meta tags", not restated,
