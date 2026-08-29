@@ -157,14 +157,29 @@ def measure() -> dict:
         routes[entry["path"]] = fingerprint(layout)
 
     client = site.server.test_client()
+    # SEND A BROWSER UA. Which lane a request lands on is decided by
+    # dash-improve-my-llms' UA classification, and from 2.8.0 an ABSENT
+    # User-Agent is the CRAWLER lane (no browser sends none) where it used to
+    # be a desktop human. A UA-less probe therefore gets the crawler document
+    # — and on a `mark_hidden` path, the package's 404: this sweep started
+    # reporting `/admin/control-board: 404` the day 2.8.0 could resolve, with
+    # nothing about the app changed. Same trap the template hit in
+    # tests/test_proxy_scheme.py; this repo's shape of it is here, because
+    # scripts/smoke_test.py's "every route serves 200" runs on this function
+    # and IS a CI gate. Mirrors tests/conftest.py's BROWSER_UA on purpose.
+    BROWSER_UA = (
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    )
+    hdrs = {"User-Agent": BROWSER_UA}
     statuses = {}
     for path in routes:
-        statuses[path] = client.get(path).status_code
-    hz = client.get("/healthz")
+        statuses[path] = client.get(path, headers=hdrs).status_code
+    hz = client.get("/healthz", headers=hdrs)
     plumbing = {
         "/healthz": [hz.status_code, bool((hz.get_json() or {}).get("ok"))],
-        "/_dash-layout": client.get("/_dash-layout").status_code,
-        "/_dash-dependencies": client.get("/_dash-dependencies").status_code,
+        "/_dash-layout": client.get("/_dash-layout", headers=hdrs).status_code,
+        "/_dash-dependencies": client.get("/_dash-dependencies", headers=hdrs).status_code,
     }
 
     all_chart_ids = {cid for r in routes.values() for cid in r["mui_ids"]}

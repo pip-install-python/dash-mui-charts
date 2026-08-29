@@ -497,6 +497,7 @@
  "route_statuses": {
   "/": 200,
   "/admin/control-board": 200,
+  "/admin/traffic": 200,
   "/api": 200,
   "/barchart-basic": 200,
   "/barchart-dataset": 200,
@@ -545,6 +546,11 @@
    "mui_mounts": 0
   },
   "/admin/control-board": {
+   "mui_components": {},
+   "mui_ids": [],
+   "mui_mounts": 0
+  },
+  "/admin/traffic": {
    "mui_components": {},
    "mui_ids": [],
    "mui_mounts": 0

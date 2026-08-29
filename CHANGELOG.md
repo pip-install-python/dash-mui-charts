@@ -7,6 +7,69 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### The ledger row, and a branch only CI can write
+
+Sync items 12 and 13 from the template's SYNC-1.6.22-1.6.35, ported into
+this fork's shape (see `DIVERGENCES.md` for where the shapes differ).
+
+#### Changed
+
+- **`human_hits` DROPS and `bot_hits` RISES from the first deploy after
+  this.** `lib/analytics_tracker.py` no longer carries its own User-Agent
+  list; it delegates to `dash_improve_my_llms.classify()`, the same vendor
+  registry `robots.txt` is already rendered from — so what this site SAYS
+  about a vendor and what it COUNTS finally agree. The old list filed
+  ClaudeBot (Anthropic's *training* crawler) under "search", still named
+  the retired `anthropic-ai` / `claude-web` tokens, and counted every
+  UA-less or library client (`httpx`, `Go-http-client`, `node-fetch`, an
+  empty User-Agent) as a person. Those clients move from human to crawler.
+  The hub's day-over-day view will show a step: that is the number
+  becoming true, not a regression.
+- **An absent User-Agent is a crawler now.** The same flip bit this repo's
+  own tooling before it bit the numbers: `scripts/route_parity.py` probed
+  every route with no UA, so from the moment dash-improve-my-llms 2.8.0
+  could resolve, `scripts/smoke_test.py` — a CI gate — reported
+  `/admin/control-board: 404`, the package's hidden-path answer to a
+  crawler, with nothing about the app changed. The sweep now sends the
+  same `BROWSER_UA` `tests/conftest.py` does. (The template hit this in
+  `tests/test_proxy_scheme.py`, a file this fork does not carry.)
+- **`main` is no longer a deploy.** Render deploys the `release` branch,
+  and only `cd.yml`'s `deploy` job writes it — a fast-forward push of the
+  run's own sha, after the CI matrix is green. The Render deploy-hook step
+  is gone; its repository secret is inert. A push to `main` whose CD run
+  is red or still running leaves `release` where it was, and production
+  with it. `verify` now runs only on `needs.deploy.result == 'success'`
+  and asserts `/healthz build == github.sha` itself, which retires this
+  fork's own weaker `!= 'skipped'` divergence.
+
+#### Added
+
+- **The read ledger.** dash-improve-my-llms 2.8.0's `on_document_read`
+  hands this app one row per corpus document it serves — tier, verdict,
+  bytes, verified vendor — and `AnalyticsTracker.record_read` keeps it as
+  a `reads` table in the same analytics file, same buffer, lock, flush
+  cadence and retention as `visits`. It is a second table JOINED by the
+  rollup, never summed into `human_hits` / `bot_hits` / `pages`, and the
+  client address is dropped unless `ANALYTICS_KEEP_CLIENT_IP=1`.
+- **Rollup v4.** `daily_rollup` gains `vendors[]` (one row per vendor ×
+  verified × policy, with per-tier counts and bytes, capped at 40) and
+  `reads`, present only on a day that had reads. Every v3 key is
+  byte-identical; the reporter is unchanged.
+- **`/admin/traffic`** — this host's own ledger: vendor × day, vendor →
+  tier, top paths per vendor, and the v3 headline numbers for the same
+  day. Behind the control board's exact gate, fails closed without Clerk,
+  hidden from every machine surface, plain tables and no charts. The page
+  says on its face that `verified: n/a` is a property of the vendor
+  (Anthropic publishes no IP ranges, so ClaudeBot is always n/a) and not a
+  defect on this host.
+- **`DIVERGENCES.md` now carries a posture fence** declaring what this
+  host serves, measured with a real vendor UA rather than assumed.
+
+#### Floors
+
+- `dash-improve-my-llms>=2.8.0` in `requirements.txt` (the Docker cache
+  bust), `run.py`'s boot floor, and both version assertions in `ci.yml`.
+
 ### The card X can read, and one fleet Python
 
 - **`twitter:card` is declared where a scraper can see it again.** Dash

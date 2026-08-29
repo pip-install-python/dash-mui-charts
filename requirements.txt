@@ -40,7 +40,7 @@ requests>=2.27.1              # 2plot.dev ad-network client (lib/ad_client.py)
 mistune>=3.0.0
 # markdown2dash==0.1.2        <- installed --no-deps, see above
 
-# AI/LLM Integration & SEO. 2.7.1 is the network floor as of the floor round.
+# AI/LLM Integration & SEO. 2.8.0 is the network floor as of the ledger round.
 # 2.5.1 was the Tier-B SEO standard (per-page title/image/schema type reach
 # the crawler document; the prerender no longer clobbers the browser's
 # per-page <title>); 2.6.0 adds the honesty standard on top: sitemap
@@ -68,14 +68,22 @@ mistune>=3.0.0
 # relations + Link headers, the text/plain Accept ramp, and the
 # representation digest.
 #
+# 2.8.0 is the LEDGER floor (2026-08-29): `classify()` — the one vendor
+# registry robots.txt is already rendered from, which lib/analytics_tracker
+# now delegates to instead of carrying its own UA list — and
+# `on_document_read`, which hands this app one row per corpus document
+# served (tier, verdict, bytes, verified vendor) for the ledger's `reads`
+# table and rollup v4's vendors[]. Also `Vary: User-Agent` on the
+# lane-split responses. run.py REFUSES TO BOOT below it.
+#
 # THIS LINE IS THE DOCKER CACHE BUST. The image's dependency layer re-runs
 # only when requirements.txt bytes change, so a code-only commit can never
 # pull a new release — the floor moving is the mechanism that delivers it,
 # not a side effect of describing it.
-dash-improve-my-llms[flask]>=2.7.1
-# dash-improve-my-llms[fastapi]>=2.7.1   # Dash 4.4+ FastAPI backend
-# dash-improve-my-llms[quart]>=2.7.1     # Dash 4.4+ Quart backend
-# dash-improve-my-llms[all]>=2.7.1       # all three
+dash-improve-my-llms[flask]>=2.8.0
+# dash-improve-my-llms[fastapi]>=2.8.0   # Dash 4.4+ FastAPI backend
+# dash-improve-my-llms[quart]>=2.8.0     # Dash 4.4+ Quart backend
+# dash-improve-my-llms[all]>=2.8.0       # all three
 
 # Clerk satellite auth for the HOSTED docs site only (lib/auth.py) — fully
 # dormant without the CLERK_* env keys. Not on PyPI; vendored like the

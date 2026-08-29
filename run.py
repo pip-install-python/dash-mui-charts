@@ -49,7 +49,7 @@ def _version(text: str) -> tuple:
 
 DASH_VERSION = _version(dash.__version__)
 
-# AI/LLM Integration & SEO — dash-improve-my-llms >= 2.7.1 from PyPI.
+# AI/LLM Integration & SEO — dash-improve-my-llms >= 2.8.0 from PyPI.
 # 2.5.1 was the Tier-B SEO standard: per-page `title`/`image_url`/
 # `schema_type` actually reaching the crawler document, `configure_seo`
 # (icons, social card, publisher/sameAs), /favicon.ico answered with a
@@ -74,6 +74,7 @@ from dash_improve_my_llms import (  # noqa: E402
     add_llms_routes,
     LLMSConfig,
     RobotsConfig,
+    on_document_read,
     register_page_metadata,
 )
 
@@ -90,10 +91,20 @@ from dash_improve_my_llms import (  # noqa: E402
 # `lastmod=` is additionally swallowed into **kwargs and the sitemap goes
 # back to swearing everything changed at build time.
 #
+# 2.8.0 is the ledger floor (2026-08-29, sync item 12): ONE classifier —
+# `classify()` is the same vendor registry robots.txt is rendered from, and
+# lib/analytics_tracker delegates to it instead of carrying a fourth UA list
+# that filed ClaudeBot as *search*; and the READ EVENT — `on_document_read`
+# hands this app one row per corpus document served (tier, verdict, bytes,
+# verified vendor), which the tracker keeps as the ledger's `reads` table and
+# lib/traffic_rollup folds into rollup v4's vendors[]. 2.8.1 will write the
+# resolved `policy` on every event; until then it is None and the rollup
+# groups it as "default". Nothing here waits on it.
+#
 # Moving this tuple is HALF the job: the requirements.txt line is what
 # busts the Docker dependency layer and actually delivers the release. A
 # floor raised here alone would refuse to boot the image it was shipped in.
-LLMS_PKG_FLOOR = (2, 7, 1)
+LLMS_PKG_FLOOR = (2, 8, 0)
 
 from dash_mui_charts import __version__ as _COMPONENT_VERSION  # noqa: E402
 
@@ -173,7 +184,11 @@ if LLMS_PKG_FLOOR > _version(LLMS_PKG_VERSION):
     _dependency_floor(
         f"dash-improve-my-llms {LLMS_PKG_VERSION} is below the "
         f"{'.'.join(str(n) for n in LLMS_PKG_FLOOR)} floor in "
-        "requirements.txt. Below 2.7.1 this host loses the llms.txt v2 "
+        "requirements.txt. Below 2.8.0 there is no `classify()` and no "
+        "`on_document_read`: the tracker cannot delegate bot classification "
+        "and no read row is ever kept, so the ledger's `reads` table and "
+        "rollup v4's vendors[] are empty (ImportError at boot, not a silent "
+        "degrade). Below 2.7.1 this host loses the llms.txt v2 "
         "discovery relations and Link headers, the text/plain Accept ramp "
         "and the representation digest. Below 2.7.0 every page serves TWO "
         "h1s to a generic client — the injected prerender header plus the "
@@ -449,6 +464,17 @@ ACCESS_ENABLED = _access.configure(
 )
 
 add_llms_routes(app, LLMSConfig(warn_missing_llms_doc=True))
+
+# The ledger row (sync item 12, dimll 2.8.0): the package emits one event per
+# corpus document it serves and does no I/O with it; the tracker keeps it as
+# the `reads` table next to `visits` in the SAME analytics file. Registered
+# ONCE — this suite imports run.py more than once per process and
+# `on_document_read` appends, so a marker on the callback's owner guards the
+# second import (the package also dedups an identical callable; belt and
+# braces).
+if not getattr(tracker, "_read_hook_registered", False):
+    on_document_read(tracker.record_read)
+    tracker._read_hook_registered = True
 
 # ============================================================================
 

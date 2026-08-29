@@ -6,7 +6,11 @@ services:
     # hub's hourly sweep expects both assume a paid instance.
     plan: starter
     repo: https://github.com/pip-install-python/dash-mui-charts
-    branch: main
+    # THE CERTIFIED BRANCH (sync item 13). Render deploys `release`, and only
+    # cd.yml's `deploy` job writes it (a fast-forward push of the run's sha
+    # after the matrix is green). A push to main is not a deploy. autoDeploy
+    # stays true below: Render reacting to this branch IS the mechanism.
+    branch: release
     # markdown2dash installs --no-deps: it pins gunicorn<22 against the
     # CVE-driven >=23 floor (LESSONS §8). Same pair as the Dockerfile and CI.
     buildCommand: pip install -r requirements.txt && pip install --no-deps markdown2dash==0.1.2 && pip install .

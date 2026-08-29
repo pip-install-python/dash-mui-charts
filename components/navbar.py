@@ -111,7 +111,7 @@ TOP_LINKS = [("/", "Home", "material-symbols:home-outline"),
 # arrived in the sidebar as "Other → Control Board" for every anonymous
 # reader (measured by scripts/route_parity.py the day it landed). It gets
 # its own section below instead: hidden by default, revealed server-side.
-EXCLUDED_LINKS = {"/admin/control-board"}
+EXCLUDED_LINKS = {"/admin/control-board", "/admin/traffic"}
 
 # The control board's nav entry. Rendered into BOTH the desktop navbar and
 # the mobile drawer, so its id is pattern-matched: two components may not

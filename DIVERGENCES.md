@@ -5,9 +5,12 @@ this fork and the template, with the reason. `.claude/CLAUDE.md` clause 5
 is the rule it serves — a sync must never "restore" anything written
 here, and an unrecorded difference is treated as drift.
 
-Template baseline for this pass: **1.6.29** (`5589318`). The kit
-surface and every path in the three specs' `sync-verbatim` blocks are
-at those bytes — verified by md5, 2026-08-26. Every item in the three
+Template baseline for this pass: **1.6.35** (`4c63992`) for sync items
+12 and 13; the kit surface (`.claude/CLAUDE.md`, the three skills,
+`tests/test_claude_kit.py`) is at those bytes as of 2026-08-29. The
+1.6.22-1.6.33 verbatim block landed by fan-out in `79be8c3` (PR #8).
+The 1.6.29 baseline this line used to state (`5589318`, md5-verified
+2026-08-26) held for items 1-11. Every item in the three
 sync specs (1.6.10-16, 1.6.17-21, 1.6.22-29) has had its **detect**
 run against this tree and its disposition reported. What the detects
 found and did not fix is the drift list at the foot of this file, not
@@ -76,11 +79,23 @@ item below follows from that and is deliberate:
   it, and `test_every_ci_job_is_assigned_a_lane` is what stops a new job
   from escaping both lanes unnoticed.
 
-## 2. CD refuses to verify a deploy that never ran
+## 2. CD refuses to verify a deploy that never ran — RETIRED 2026-08-29
 
-The `verify` job's condition here is
+**Subsumed by sync item 13 (a2), which is strictly stronger.** `verify`'s
+condition here is now `needs.deploy.result == 'success'` — the template's
+own shape since 1.6.35 — so this fork and the template agree again and
+there is nothing left to pay upstream. The record stays because reports
+written before today describe the divergence as live, and because the
+reasoning is what made the stronger form legible: the fork had already
+found that a SKIPPED deploy must not be verified; the ops seat then found
+on the template's run 33262495272 that a FAILED one must not be either
+(`!= 'cancelled' && != 'skipped'` still admits `failure`, and that run
+went GREEN against the previous build). Same defect class, one more branch.
+The historical text follows.
+
+The `verify` job's condition here was
 `always() && needs.deploy.result != 'cancelled' && needs.deploy.result != 'skipped'`;
-the template stops at `!= 'cancelled'`.
+the template stopped at `!= 'cancelled'`.
 
 Why: CI red → `deploy` skipped → `verify` still ran and graded the
 **previous** release against the **new** checkout's battery. The gate
@@ -191,6 +206,48 @@ call that must not exist. The contract is met by construction: an
 imported `__version__` cannot go stale the way a token can. Wire check
 run 2026-08-26 — `/llms.txt` carries no `{{` token.
 
+---
+
+## 9. This host's posture — measured, not assumed
+
+The fence below is SYNC-1.6.22-1.6.35 item 9's contract (1.6.30), ported
+here on 2026-08-29 because item 13 (c) needs the `deploy:` key and a key
+cannot be added to a fence that does not exist. Until today
+`tests/test_claude_kit.py` SKIPPED its posture pin on this repo with
+"DIVERGENCES.md has no posture fence" — that skip is what an unported
+contract item looks like, and it is now gone.
+
+Every value below was MEASURED on 2026-08-29 against
+`https://muicharts.2plot.dev`, with a real vendor UA (ClaudeBot
+`Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible;
+ClaudeBot/1.0; +claudebot@anthropic.com)`), GET not HEAD:
+
+    ClaudeBot GET /          -> 403
+    ClaudeBot GET /llms.txt  -> 200
+    ClaudeBot GET /healthz   -> 403
+
+That is the template's default robots posture this fork deliberately
+keeps (see "Checked, and NOT divergent" below: `block_ai_training=True`,
+`allow_ai_search=True`) — training crawlers are refused the browser
+document and the health surface, and the corpus stays open while the
+crawl-demand window is measuring. `healthz: full` — the live payload
+carries `app`, `backend`, `build`, `dash_version`, `geo`, `ok`, `python`
+(read on the wire at build `79be8c3`). `runtime: python` — `render.yaml`
+line 4, the one value the kit test validates against the repo itself.
+`deploy: release-branch` — sync item 13, this pass.
+
+Nothing but a probe can validate a status: re-measure and paste the probe
+whenever what this host serves changes.
+
+```yaml posture
+ai_bots: {"/": 403, "/llms.txt": 200, "/healthz": 403}
+healthz: full
+runtime: python
+deploy: release-branch
+```
+
+---
+
 ## Checked, and NOT divergent
 
 Recorded because a reader has reason to wonder:
@@ -225,10 +282,18 @@ a decision this fork made.
   `runtime: python`. The Dockerfile's only consumer is CI's
   `docker image · boot · battery` job, which is also why the missing
   `HEALTHCHECK` costs a real check (see the CI verdict entry below).
-- `.github/workflows/cd.yml`: template 1.6.13 widened the build-match
-  wait to 100 × 15s with a 30-minute job timeout, sized for the
-  cache-busted builds a floor bump forces, and made the hookless case a
-  `::warning`. This repo is still at 60 × 15s / 25 / `::notice`.
+- ~~`.github/workflows/cd.yml`: template 1.6.13 widened the build-match
+  wait to 100 × 15s with a 30-minute job timeout~~ — **TAKEN 2026-08-29**
+  with sync item 13, because the ledger round's floor bump (item 12) is
+  exactly the cache-busted build class the widening was sized for: the
+  requirements line changing IS the cache bust, and dash-email's wait
+  timed out on that class (2026-08-23) inside the old 60 × 15s window.
+  The `::notice` / `::warning` half of that entry went with the hook step
+  itself. NOT taken: the template's compare-API fast-fail on supersession
+  (its wait reads `gh api .../compare` and exits 1 when the live build is
+  a DESCENDANT of the wanted sha). This fork's wait is still the plain
+  loop — a superseded run here goes red at timeout instead of red in one
+  second, with a worse message. Next sync.
 
 Found by the 2026-08-26 detect sweep (all three specs run against this
 tree):
