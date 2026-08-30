@@ -40,6 +40,20 @@ item below follows from that and is deliberate:
   (Dash-version × Python matrix that rebuilds the wrappers from source),
   `package` (wheel build, metadata check, clean-venv import, dash-floor
   measurement), `package-python-range`.
+- **THE DOCKERFILE IS A CI ARTIFACT. IT DOES NOT SERVE PRODUCTION.**
+  `render.yaml` line 4 declares `runtime: python`, so Render's NATIVE
+  runtime builds this service from `requirements.txt` + `pip install .`
+  and never reads the image at all. The Dockerfile's only consumer is
+  CI's `docker image · boot · battery` job. Stated as its own line
+  (2026-08-30, at the ops seat's request) because it was buried in a
+  drift entry and it decides who is right in whole classes of finding:
+  the fleet's `python:3.14-slim` bump certified an interpreter nothing
+  ran until `PYTHON_VERSION` moved too (see the RESOLVED entry below),
+  and pannellum's "CHANGELOG.md missing from the image" defect cannot
+  occur here for two independent reasons — this Dockerfile is `COPY . .`
+  rather than an explicit-file COPY, AND Render never opens it. A finding
+  that reasons from the image to production is wrong on this host before
+  it is examined.
 - **`Dockerfile` runs `pip install .`** — the docs image installs the
   library from this same tree, so a demo page and the published wheel
   can never disagree about what a component does. And **no Node layer**:
@@ -101,6 +115,19 @@ Why: CI red → `deploy` skipped → `verify` still ran and graded the
 **previous** release against the **new** checkout's battery. The gate
 wave produced two red jobs from one cause, and the loud one was the
 wrong one. Template-class — worth paying upstream.
+
+**Measured on the road's first run (2026-08-30, `9928ba0`, CD run
+33334818928 conclusion success):** the push landed ~20:52:00Z and the
+wire served the new build at 20:53:35Z — 95 seconds — while
+`git ls-remote origin release` was still EMPTY at 20:53:55Z. Render built
+`main`. Item 13's note says the first promoted run cannot discriminate
+because main and release hold the same sha; that is true only when
+`release` already exists. Whenever the wire moves BEFORE the promote step
+runs, absence of the ref is proof, and this run had it. 95 seconds is also
+far less than this CI matrix takes, so production was serving the commit
+while its own run was still judging it — de0bcff's defect, on this host,
+in the deploy that ships the fix. It closes on the owner's dashboard
+Branch click, not on this commit.
 
 Lineage note, not a divergence: this repo's build-match wait is the
 origin of the fleet's. It shipped here as `commit` and the template
@@ -228,12 +255,28 @@ cannot be added to a fence that does not exist. Until today
 "DIVERGENCES.md has no posture fence" — that skip is what an unported
 contract item looks like, and it is now gone.
 
-### The wall is retired (sync item 15, 2026-08-30)
+### The wall is retired (sync item 15) — MEASURED ON THE WIRE 2026-08-30
 
-`ai_bots` below states **200/200/200**. That is what this tree serves and
-it is NOT yet what the wire serves, because nothing in this pass has been
-pushed — the owner holds the push until the ops seat's visual pass. The
-honest reading of every line here:
+`ai_bots` below is a WIRE measurement, taken at 20:54:20Z on build
+`9928ba0`, GET not HEAD, with real vendor UAs:
+
+    ClaudeBot GET /          -> 200 (14065b)
+    ClaudeBot GET /llms.txt  -> 200 (20693b)
+    ClaudeBot GET /healthz   -> 200 (213b)
+    GPTBot    GET /          -> 200 (14065b)
+    GPTBot    GET /llms.txt  -> 200 (20719b)
+    GPTBot    GET /healthz   -> 200 (213b)
+    robots.txt: NO stanza for GPTBot, ClaudeBot or CCBot — all three fall
+    under `User-agent: *`.
+
+The ops seat's independent probe agrees on all six. `/` is 14065 bytes on
+the wire and 14065 in-process — the same crawler document byte for byte,
+which is the confirmation that nothing sits in front of this host
+rewriting anything.
+
+The three readings that produced it, kept because the SHAPE of the
+evidence is the point — the wire minus in-process is what an edge rule
+would show up in, and here it is zero:
 
 **Wire, 2026-08-29** (build `79be8c3`, ClaudeBot UA, GET not HEAD):
 
@@ -256,14 +299,13 @@ honest reading of every line here:
     and scripts/network_smoke.py assert "not Disallow", never "Allow: /",
     for exactly that reason.
 
-**The wire minus in-process is ZERO on this host.** Before the flip the
-wire and the app agreed on 403/200/403, so every 403 muicharts.2plot.dev
-ever served was dash-improve-my-llms' own middleware. There is no edge
-wall in front of this host — which matches the owner's finding of
-2026-08-30 that the Cloudflare AI-bot rule is Enterprise-only on this
-plan and no zone rule exists. **The wire half of item 15's acceptance is
-therefore PENDING THE PUSH**, and must be re-measured and re-dated here
-the moment the deploy lands.
+**The wire minus in-process is ZERO on this host, before and after.**
+Before the flip the wire and the app agreed on 403/200/403; after it they
+agree on 200/200/200. Every 403 muicharts.2plot.dev ever served was
+dash-improve-my-llms' own middleware, and there is no edge wall in front
+of this host — matching the owner's finding of 2026-08-30 that the
+Cloudflare AI-bot rule is Enterprise-only on this plan and no zone rule
+exists. Item 15's acceptance is CLOSED on both halves.
 
 `healthz: full` — the live payload carries `app`, `backend`, `build`,
 `dash_version`, `geo`, `ok`, `python` (read on the wire at build

@@ -203,12 +203,21 @@ def create_header(data):
                                         size="sm",
                                         radius="sm",
                                     ),
+                                    # visibleFrom="xs": at 390px the wordmark
+                                    # plus two burgers, the avatar, the badge
+                                    # and the whole right group wrapped the
+                                    # header onto two rows (the ops seat's
+                                    # phone pass, 2026-08-30). Hidden below
+                                    # xs rather than dropped, so the node
+                                    # stays in the DOM for anything that
+                                    # addresses it by id.
                                     dmc.Text(
                                         "Dash MUI Charts",
                                         size="lg",
                                         fw=700,
                                         c="#1976d2",
                                         id="dash-docs-title",
+                                        visibleFrom="xs",
                                     ),
                                     # Version from the package (package-info.json),
                                     # the same source setup.py builds from —
@@ -223,6 +232,14 @@ def create_header(data):
                             ),
                             href="/",
                             underline=False,
+                            # The home link's accessible name comes from HERE,
+                            # not from the wordmark text: `visibleFrom` is
+                            # display:none, which removes the Text from the
+                            # accessibility tree, and the avatar is decorative.
+                            # Without this label the home link would have no
+                            # name at all on a phone — the a11y half of the
+                            # line above, and the reason the two ship together.
+                            **{"aria-label": "Dash MUI Charts — home"},
                         ),
                     ],
                     gap="md",
