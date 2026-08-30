@@ -116,18 +116,47 @@ Why: CI red → `deploy` skipped → `verify` still ran and graded the
 wave produced two red jobs from one cause, and the loud one was the
 wrong one. Template-class — worth paying upstream.
 
-**Measured on the road's first run (2026-08-30, `9928ba0`, CD run
-33334818928 conclusion success):** the push landed ~20:52:00Z and the
-wire served the new build at 20:53:35Z — 95 seconds — while
-`git ls-remote origin release` was still EMPTY at 20:53:55Z. Render built
-`main`. Item 13's note says the first promoted run cannot discriminate
-because main and release hold the same sha; that is true only when
-`release` already exists. Whenever the wire moves BEFORE the promote step
-runs, absence of the ref is proof, and this run had it. 95 seconds is also
-far less than this CI matrix takes, so production was serving the commit
-while its own run was still judging it — de0bcff's defect, on this host,
-in the deploy that ships the fix. It closes on the owner's dashboard
-Branch click, not on this commit.
+**Measured on the road's two runs, 2026-08-30, both conclusion
+success.** Timestamps from the runs themselves, not from wall-clock
+guesses:
+
+*Before the dashboard Branch click* — CD run 33334818928, head `9928ba0`,
+created 20:51:47Z, concluded 20:54:20Z (153 s):
+
+    20:53:35Z  wire serves 9928ba0            108 s into the run
+    20:53:55Z  origin/release still EMPTY     128 s into the run
+    20:54:20Z  run concludes
+
+Render built `main`: the wire had the build 45 s before the run that
+judges it concluded, and `release` did not exist at all when the wire had
+already moved, so `release` cannot have been the source. Item 13's note
+says a first promoted run cannot discriminate because both refs hold the
+same sha — true only once `release` EXISTS. When the wire moves before the
+promote step runs, absence of the ref is the proof, and this run had it.
+
+*After the click* — CD run 33335418597, head `0224479`, created 21:04:59Z,
+concluded 21:08:33Z (214 s):
+
+    21:06:42Z  origin/release 9928ba0 -> 0224479   103 s into the run
+    21:08:08Z  wire serves 0224479                 189 s into the run
+
+**The ref moved 86 seconds BEFORE the wire.** That is the road working:
+Render is watching `release`, and `release` only moves when a green matrix
+lets the promote step write it. Same host, same cache-busting build class,
+opposite ordering — the click is what changed between them.
+
+This is also the fleet's first fork-side confirmation of the
+`fetch-depth: 0` fix (template `bf1fde2`). The FIRST promote proves
+nothing about it, because creating a ref works from a shallow clone; this
+one fast-forwarded an EXISTING `release` from `9928ba0`, which is exactly
+what failed in one second on the template's run 33262495272.
+
+CORRECTION, recorded because the earlier text of this entry asserted it:
+"95 seconds is far less than this CI matrix takes" was an ASSUMPTION, not
+a measurement, and the margin is much narrower than it implied — CI here
+reaches the promote step in roughly 100 s (103 s on the run above), so the
+wire beat it by seconds, not minutes. The conclusion survives and is now
+measured rather than reasoned; the reasoning that reached it did not.
 
 Lineage note, not a divergence: this repo's build-match wait is the
 origin of the fleet's. It shipped here as `commit` and the template
@@ -311,7 +340,10 @@ exists. Item 15's acceptance is CLOSED on both halves.
 `dash_version`, `geo`, `ok`, `python` (read on the wire at build
 `79be8c3`). `runtime: python` — `render.yaml` line 4, the one value the
 kit test validates against the repo itself. `deploy: release-branch` —
-sync item 13.
+sync item 13, and CONFIRMED on the platform 2026-08-30: the owner set the
+Render service's Branch to `release`, and the run after that click moved
+`origin/release` 86 s before the wire moved (§2). The key is a statement
+about what deploys this host, and it is now a measured one.
 
 Nothing but a probe can validate a status: re-measure and paste the probe
 whenever what this host serves changes.
