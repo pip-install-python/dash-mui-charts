@@ -4,6 +4,7 @@ description: Interactive playground for nested two-ring PieCharts on Titanic sur
 endpoint: /pie-props
 package: dash_mui_charts
 category: PieChart
+order: 2
 icon: mdi:tune-variant
 ---
 

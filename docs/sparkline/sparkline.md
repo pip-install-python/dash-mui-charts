@@ -4,6 +4,7 @@ description: "SparklineChart demos: line, area and bar sparklines for KPI cards 
 endpoint: /sparkline
 package: dash_mui_charts
 category: SparklineChart
+order: 1
 icon: mdi:chart-line-variant
 ---
 

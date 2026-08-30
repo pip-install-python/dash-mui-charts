@@ -4,6 +4,7 @@ description: "TimeClock experiments: live recoloring, a liquid-glass theme, a st
 endpoint: /time-clock-lab
 package: dash_mui_charts
 category: Date & Time Pickers
+order: 2
 icon: mdi:flask-outline
 ---
 

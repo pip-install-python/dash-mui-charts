@@ -4,6 +4,7 @@ description: "PieChart demos: basic pie, donut, arc labels, styled slices, half-
 endpoint: /pie
 package: dash_mui_charts
 category: PieChart
+order: 1
 icon: mdi:chart-pie
 ---
 

@@ -4,6 +4,7 @@ description: "Pro brush range selection on LineChart: drag to select a region, o
 endpoint: /linechart-brush
 package: dash_mui_charts
 category: LineChart
+order: 3
 icon: mdi:brush
 ---
 

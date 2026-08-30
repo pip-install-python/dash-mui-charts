@@ -4,6 +4,7 @@ description: "Fundamentals of the LineChart Dash component: grid, area and stack
 endpoint: /linechart-basic
 package: dash_mui_charts
 category: LineChart
+order: 1
 icon: mdi:chart-line
 ---
 

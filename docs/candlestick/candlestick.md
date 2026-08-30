@@ -4,6 +4,7 @@ description: "CandlestickChart OHLC demos: array and dataset formats, volume ove
 endpoint: /candlestick
 package: dash_mui_charts
 category: CandlestickChart
+order: 1
 icon: mdi:chart-waterfall
 ---
 

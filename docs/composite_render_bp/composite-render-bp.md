@@ -4,6 +4,7 @@ description: "Best-practice CompositeChart rendering for stacked discharge/tempe
 endpoint: /composite-render-bp
 package: dash_mui_charts
 category: CompositeChart
+order: 3
 icon: mdi:speedometer
 ---
 

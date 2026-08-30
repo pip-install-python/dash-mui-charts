@@ -4,6 +4,7 @@ description: "TimeClock demos mirroring the MUI docs: basic usage, controlled vs
 endpoint: /time-clock
 package: dash_mui_charts
 category: Date & Time Pickers
+order: 1
 icon: mdi:clock-outline
 ---
 

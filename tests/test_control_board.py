@@ -240,81 +240,94 @@ def test_the_board_stays_out_of_both_ledgers(clean_store):
 
 
 def test_the_board_never_reaches_the_docs_navigation(app_module):
-    """The sidebar's family map is the nav authority, and an admin surface
-    is not documentation.
+    """The sidebar's sections are the nav authority, and an admin surface is
+    not documentation.
 
-    Without the EXCLUDED_LINKS line in components/navbar.py the board landed
-    in the sidebar's unsorted "Other" section — visible to every anonymous
-    reader, on every page, advertising a URL the board itself would reject.
-    scripts/route_parity.py caught it the day it landed; this pins it.
+    RESHAPED by sync item 16: this fork used to keep a hand-written
+    EXCLUDED_LINKS set in components/navbar.py, and a second copy of the same
+    rule in components/header.py's search. Both are gone — `is_nav_page`
+    excludes `/admin/*` structurally, for the sidebar and the search at once,
+    so the two can no longer disagree. The assertion is unchanged in
+    substance: no /admin href reaches the anonymous tree, and no admin
+    surface is searchable.
 
-    Both search Selects are checked too: a page that is not in the nav but
-    IS in the search dropdown is the same leak with an extra step.
+    Both search Selects are checked: a page that is not in the nav but IS in
+    the search dropdown is the same leak with an extra step.
     """
     import dash
 
     from components.header import create_search
-    from components.navbar import EXCLUDED_LINKS, create_content
+    from components.navbar import create_content, search_data
     from conftest import component_iter
-
-    assert "/admin/control-board" in EXCLUDED_LINKS
 
     registry = list(dash.page_registry.values())
     hrefs = {getattr(c, "href", None)
              for c in component_iter(create_content(registry))}
-    assert not {h for h in hrefs if h and h.startswith("/admin")} - {
-        "/admin/control-board"
-    }, "an unexpected /admin link is in the navigation"
+    assert not {h for h in hrefs if h and h.startswith("/admin")}, (
+        "an /admin link is in the anonymous navigation tree"
+    )
 
     for select in (create_search(registry),):
         values = {row["value"] for row in select.data}
         assert not any(v.startswith("/admin") for v in values), (
             "an admin surface is searchable from the header"
         )
+    assert not any(d["value"].startswith("/admin")
+                   for d in search_data(registry))
 
 
-def test_the_admin_nav_section_is_hidden_until_the_server_says_otherwise(
-    app_module,
-):
-    """The Control Board link ships `display: none` and is revealed by a
-    server-side callback against the real session — never by anything the
-    browser can set. Rendering it visible-by-default would advertise the
-    board to every reader for the instant before the callback ran.
+def test_the_admin_section_is_absent_until_the_server_fills_it(app_module,
+                                                               monkeypatch):
+    """The Admin section is not HIDDEN, it does not EXIST for a non-admin.
+
+    This fork previously rendered the section with `display: none` and
+    revealed it with a callback on `url.pathname`. Sync item 16 converges on
+    the template's (pip-docs+) shape: the startup tree carries an empty
+    placeholder Box, and a callback fills it only for a viewer the admin
+    pages would admit. Strictly better — the anonymous DOM no longer carries
+    the admin URLs at all, which `display: none` still did.
     """
+    from components.navbar import create_content, render_admin_section
     import dash
 
-    from components.navbar import ADMIN_NAV_ID, create_content
-    from conftest import component_iter
+    tree = str(create_content(dash.page_registry.values()))
+    assert "/admin/" not in tree
+    assert "navbar-admin-desktop" in tree
 
-    sections = [
-        c for c in component_iter(create_content(list(dash.page_registry.values())))
-        if isinstance(getattr(c, "id", None), dict)
-        and c.id.get("type") == ADMIN_NAV_ID
-    ]
-    assert len(sections) == 1, "expected exactly one admin nav section"
-    assert sections[0].style == {"display": "none"}, (
-        "the admin nav section is visible before the server has decided"
-    )
+    monkeypatch.delenv("ALLOW_UNGATED_ADMIN", raising=False)
+    assert render_admin_section("navbar-admin-desktop") == (None, None)
+
+    monkeypatch.setenv("ALLOW_UNGATED_ADMIN", "1")
+    desktop, mobile = render_admin_section("navbar-admin-desktop")
+    text = str(desktop)
+    assert "/admin/control-board" in text and "/admin/traffic" in text
+    assert str(mobile) == text
 
 
-def test_every_excluded_link_is_machine_hidden(app_module):
+def test_every_admin_path_is_machine_hidden(app_module):
     """The llms-2plot-dev footgun, pinned on this fork's seam.
 
-    Upstream the navbar itself marks every excluded path hidden through
-    dimll at import; here the one excluded path hides itself inside
-    pages/control_board.py. Same contract, different seam — so pin it over
-    the SET rather than the single path (the test above does that one).
-    A second entry added to EXCLUDED_LINKS would otherwise vanish from the
-    sidebar while still publishing to the sitemap, the llms.txt family and
-    the prerender: hidden from a reader, wide open to every crawler.
+    Upstream the navbar itself marked every excluded path hidden through
+    dimll at import; here each admin page hides itself inside its own module
+    (pages/control_board.py, pages/traffic.py). Same contract, different
+    seam — and since sync item 16 deleted EXCLUDED_LINKS the SET to pin is
+    the registry's own `/admin/*`, not a hand-kept list. A third admin page
+    added tomorrow would otherwise vanish from the sidebar while still
+    publishing to the sitemap, the llms.txt family and the prerender:
+    hidden from a reader, wide open to every crawler.
+
+    tests/test_excluded_links_hidden.py holds the other end (the surfaces);
+    this holds the mechanism.
     """
+    import dash
     from dash_improve_my_llms import is_hidden
 
-    from components.navbar import EXCLUDED_LINKS
-
-    not_hidden = sorted(p for p in EXCLUDED_LINKS if not is_hidden(p))
+    paths = [p["path"] for p in dash.page_registry.values()
+             if p["path"].startswith("/admin/")]
+    assert len(paths) >= 2, f"expected both admin pages, got {paths}"
+    not_hidden = sorted(p for p in paths if not is_hidden(p))
     assert not_hidden == [], (
-        f"excluded from the sidebar but NOT from the machine surfaces: "
-        f"{not_hidden} — mark_hidden() is missing wherever these pages are "
-        "registered, so they publish to every crawler while looking hidden."
+        f"in the app but NOT hidden from the machine surfaces: {not_hidden} "
+        "— mark_hidden() is missing wherever these pages are registered, so "
+        "they publish to every crawler while looking hidden."
     )

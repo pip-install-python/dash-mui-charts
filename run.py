@@ -353,13 +353,34 @@ app._base_url = BASE_URL
 
 network_directory.apply(BASE_URL)
 
-# Training crawlers (GPTBot, ClaudeBot, CCBot, …) are disallowed; the
-# user-triggered and search fetchers stay allowed — dimll >=2.3.3 buckets
-# per vendor, so this split is exact.
+# Crawler posture — THE WALL IS RETIRED (sync item 15, Round 3.4, owner
+# decision 2026-08-29). Until now this host blocked the AI-training
+# crawlers (GPTBot, ClaudeBot, CCBot, …): robots.txt said Disallow and the
+# package's middleware answered 403 on the browser document and /healthz,
+# while the corpus (/llms.txt and the tiers) stayed open — a wall that
+# decided by vendor CLASS what nobody could account for. The ledger changed
+# that: since sync item 12 every corpus read is a row (tier, vendor,
+# verified, bytes) and the hub reconciles it against the wire. A read that
+# is recorded and priceable does not need a wall; it needs a policy. So
+# training crawlers are ALLOWED by default, the same as search fetchers and
+# traditional bots, and the per-vendor knob is the tool from here on —
+# block or meter ONE vendor by name when its ledger rows justify it, never
+# the whole class:
+#
+#     vendor_policy={"bytespider": "block", "gptbot": "meter"}
+#
+# (2.3.3's per-vendor buckets still matter: they are what makes a
+# per-vendor line mean the vendor it names.)
+#
+# MEASURED HERE, in-process, before and after the flip (2026-08-30):
+# ClaudeBot and GPTBot on `/`, `/llms.txt`, `/healthz` went 403/200/403 ->
+# 200/200/200, and the wire before the flip was the same 403/200/403 — so
+# every 403 this host ever served was the app's own middleware. There is no
+# edge wall in front of muicharts.2plot.dev.
 app._robots_config = RobotsConfig(
-    block_ai_training=True,
-    allow_ai_search=True,
-    allow_traditional=True,
+    block_ai_training=False,      # training crawlers allowed; the ledger records every read
+    allow_ai_search=True,         # Allow Claude-User/-SearchBot, ChatGPT-User, ...
+    allow_traditional=True,       # Allow Googlebot, Bingbot, etc.
     crawl_delay=10,
     disallowed_paths=[],
 )

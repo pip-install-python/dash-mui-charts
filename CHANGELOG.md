@@ -7,6 +7,82 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### The wall comes down, and navigation comes from one registry
+
+Sync items 15 and 16 from the template's SYNC-1.6.22-1.6.38, ported into
+this fork's shape alongside items 12 and 13 below.
+
+#### Changed
+
+- **Training crawlers are allowed.** `block_ai_training=False`: GPTBot,
+  ClaudeBot, CCBot and the rest now get the browser document, `/healthz`
+  and no `Disallow` in robots.txt, the same as every other bot. The wall
+  decided by vendor CLASS what nobody could account for; since the ledger
+  round every corpus read is a row and the hub reconciles it against the
+  wire, so a read is recorded and priceable. The tool from here is
+  per-vendor — `vendor_policy={"<key>": "block"|"meter"}` for one vendor
+  whose rows justify it — never the class. Measured in-process before and
+  after: ClaudeBot and GPTBot on `/`, `/llms.txt`, `/healthz` went
+  403/200/403 → 200/200/200. The wire before the flip was that same
+  403/200/403, so every 403 this host ever served was the app's own
+  middleware; there is no edge rule in front of it.
+- **The sidebar is built from the page registry, not a hand-written map.**
+  `components/navbar.py`'s FAMILIES list is gone; each page declares
+  `category:` and `order:` in its own frontmatter and
+  `lib/constants.CATEGORY_ORDER` names the section order. The rendered
+  sidebar is unchanged — same families, same sequence — but a new page now
+  arrives in the right section by describing itself, instead of by
+  remembering to edit a second file. `components/navbar.py`,
+  `components/footer.py`, `pages/changelog.py` and `lib/aside.py` are
+  byte-identical to the template's now.
+- **Admin pages are hidden from navigation, not merely blocked.** The
+  Admin section used to ship in every anonymous page's DOM with
+  `display: none` and a callback to reveal it. It is now an empty
+  placeholder that a server-side callback FILLS for an admin — so the
+  admin URLs are not in the anonymous document at all. `/admin/traffic`
+  gains its first nav link in the same change.
+- **`/changelog` is a Timeline.** Parsed from `CHANGELOG.md` at render
+  time, one card per section, and the file itself (minus its duplicate H1)
+  is the page's `LLMS_DOC` — which also retires the "1 page have no
+  LLMS_DOC source" warning this app printed at every boot.
+- **The top bar's GitHub icon, JSON-LD `sameAs` and the Resources block
+  read one constant** (`GITHUB_URL`). The "More Dash components" link to
+  `pip-install-python.com` is retired — the domain has been out of the
+  network directory since the retire sweep and this header was still
+  sending readers there.
+- **Resources is third-party only**: `dmc` and MUI X Charts. The Dash
+  Community forum, the `2plot.dev` link and the "Pip Components" section
+  are gone; the network is listed once, in the new **Other Apps** menu in
+  the top bar, built from `lib/network_directory.PRIMARY` so it cannot be
+  listed twice or drift from the registry.
+
+#### Added
+
+- **A footer** — © year, the GitHub profile, Discord and YouTube, every
+  icon with an accessible name.
+- **`/admin/traffic` gains a People section** with the day's human hits,
+  visitors, sessions and median session, above the crawler tables and
+  labelled: humans never enter the read ledger, so "(unidentified)" there
+  is the UA-less crawler lane and never a person. Its day picker is a
+  `dmc.DatePickerInput` bounded by the ledger's own first and last day.
+- **Accessibility**: the code blocks' copy button and every icon-only
+  control in `components/` carry names; `tests/test_nav_contract.py` greps
+  for the next one that does not.
+
+#### Fixed
+
+- Code blocks inside a list item, blockquote or timeline row could widen
+  the whole document at phone width. One stylesheet rule for every
+  container a code block can sit in, never a per-page override.
+- The mobile drawer is `keepMounted` — the hamburger no longer depends on
+  a mount-on-open transition, and the Admin callback's mobile target
+  exists on every load.
+- The right-hand aside is collapsed on pages that render no `.. toc::`
+  (`/changelog`, home, the admin pages), which were rendering in the docs
+  column beside an empty gutter.
+- The Other Apps dropdown gets a solid themed background; it was
+  near-transparent in dark mode.
+
 ### The ledger row, and a branch only CI can write
 
 Sync items 12 and 13 from the template's SYNC-1.6.22-1.6.35, ported into

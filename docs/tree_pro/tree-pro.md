@@ -4,6 +4,7 @@ description: "TreeViewPro (MUI X Pro): drag-and-drop reordering, reorderable sub
 endpoint: /tree-pro
 package: dash_mui_charts
 category: TreeView
+order: 8
 icon: mdi:diamond-outline
 ---
 

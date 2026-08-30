@@ -4,6 +4,7 @@ description: "Interactive Heatmap props playground (MUI X Pro): live controls fo
 endpoint: /heatmap-props
 package: dash_mui_charts
 category: Heatmap
+order: 2
 icon: mdi:tune-vertical
 ---
 

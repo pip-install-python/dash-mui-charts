@@ -4,6 +4,7 @@ description: "TreeView disabled items: disabledItems blocking selection, checkbo
 endpoint: /tree-disabled
 package: dash_mui_charts
 category: TreeView
+order: 7
 icon: mdi:cancel
 ---
 

@@ -4,6 +4,7 @@ description: "MUI X Pro features on LineChart: zoom and pan with a slider, zoom 
 endpoint: /linechart-pro
 package: dash_mui_charts
 category: LineChart
+order: 2
 icon: mdi:diamond-outline
 ---
 

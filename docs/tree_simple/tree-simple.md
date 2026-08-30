@@ -4,6 +4,7 @@ description: "SimpleTreeView examples: itemId/label items, checkbox multi-select
 endpoint: /tree-simple
 package: dash_mui_charts
 category: TreeView
+order: 2
 icon: mdi:view-list-outline
 ---
 

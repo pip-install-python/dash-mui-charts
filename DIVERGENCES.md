@@ -131,22 +131,33 @@ visitor-tracking hook is Flask-specific). Consequences:
 A sync of anything in `lib/health.py` or the route-registration seam
 lands Flask-lane only.
 
-## 5. Excluded links hide through a different seam
+## 5. Excluded links hide through a different seam — RETIRED 2026-08-30
 
-Template: `components/navbar.excluded_links` plus a navbar-time
-`mark_hidden` loop, pinned by `tests/test_excluded_links_hidden.py`.
+**Both seams are gone, on both sides.** Sync item 16 deleted the
+template's `excluded_links` AND this fork's `EXCLUDED_LINKS`: the sidebar
+and the header search now both ask `components.navbar.is_nav_page`, which
+excludes `/admin/*` and hidden-tier pages structurally, so the two halves
+that used to be kept in step by hand are one rule. This fork's hidden
+`ADMIN_NAV_ID` section (rendered with `display: none` and revealed by a
+callback on `url.pathname`) converged on the template's pip-docs+ shape in
+the same change — a placeholder `Box` the callback FILLS, which is
+strictly better: the anonymous DOM no longer carries the admin URLs at
+all, where `display: none` still did. `components/navbar.py` is now
+byte-identical to the template's.
 
-Here: `EXCLUDED_LINKS` (one entry, `/admin/control-board`) filters the
-sidebar, and the path hides itself from the machine surfaces at its own
-import (`pages/control_board.py` → `mark_hidden`). This fork also has a
-hidden Admin nav section revealed by a server-side callback
-(`ADMIN_NAV_ID`), which the template does not have at all.
+What survives, because it is still this fork's shape: each admin page
+calls `mark_hidden` at its OWN import (`pages/control_board.py`,
+`pages/traffic.py`) rather than the navbar doing it in a loop. The pin
+moved with the seam — `tests/test_control_board.py::
+test_every_admin_path_is_machine_hidden` now reads the registry's
+`/admin/*` instead of a hand-kept set, and `tests/test_excluded_links_hidden.py`
+(new here, ported) holds the other end: the surfaces. That is the
+llms-2plot-dev footgun — hidden from the sidebar, still published to every
+crawler — closed on a rule instead of a list. The historical text follows.
 
-Same contract, different seam — so it is pinned over the **set** rather
-than the one path:
-`tests/test_control_board.py::test_every_excluded_link_is_machine_hidden`.
-That is the llms-2plot-dev footgun (hidden from the sidebar, still
-published to every crawler), closed on this fork's shape.
+Template was: `components/navbar.excluded_links` plus a navbar-time
+`mark_hidden` loop. Here: `EXCLUDED_LINKS` filtered the sidebar and the
+path hid itself at its own import.
 
 ## 6. Table scroll containment needs two selectors
 
@@ -217,30 +228,54 @@ cannot be added to a fence that does not exist. Until today
 "DIVERGENCES.md has no posture fence" — that skip is what an unported
 contract item looks like, and it is now gone.
 
-Every value below was MEASURED on 2026-08-29 against
-`https://muicharts.2plot.dev`, with a real vendor UA (ClaudeBot
-`Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible;
-ClaudeBot/1.0; +claudebot@anthropic.com)`), GET not HEAD:
+### The wall is retired (sync item 15, 2026-08-30)
+
+`ai_bots` below states **200/200/200**. That is what this tree serves and
+it is NOT yet what the wire serves, because nothing in this pass has been
+pushed — the owner holds the push until the ops seat's visual pass. The
+honest reading of every line here:
+
+**Wire, 2026-08-29** (build `79be8c3`, ClaudeBot UA, GET not HEAD):
 
     ClaudeBot GET /          -> 403
     ClaudeBot GET /llms.txt  -> 200
     ClaudeBot GET /healthz   -> 403
 
-That is the template's default robots posture this fork deliberately
-keeps (see "Checked, and NOT divergent" below: `block_ai_training=True`,
-`allow_ai_search=True`) — training crawlers are refused the browser
-document and the health surface, and the corpus stays open while the
-crawl-demand window is measuring. `healthz: full` — the live payload
-carries `app`, `backend`, `build`, `dash_version`, `geo`, `ok`, `python`
-(read on the wire at build `79be8c3`). `runtime: python` — `render.yaml`
-line 4, the one value the kit test validates against the repo itself.
-`deploy: release-branch` — sync item 13, this pass.
+**In-process, 2026-08-30, BEFORE the flip** (`run.py` at
+`block_ai_training=True`; the app's own answer, no proxy in front):
+
+    ClaudeBot / 403 (318b) · /llms.txt 200 · /healthz 403 (318b)
+    GPTBot    / 403 (318b) · /llms.txt 200 · /healthz 403 (318b)
+
+**In-process, 2026-08-30, AFTER the flip** (`block_ai_training=False`):
+
+    ClaudeBot / 200 (14065b) · /llms.txt 200 · /healthz 200
+    GPTBot    / 200 (14065b) · /llms.txt 200 · /healthz 200
+    robots.txt: NO training stanza at all — GPTBot, ClaudeBot and CCBot
+    fall under `User-agent: *`. The fingerprints in scripts/smoke_live.py
+    and scripts/network_smoke.py assert "not Disallow", never "Allow: /",
+    for exactly that reason.
+
+**The wire minus in-process is ZERO on this host.** Before the flip the
+wire and the app agreed on 403/200/403, so every 403 muicharts.2plot.dev
+ever served was dash-improve-my-llms' own middleware. There is no edge
+wall in front of this host — which matches the owner's finding of
+2026-08-30 that the Cloudflare AI-bot rule is Enterprise-only on this
+plan and no zone rule exists. **The wire half of item 15's acceptance is
+therefore PENDING THE PUSH**, and must be re-measured and re-dated here
+the moment the deploy lands.
+
+`healthz: full` — the live payload carries `app`, `backend`, `build`,
+`dash_version`, `geo`, `ok`, `python` (read on the wire at build
+`79be8c3`). `runtime: python` — `render.yaml` line 4, the one value the
+kit test validates against the repo itself. `deploy: release-branch` —
+sync item 13.
 
 Nothing but a probe can validate a status: re-measure and paste the probe
 whenever what this host serves changes.
 
 ```yaml posture
-ai_bots: {"/": 403, "/llms.txt": 200, "/healthz": 403}
+ai_bots: {"/": 200, "/llms.txt": 200, "/healthz": 200}
 healthz: full
 runtime: python
 deploy: release-branch
@@ -248,15 +283,80 @@ deploy: release-branch
 
 ---
 
+## 10. The navigation contract, ported where the tree differs (item 16)
+
+`components/navbar.py`, `components/footer.py`, `pages/changelog.py` and
+`lib/aside.py` are byte-identical to the template at 1.6.39 — this fork
+holds NO content in them, which is the evidence sync item 16 asks for
+before it reclasses them as cargo. Four places the tree required a port
+rather than a copy, each deliberate:
+
+- **`/api` is a markdown page here, not a generated one.** The template
+  adds `pages/api.py` + `lib/api_reference.py`, which read the installed
+  package's `metadata.json`. This fork already had `/api`: a markdown doc
+  whose `.. kwargs::` directive builds one table per component — prop,
+  type, default, description — from that same metadata, wrapped in the
+  site's own prose and carrying its own `.. toc::`. Contract 7 is met by
+  behaviour; installing the generator would replace a richer page with a
+  thinner one, drop the prose, and orphan the CSS divergence in §6 (the
+  `m2d-block-kwargs` selector exists because of these very tables).
+  `API_PACKAGES = ["dash_mui_charts"]` IS set — it drives the header's
+  version badge and the sidebar's API section, and
+  `tests/test_nav_contract.py::test_the_api_page_documents_the_declared_package`
+  pins the behaviour on this fork's page. Consequence: `has_aside("/api")`
+  is True here and False on the template.
+- **`SAME_AS` keeps the PyPI project.** The template ships
+  `SAME_AS = [GITHUB_URL]` because it publishes no package. This host
+  documents one, so the sameAs loop names GitHub *and*
+  `pypi.org/project/dash-mui-charts/` — three properties pointing at each
+  other is the strongest statement of which URL is this package's
+  canonical docs home. The contract's pin (`GITHUB_URL in SAME_AS`) holds.
+- **`pages/home.py` stays hand-written Dash.** The template's home is 56
+  lines of markdown2dash over `pages/home.md`; this fork's is a 371-line
+  Dash layout with a component-card grid, and §8 above records why (it
+  renders the version badge from an import rather than a substituted
+  token). Contract 9 applied to it as written — `dcc.Link` became
+  `dmc.Anchor` — and `lib/directives/headings.py`'s new inline-image
+  renderer is `not-applicable`: it exists so the template's home can carry
+  `![alt](src)` through markdown2dash, and no page here goes through that
+  path.
+- **`components/header.py` keeps this fork's identity**: the
+  `header-avatar` id (a contract with the random favicon swapper in
+  `templates/index.html` — rename both or neither), the "Dash MUI Charts"
+  wordmark in `#1976d2`, and the version badge fed by
+  `dash_mui_charts.__version__` that `tests/test_version_parity.py` pins
+  five ways. What the contract changed: the search reads
+  `navbar.search_data`, the Other Apps menu arrived, the GitHub icon reads
+  `GITHUB_URL`, and the "More Dash components" link to
+  `pip-install-python.com` is RETIRED — the domain has been out of
+  `lib/network_directory.py` since the retire sweep and the header was
+  still sending readers there.
+
+Also retired in this pass, without replacement: the sidebar's "Pip
+Components" section (`2plot.dev/pip`) and its `2plot.dev` and Dash
+Community (`community.plotly.com`) Resources links. The network is listed
+once now, in the top bar's Other Apps menu; the forum was the owner's
+explicit removal.
+
+---
+
 ## Checked, and NOT divergent
 
 Recorded because a reader has reason to wonder:
 
-- **Robots posture**: `block_ai_training=True`, `allow_ai_search=True` —
-  the template default, deliberately unchanged. Training crawlers
-  (GPTBot, ClaudeBot, CCBot) are disallowed; AI *search* agents are
-  allowed. The sibling fork that opens AI training is the divergent one;
-  this host does not share that position.
+- **Robots posture**: `block_ai_training=False`, `allow_ai_search=True`,
+  `allow_traditional=True` — the template default, deliberately
+  unchanged, and the default INVERTED fleet-wide on 2026-08-30 (sync item
+  15). Training crawlers are allowed now. The reasoning is the ledger:
+  since sync item 12 every corpus read is a row (tier, vendor, verified,
+  bytes) and the hub reconciles it against the wire, so a read is recorded
+  and priceable and does not need a wall — the tool from here on is
+  per-vendor `vendor_policy={"<key>": "block"|"meter"}` for ONE vendor
+  whose rows justify it, never the whole class. This entry read "training
+  crawlers are disallowed … the sibling fork that opens AI training is the
+  divergent one" until that day; it is kept, corrected, rather than
+  deleted, because reports written before it describe the old posture as
+  this host's position.
 - **`/healthz` payload**: template 1.6.10 verbatim apart from the
   `[muicharts]` log prefix — `app`, `build`, `geo` and nothing extra. A
   missing `geo` block here means the Docker cache trap fired, with no

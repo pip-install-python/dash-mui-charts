@@ -3,14 +3,27 @@
 Before the boilerplate migration, this site's navigation WAS a
 SimpleTreeView — the component navigating its own docs. The shell now uses
 the network-standard navbar, so the dogfooding story lives here instead:
-the tree below is built from `components/navbar.py`'s real family map (it
-can never drift from the actual nav), and selecting a leaf genuinely
+the tree below is built from the SAME source the real sidebar reads, so it
+can never drift from the actual nav, and selecting a leaf genuinely
 navigates, exactly as the old sidebar did.
+
+That source moved with sync item 16. The sidebar used to come from a
+hand-written FAMILIES map in `components/navbar.py`; it now comes from each
+page's own frontmatter (`category:` + `order:`) ordered by
+`lib.constants.CATEGORY_ORDER`. This module reads the frontmatter directly
+rather than the page registry, because a docs demo is executed WHILE the
+registry is still being built — the file on disk is the one source that is
+complete at any moment.
 """
+import re
+from pathlib import Path
+
 from dash import Input, Output, clientside_callback, html
 
 from dash_mui_charts import SimpleTreeView
-from components.navbar import FAMILIES, TOP_LINKS
+from lib.constants import CATEGORY_ORDER
+
+_DOCS = Path(__file__).resolve().parent.parent
 
 _ICON_BY_FAMILY = {
     "SparklineChart": "Timeline",
@@ -24,22 +37,52 @@ _ICON_BY_FAMILY = {
     "CompositeChart": "Layers",
     "TreeView": "AccountTree",
     "Date & Time Pickers": "Schedule",
+    "Reference": "MenuBook",
 }
 
+
+def _frontmatter(md):
+    out = {}
+    for key in ("name", "endpoint", "category", "order"):
+        m = re.search(rf"^{key}:\s*(.+?)\s*$", md, re.M)
+        if m:
+            out[key] = m.group(1)
+    return out
+
+
+def _families():
+    """``[(category, [(endpoint, name), ...]), ...]`` in sidebar order."""
+    by_cat = {}
+    for f in sorted(_DOCS.glob("**/*.md")):
+        fm = _frontmatter(f.read_text())
+        if not fm.get("endpoint") or not fm.get("category"):
+            continue
+        try:
+            order = int(fm.get("order", 1000))
+        except ValueError:
+            order = 1000
+        by_cat.setdefault(fm["category"], []).append(
+            (order, fm["name"], fm["endpoint"]))
+    known = [c for c in CATEGORY_ORDER if c in by_cat]
+    extra = sorted(c for c in by_cat if c not in CATEGORY_ORDER)
+    return [(c, [(e, n) for _o, n, e in sorted(by_cat[c])])
+            for c in known + extra]
+
+
 items = [
-    {"itemId": path, "label": label, "icon": "Home" if path == "/" else "History"}
-    for path, label, _icon in TOP_LINKS
+    {"itemId": "/", "label": "Home", "icon": "Home"},
+    {"itemId": "/changelog", "label": "Changelog", "icon": "History"},
 ] + [
     {
         "itemId": f"group-{family}",
         "label": family,
         "icon": _ICON_BY_FAMILY.get(family, "Folder"),
         "children": [
-            {"itemId": path, "label": label, "icon": "PlayArrow"}
-            for path, label, _icon in entries
+            {"itemId": path, "label": name, "icon": "PlayArrow"}
+            for path, name in entries
         ],
     }
-    for family, entries in FAMILIES
+    for family, entries in _families()
 ]
 
 component = html.Div(

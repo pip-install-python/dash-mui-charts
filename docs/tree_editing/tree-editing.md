@@ -4,6 +4,7 @@ description: "Inline TreeView label editing: isItemEditable for all items, edita
 endpoint: /tree-editing
 package: dash_mui_charts
 category: TreeView
+order: 5
 icon: mdi:pencil-outline
 ---
 

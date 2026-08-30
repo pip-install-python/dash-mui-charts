@@ -162,20 +162,47 @@ def test_the_url_location_contract(app):
     assert getattr(locations[0], "refresh", None) == "callback-nav"
 
 
-def test_the_navbar_families_cover_the_registry_exactly(page_paths):
-    """The family map in components/navbar.py is the nav order authority
-    (what page_order is to the boilerplate). Every mapped path must be a
-    registered route (or a sidebar click 404s), and every registered route
-    must be mapped (or it renders in the unsorted "Other" section)."""
-    from components.navbar import FAMILIES, TOP_LINKS
+def test_every_nav_page_declares_a_known_category(app_module, page_paths):
+    """The sidebar's order authority, after sync item 16 moved it.
 
-    mapped = {p for _t, entries in FAMILIES for p, _label, _icon in entries}
-    mapped |= {p for p, _label, _icon in TOP_LINKS}
-    dead = sorted(mapped - set(page_paths))
-    assert dead == [], f"nav entries with no registered route: {dead}"
-    unmapped = sorted(set(page_paths) - mapped)
-    assert unmapped == [], (
-        f"registered routes missing from the navbar family map: {unmapped}"
+    It used to be a hand-written FAMILIES map in components/navbar.py, and
+    this test held it to the registry from both ends. The map is gone: the
+    sections come from each page's own `category:` + `order:` frontmatter,
+    ordered by lib.constants.CATEGORY_ORDER. The failure mode moved with it
+    — a page can no longer be "missing from the map", it can only declare a
+    category nobody ordered, which lands it in a trailing alphabetical
+    section (visible, but not where its author meant). Both ends still:
+    every crawlable page reaches exactly one section, and every category
+    the pages use is one CATEGORY_ORDER names.
+    """
+    import dash
+
+    from components.navbar import sections_for
+    from lib.constants import CATEGORY_ORDER
+
+    data = list(dash.page_registry.values())
+    sections = sections_for(data)
+
+    placed = [e["path"] for _title, entries in sections for e in entries]
+    assert len(placed) == len(set(placed)), "a page is in two sections"
+
+    # /api and /changelog are their own sidebar sections by contract, and
+    # `/` is the Home link — the rest of the crawlable pages are sections.
+    expected = sorted(set(page_paths) - {"/", "/changelog", "/api"})
+    assert sorted(placed) == expected, (
+        f"pages missing from the sidebar: "
+        f"{sorted(set(expected) - set(placed))}; unexpected: "
+        f"{sorted(set(placed) - set(expected))}"
+    )
+
+    unordered = sorted({t for t, _e in sections} - set(CATEGORY_ORDER))
+    assert unordered == [], (
+        f"categories no CATEGORY_ORDER entry names: {unordered} — the "
+        "pages render in a trailing alphabetical section instead of where "
+        "their author meant. Add them to lib/constants.CATEGORY_ORDER."
+    )
+    assert "Documentation" not in {t for t, _e in sections}, (
+        "a docs page has no `category:` in its frontmatter"
     )
 
 

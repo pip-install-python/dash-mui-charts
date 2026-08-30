@@ -4,6 +4,7 @@ description: Every prop of all 13 dash-mui-charts components — generated from 
 endpoint: /api
 package: dash_mui_charts
 category: Reference
+order: 1
 icon: mdi:api
 ---
 

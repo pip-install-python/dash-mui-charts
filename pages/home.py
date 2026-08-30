@@ -4,7 +4,7 @@ Home Page - Dash MUI Charts Examples
 
 import dash
 import dash_mantine_components as dmc
-from dash import html, dcc
+from dash import html
 from dash_mui_charts import __version__ as _PKG_VERSION
 
 from lib.constants import OG_IMAGE_URL, SITE_BRAND, SITE_DESCRIPTION
@@ -241,7 +241,10 @@ COMPONENTS = [
 
 
 def make_component_card(comp):
-    return dcc.Link(
+    # dmc.Anchor, not dcc.Link (sync item 16 contract 9): never dcc where DMC
+    # has the component. Only Location, Store, Interval, Upload and Graph have
+    # no equivalent and stay.
+    return dmc.Anchor(
         dmc.Paper(
             [
                 dmc.Group(
@@ -267,6 +270,7 @@ def make_component_card(comp):
             className="home-card",
         ),
         href=comp["link"],
+        underline=False,
         style={"textDecoration": "none"},
     )
 

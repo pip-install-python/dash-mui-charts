@@ -4,6 +4,7 @@ description: "CompositeChart v1.2.0 demos: the axis tooltip fix, the highlighted
 endpoint: /composite-v120
 package: dash_mui_charts
 category: CompositeChart
+order: 2
 icon: mdi:layers-plus
 ---
 

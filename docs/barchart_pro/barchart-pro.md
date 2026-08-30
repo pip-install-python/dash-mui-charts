@@ -4,6 +4,7 @@ description: "BarChart Pro features with a MUI X license key: zoom with slider, 
 endpoint: /barchart-pro
 package: dash_mui_charts
 category: BarChart
+order: 6
 icon: mdi:diamond-outline
 ---
 

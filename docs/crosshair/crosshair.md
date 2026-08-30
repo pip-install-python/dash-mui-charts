@@ -4,6 +4,7 @@ description: "CompositeChart crosshair tracking with live coordinate readout, ri
 endpoint: /crosshair
 package: dash_mui_charts
 category: LineChart
+order: 9
 icon: mdi:crosshairs-gps
 ---
 

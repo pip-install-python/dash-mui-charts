@@ -91,10 +91,99 @@ OG_IMAGE_ALT = SITE_BRAND
 # project_urls and the GitHub README pointing back at muicharts.2plot.dev —
 # is a per-package checklist item, not code.
 PUBLISHER = "Pip Install Python LLC"
+
+# ONE constant for the repository. The header's GitHub icon, the Resources
+# block and JSON-LD `sameAs` all read it (sync item 16): a fork sets it once.
+# muischeduler's icon pointed at the profile while its sameAs named the repo —
+# two truths, one of them wrong.
+GITHUB_URL = "https://github.com/pip-install-python/dash-mui-charts"
+
+# The owner's PROFILE — the footer's GitHub link. The repo is the top bar's
+# icon; the design (2026-08-30) puts one in each place, not both in both.
+GITHUB_PROFILE_URL = "https://github.com/pip-install-python"
+
+# DIVERGENCE from the template's `SAME_AS = [GITHUB_URL]`: this host documents
+# a published package, so the PyPI project belongs in the sameAs loop. Three
+# properties pointing at each other is the strongest available statement of
+# which URL is dash-mui-charts' canonical documentation home; the template
+# ships no package and has nothing to add.
 SAME_AS = [
-    "https://github.com/pip-install-python/dash-mui-charts",
+    GITHUB_URL,
     "https://pypi.org/project/dash-mui-charts/",
 ]
+
+# ---------------------------------------------------------------------------
+# Navigation contract (sync item 16) — the parts of the sidebar and top bar
+# that are IDENTICAL on every host come from template code and the constants
+# below; this app's own sections come from each page's frontmatter. A fork
+# edits THIS block and its docs' frontmatter, never components/navbar.py.
+# ---------------------------------------------------------------------------
+
+# This app's own sections, in sidebar order — the component FAMILIES that used
+# to live as a hand-written map in components/navbar.py. The names are kept
+# exactly (the freedom the design grants each app); what moved is where the
+# order is stated: `category:` + `order:` in every page's frontmatter, read
+# from the page registry. A category not listed here still renders, after
+# these, alphabetically — a new family is visible-but-unsorted, never lost,
+# which is what the old map's "Other" section did.
+#
+# "Reference" is deliberately ABSENT: its only page is /api, and the contract
+# gives /api its own section below the app's own (navbar._has_api_page).
+CATEGORY_ORDER = [
+    "SparklineChart",
+    "PieChart",
+    "BarChart",
+    "Heatmap",
+    "ScatterChart",
+    "LineChart",
+    "CandlestickChart",
+    "LiveTradingChart",
+    "CompositeChart",
+    "TreeView",
+    "Date & Time Pickers",
+]
+
+# Network-wide community links — identical on every host.
+DISCORD_URL = "https://discord.gg/e5s5uHWUHH"
+YOUTUBE_URL = "https://www.youtube.com/@2plotai"
+YOUTUBE_SUBSCRIBE_URL = YOUTUBE_URL + "?sub_confirmation=1"
+DMC_URL = "https://www.dash-mantine-components.com/"
+
+# The upstream project this component library wraps. Rendered as the last
+# Resources link. dash-mui-charts is a Dash wrapper over MUI X Charts, so the
+# upstream API reference is the page a reader of these docs most often needs
+# next — it was already in this fork's Resources section and is now stated
+# once, here, in the shape the contract reads.
+UPSTREAM = {
+    "name": "MUI X Charts",
+    "url": "https://mui.com/x/react-charts/",
+    "icon": "simple-icons:mui",
+}
+
+# Dash component packages the /api page documents, and the source of the
+# header's version badge (the first entry's __version__). This host documents
+# exactly one package, and the docs image installs it from this same tree, so
+# the badge cannot disagree with what a demo page renders.
+API_PACKAGES: list = ["dash_mui_charts"]
+
+
+def resources() -> list:
+    """The sidebar's Resources section: THIRD-PARTY ONLY (owner, 2026-08-30).
+
+    `dmc` and the upstream project, and nothing else. The owner's own links
+    (repo, Discord, YouTube) live in the top bar and the footer, never here.
+    Removed from this fork's previous list in the same move: the Dash
+    Community forum (community.plotly.com — the owner asked for it out) and
+    2plot.dev (the network is the top bar's Other Apps menu now, listed once).
+    """
+    items = [
+        {"label": "dmc", "url": DMC_URL, "icon": "ic:baseline-design-services"},
+    ]
+    if UPSTREAM:
+        items.append({"label": UPSTREAM["name"], "url": UPSTREAM["url"],
+                      "icon": UPSTREAM.get("icon", "mdi:open-in-new")})
+    return items
+
 
 # ---------------------------------------------------------------------------
 # The network's internal-traffic contract

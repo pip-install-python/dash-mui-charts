@@ -4,6 +4,7 @@ description: "TreeView selection modes: single, multi-select, checkbox selection
 endpoint: /tree-selection
 package: dash_mui_charts
 category: TreeView
+order: 3
 icon: mdi:check-box-outline
 ---
 

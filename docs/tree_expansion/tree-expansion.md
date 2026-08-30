@@ -4,6 +4,7 @@ description: "TreeView expansion control: content vs iconContainer triggers, con
 endpoint: /tree-expansion
 package: dash_mui_charts
 category: TreeView
+order: 4
 icon: mdi:unfold-more-horizontal
 ---
 

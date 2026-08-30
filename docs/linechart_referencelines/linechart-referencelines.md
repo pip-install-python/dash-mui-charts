@@ -4,6 +4,7 @@ description: "Horizontal and vertical reference lines on LineChart: targets, thr
 endpoint: /linechart-referencelines
 package: dash_mui_charts
 category: LineChart
+order: 4
 icon: mdi:chart-timeline-variant
 ---
 

@@ -4,6 +4,7 @@ description: "CompositeChart demos layering scatter and line series on one surfa
 endpoint: /composite
 package: dash_mui_charts
 category: CompositeChart
+order: 1
 icon: mdi:layers-outline
 ---
 

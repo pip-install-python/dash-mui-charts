@@ -4,6 +4,7 @@ description: "LineChart Pro zoom slider with a miniature full-dataset preview, z
 endpoint: /linechart-zoom-preview
 package: dash_mui_charts
 category: LineChart
+order: 7
 icon: mdi:magnify-plus-outline
 ---
 

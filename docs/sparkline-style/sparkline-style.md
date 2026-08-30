@@ -4,6 +4,7 @@ description: "Interactive SparklineChart styling playground: tweak color, plot t
 endpoint: /sparkline-style
 package: dash_mui_charts
 category: SparklineChart
+order: 2
 icon: mdi:palette-outline
 ---
 

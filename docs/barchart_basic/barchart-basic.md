@@ -4,6 +4,7 @@ description: "BarChart basics for Dash: multi-series vertical, stacked and horiz
 endpoint: /barchart-basic
 package: dash_mui_charts
 category: BarChart
+order: 1
 icon: mdi:chart-bar
 ---
 

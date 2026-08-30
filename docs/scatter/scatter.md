@@ -4,6 +4,7 @@ description: "ScatterChart demos: two-series scatter, custom marker sizes, z-axi
 endpoint: /scatter
 package: dash_mui_charts
 category: ScatterChart
+order: 1
 icon: mdi:chart-scatter-plot
 ---
 

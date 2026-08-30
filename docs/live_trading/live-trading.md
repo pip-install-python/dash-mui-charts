@@ -4,6 +4,7 @@ description: LiveTradingChart real-time candlestick simulation with OHLCV data, 
 endpoint: /live-trading
 package: dash_mui_charts
 category: LiveTradingChart
+order: 1
 icon: mdi:trending-up
 ---
 

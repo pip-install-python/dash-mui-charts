@@ -4,6 +4,7 @@ description: "BarChart stacking options: standard, normalized (expand) and diver
 endpoint: /barchart-stacking
 package: dash_mui_charts
 category: BarChart
+order: 3
 icon: mdi:chart-bar-stacked
 ---
 

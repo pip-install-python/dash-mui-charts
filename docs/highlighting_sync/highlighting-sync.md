@@ -4,6 +4,7 @@ description: "Synchronized highlighting across charts: hover one to highlight ma
 endpoint: /highlighting-sync
 package: dash_mui_charts
 category: LineChart
+order: 6
 icon: mdi:sync
 ---
 

@@ -4,6 +4,7 @@ description: "BarChart interaction in Dash: bar and axis click callbacks, series
 endpoint: /barchart-interaction
 package: dash_mui_charts
 category: BarChart
+order: 4
 icon: mdi:cursor-default-click-outline
 ---
 

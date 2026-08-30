@@ -4,6 +4,7 @@ description: "Controlled highlighting on LineChart: set highlightedItem and high
 endpoint: /linechart-highlighting
 package: dash_mui_charts
 category: LineChart
+order: 5
 icon: mdi:lightbulb-on-outline
 ---
 

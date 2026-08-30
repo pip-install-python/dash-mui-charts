@@ -4,6 +4,7 @@ description: "Best practices for LineChart tooltips, reference lines, ticks and 
 endpoint: /linechart-tick-hover
 package: dash_mui_charts
 category: LineChart
+order: 8
 icon: mdi:gesture-tap
 ---
 

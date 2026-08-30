@@ -334,9 +334,11 @@ def main(base: str) -> int:
     )
     # The artifact fingerprint. pip metadata is invisible from outside, so
     # these robots.txt pairs are how a live host is proven to run the intended
-    # dash-improve-my-llms: 2.3.2 allowed OAI-SearchBot; 2.3.3 moved ClaudeBot
-    # (the training crawler) to Disallow while allowing the user-triggered and
-    # search fetchers Claude-User / Claude-SearchBot.
+    # dash-improve-my-llms: 2.3.2 allowed OAI-SearchBot; 2.3.3 split the
+    # per-vendor buckets, so Claude-User / Claude-SearchBot (user-triggered
+    # and search) are named separately from ClaudeBot (training). Those three
+    # lines are ARTIFACT evidence and stay pinned to Allow; the training
+    # crawlers moved to the posture check below.
     robots_lines = robots.splitlines()
 
     def robots_rule(agent: str) -> str:
@@ -349,7 +351,6 @@ def main(base: str) -> int:
 
     for agent, expected, since in (
         ("OAI-SearchBot", "Allow: /", "2.3.2"),
-        ("ClaudeBot", "Disallow: /", "2.3.3"),
         ("Claude-User", "Allow: /", "2.3.3"),
         ("Claude-SearchBot", "Allow: /", "2.3.3"),
     ):
@@ -358,6 +359,19 @@ def main(base: str) -> int:
             f"/robots.txt {agent} -> {expected.split(':')[0]} ({since} artifact fingerprint)",
             got == expected,
             f"got {got}: this host runs a pre-{since} artifact",
+        )
+    # POSTURE, not artifact (sync item 15, Round 3.4): the training wall is
+    # retired, and with block_ai_training=False the package emits no training
+    # stanza at all — absent or Allow are both the allow shape, so assert the
+    # absence of Disallow rather than the presence of Allow. A host whose
+    # posture fence declares ai_bots 403 by design inverts this line in its
+    # own copy and records the divergence.
+    for agent in ("ClaudeBot", "GPTBot"):
+        got = robots_rule(agent)
+        check(
+            f"/robots.txt {agent} not Disallowed (item 15 posture)",
+            got != "Disallow: /",
+            f"got {got}: this host still walls training crawlers (sync item 15)",
         )
 
     status, sitemap, _ = fetch(f"{base}/sitemap.xml")

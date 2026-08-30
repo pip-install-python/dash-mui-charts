@@ -4,6 +4,7 @@ description: "BarChart reference lines and styling: target and threshold markers
 endpoint: /barchart-reference
 package: dash_mui_charts
 category: BarChart
+order: 5
 icon: mdi:chart-bar
 ---
 

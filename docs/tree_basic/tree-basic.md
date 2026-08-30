@@ -4,6 +4,7 @@ description: "TreeView basics for Dash: data-driven items, defaultExpandedItems,
 endpoint: /tree-basic
 package: dash_mui_charts
 category: TreeView
+order: 1
 icon: mdi:file-tree
 ---
 

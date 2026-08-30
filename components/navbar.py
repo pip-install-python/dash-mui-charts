@@ -1,189 +1,30 @@
+"""The sidebar — one registry, the app's identity from frontmatter (1.6.38).
+
+Nothing in this file is edited by a fork. The sections come from each
+page's frontmatter (`category:` + `order:`) in the order of
+`lib.constants.CATEGORY_ORDER`; Resources from `lib.constants.resources()`;
+the Admin section from a callback that returns nothing unless the viewer is
+an admin (the pip-docs+ pattern); the network lives in the top bar's Other
+Apps menu (components/header.py), never here. The survey of 2026-08-30 found
+the previous hand-written `page_order` / `excluded_links` copied and edited
+twelve different ways across the fleet — this is the replacement.
+
+Contract order: Home · Changelog → the app's sections → API (when
+generated) → Resources → Admin (owner-only; absent otherwise).
+"""
+from __future__ import annotations
+
+from collections import defaultdict
+
 import dash_mantine_components as dmc
-from dash import ALL, Input, Output, callback, ctx, html
+from dash import Input, Output, callback
 from dash_iconify import DashIconify
 
-from lib.constants import HEADER_HEIGHT
+from lib.constants import CATEGORY_ORDER, HEADER_HEIGHT, resources
 
-# ---------------------------------------------------------------------------
-# Family-grouped navigation.
-#
-# The boilerplate's navbar is a flat "Documentation" section ordered by a
-# page_order list — right for pannellum's 11 pages, unreadable for this
-# site's 40. This fork groups by component family instead, in the same
-# visual language (create_nav_section). The map below is the nav ORDER
-# AUTHORITY (what page_order is to the boilerplate): a page missing from it
-# still renders, in a trailing "Other" section, so a newly added page is
-# visible-but-unsorted rather than lost.
-#
-# Each entry is (path, label, icon). LABELS ARE SHORT ON PURPOSE — the
-# section header already says the family, so the row says only what varies
-# ("Examples", "Pro Features"), exactly as the old SimpleTreeView sidebar
-# did. Registry names stay long-form ("Bar Chart - Basic") for the search
-# Select and page titles; rendering them here read as "BARCHART / Bar
-# Chart - Basic" — the redundancy this map exists to remove.
-#
-# Paths, not names, key the map: names are frontmatter/register_page
-# strings that migration phases may polish, while the endpoints are
-# contractually stable (BOILERPLATE_MIGRATION_PLAN.md decision 1).
-# ---------------------------------------------------------------------------
-FAMILIES = [
-    ("SparklineChart", [
-        ("/sparkline", "Examples", "material-symbols:play-arrow"),
-        ("/sparkline-style", "Styling", "material-symbols:palette-outline"),
-        ("/sparkline-style-advanced", "Advanced",
-         "material-symbols:auto-graph"),
-    ]),
-    ("PieChart", [
-        ("/pie", "Examples", "material-symbols:play-arrow"),
-        ("/pie-props", "Props Explorer", "material-symbols:tune"),
-    ]),
-    ("BarChart", [
-        ("/barchart-basic", "Basic", "material-symbols:play-arrow"),
-        ("/barchart-dataset", "Dataset Mode",
-         "material-symbols:table-chart-outline"),
-        ("/barchart-stacking", "Stacking",
-         "material-symbols:stacked-bar-chart"),
-        ("/barchart-interaction", "Interaction",
-         "material-symbols:touch-app-outline"),
-        ("/barchart-reference", "Reference Lines", "material-symbols:rule"),
-        ("/barchart-pro", "Pro Features", "material-symbols:diamond-outline"),
-    ]),
-    ("Heatmap", [
-        ("/heatmap", "Examples", "material-symbols:play-arrow"),
-        ("/heatmap-props", "Props Explorer", "material-symbols:tune"),
-    ]),
-    ("ScatterChart", [
-        ("/scatter", "Examples", "material-symbols:play-arrow"),
-    ]),
-    ("LineChart", [
-        ("/linechart-basic", "Basics", "material-symbols:play-arrow"),
-        ("/linechart-pro", "Pro Features",
-         "material-symbols:diamond-outline"),
-        ("/linechart-brush", "Brush Selection", "material-symbols:brush"),
-        ("/linechart-referencelines", "Reference Lines",
-         "material-symbols:rule"),
-        ("/linechart-highlighting", "Highlighting",
-         "material-symbols:highlight"),
-        ("/highlighting-sync", "Highlighting Sync", "material-symbols:sync"),
-        ("/linechart-zoom-preview", "Zoom Preview",
-         "material-symbols:zoom-in"),
-        ("/linechart-tick-hover", "Ticks & Hover",
-         "material-symbols:mouse-outline"),
-        ("/crosshair", "Crosshair", "material-symbols:point-scan"),
-    ]),
-    ("CandlestickChart", [
-        ("/candlestick", "OHLC Charts", "material-symbols:candlestick-chart-outline"),
-    ]),
-    ("LiveTradingChart", [
-        ("/live-trading", "Examples", "material-symbols:trending-up"),
-    ]),
-    ("CompositeChart", [
-        ("/composite", "Examples", "material-symbols:play-arrow"),
-        ("/composite-v120", "v1.2.1", "material-symbols:star-outline"),
-        ("/composite-render-bp", "Render BP", "material-symbols:speed-outline"),
-    ]),
-    ("TreeView", [
-        ("/tree-basic", "Basic", "material-symbols:play-arrow"),
-        ("/tree-simple", "Simple", "material-symbols:view-list-outline"),
-        ("/tree-selection", "Selection",
-         "material-symbols:check-box-outline"),
-        ("/tree-expansion", "Expansion", "material-symbols:unfold-more"),
-        ("/tree-editing", "Editing", "material-symbols:edit-outline"),
-        ("/tree-icons", "Icons", "material-symbols:palette-outline"),
-        ("/tree-disabled", "Disabled", "material-symbols:block"),
-        ("/tree-pro", "Pro", "material-symbols:diamond-outline"),
-    ]),
-    ("Date & Time Pickers", [
-        ("/time-clock", "Time Clock", "material-symbols:schedule-outline"),
-        ("/time-clock-lab", "TimeClock Lab", "material-symbols:science-outline"),
-    ]),
-    ("Reference", [
-        ("/api", "API Reference", "material-symbols:api"),
-    ]),
-]
-
-# Rendered with Home at the top rather than inside a family.
-TOP_LINKS = [("/", "Home", "material-symbols:home-outline"),
-             ("/changelog", "Changelog", "material-symbols:history")]
-
-# Admin surfaces are not documentation, so they never join the family
-# sections OR the "Other" safety net — without this line the control board
-# arrived in the sidebar as "Other → Control Board" for every anonymous
-# reader (measured by scripts/route_parity.py the day it landed). It gets
-# its own section below instead: hidden by default, revealed server-side.
-EXCLUDED_LINKS = {"/admin/control-board", "/admin/traffic"}
-
-# The control board's nav entry. Rendered into BOTH the desktop navbar and
-# the mobile drawer, so its id is pattern-matched: two components may not
-# share a plain string id, and one callback has to reach both.
-ADMIN_NAV_ID = "admin-nav-section"
-_HIDDEN = {"display": "none"}
-
-
-def create_admin_section(loc):
-    """The owner-only Control Board link, hidden until the server says otherwise.
-
-    Hidden by DEFAULT and revealed by `_reveal_admin_nav` below rather than
-    by anything the browser knows: any client-side store lives in the page
-    and a determined visitor can put whatever they like in it, so the
-    decision is made server-side against the real session.
-
-    Even so, this link is COSMETIC. /admin/control-board gates itself twice
-    — pages/control_board.layout() re-checks on every render and the
-    mutating callback re-checks before it will change anything — and it
-    fails CLOSED when Clerk is unavailable. Revealing this link grants
-    nothing; hiding it stops the board being advertised to readers it would
-    only reject. Ported from leaflet.2plot.dev, the gate pilot.
-    """
-    return html.Div(
-        id={"type": ADMIN_NAV_ID, "loc": loc},
-        style=_HIDDEN,
-        children=dmc.Stack(
-            [
-                dmc.Divider(mt="md", mb="sm"),
-                create_nav_section(
-                    "Admin",
-                    [
-                        create_nav_link(
-                            "material-symbols:tune",
-                            "Control Board",
-                            "/admin/control-board",
-                        )
-                    ],
-                ),
-            ],
-            gap="xs",
-        ),
-    )
-
-
-@callback(
-    Output({"type": ADMIN_NAV_ID, "loc": ALL}, "style"),
-    Input("url", "pathname"),
-    # The app sets `prevent_initial_callbacks=True` globally, so without this
-    # the section would stay hidden until the visitor navigated somewhere —
-    # including for the owner, on the page they signed in to.
-    prevent_initial_call=False,
-)
-def _reveal_admin_nav(_pathname):
-    """Show the Admin section only to accounts the control board would admit.
-
-    Deliberately the SAME predicate the page itself uses (`is_admin_user`,
-    or `admin_access_open` when Clerk is off) rather than a bare comparison
-    against one address: a nav that used a narrower rule would hide the
-    board from an ADMIN_EMAILS account that can still open it by URL, and a
-    link that lies about access is worse than no link.
-
-    `url.pathname` is the trigger rather than any Clerk store because that
-    store only exists when Clerk is running, and a callback with a missing
-    Input never fires — which would silently disable this everywhere Clerk
-    is off. Satellite sign-in round-trips through Clerk's hosted pages and
-    returns as a full page load, so this re-evaluates at the right moment.
-    """
-    from lib.auth import admin_access_open, clerk_enabled, is_admin_user
-
-    visible = is_admin_user() if clerk_enabled() else admin_access_open()
-    return [{} if visible else _HIDDEN] * len(ctx.outputs_list)
+ADMIN_PREFIX = "/admin/"
+UNCATEGORISED = "Documentation"
+DEFAULT_ICON = "fluent:document-24-regular"
 
 
 def create_nav_link(icon, text, href, external=False):
@@ -221,110 +62,160 @@ def create_nav_section(title, links):
     )
 
 
-def create_content(data, loc="navbar"):
-    """Navbar content: Home/Changelog, one section per component family,
-    then the network's standing sections and the hidden Admin section.
+# ----------------------------------------------------------------- pages --
 
-    ``loc`` distinguishes the desktop navbar from the mobile drawer — both
-    render this tree, so the Admin section's id has to be pattern-matched
-    rather than a plain string.
-    """
-    by_path = {entry["path"]: entry for entry in data
-               if entry["path"] not in EXCLUDED_LINKS}
 
-    placed = set()
-    sections = []
+def is_admin_path(path: str) -> bool:
+    return (path or "").startswith(ADMIN_PREFIX)
 
-    top = []
-    for path, label, icon in TOP_LINKS:
-        if path in by_path:
-            top.append(create_nav_link(icon, label, path))
-            placed.add(path)
 
-    for family, entries in FAMILIES:
-        links = [create_nav_link(icon, label, path)
-                 for path, label, icon in entries if path in by_path]
-        placed.update(path for path, _l, _i in entries if path in by_path)
-        if links:
-            sections.append(create_nav_section(family, links))
+def is_nav_page(entry) -> bool:
+    """A page the sidebar and search may list: not Home, not /admin/*, not
+    the 404, not a hidden-tier page, and registered from a real path."""
+    path = entry.get("path") or ""
+    if not path.startswith("/") or path == "/" or is_admin_path(path):
+        return False
+    if entry.get("name") in ("Not found 404",) or path in ("/404", "/changelog", "/api"):
+        return False
+    try:
+        from lib import page_tiers
 
-    # The safety net: registered pages the map does not know yet — shown
-    # under their full registry name, unsorted, so they are visible rather
-    # than lost.
-    leftovers = [
-        create_nav_link(by_path[p].get("icon") or "fluent:document-24-regular",
-                        by_path[p]["name"], p)
-        for p in sorted(by_path) if p not in placed
-    ]
-    if leftovers:
-        sections.append(create_nav_section("Other", leftovers))
+        if page_tiers.local_tier(path) == "hidden":
+            return False
+    except Exception:  # pragma: no cover - tiers optional on a fork
+        pass
+    return True
+
+
+def _sort_key(entry):
+    order = entry.get("order")
+    try:
+        order = int(order) if order is not None else 1000
+    except (TypeError, ValueError):
+        order = 1000
+    return (order, entry.get("name") or "")
+
+
+def sections_for(data) -> list[tuple[str, list]]:
+    """``[(section title, [registry entries]), ...]`` in contract order:
+    CATEGORY_ORDER first, then any other category alphabetically; pages
+    within a section by `order` then name. Uncategorised pages fall into
+    one "Documentation" section, last of the app's own."""
+    by_cat: dict[str, list] = defaultdict(list)
+    for entry in data:
+        if not is_nav_page(entry):
+            continue
+        by_cat[entry.get("category") or UNCATEGORISED].append(entry)
+    known = [c for c in CATEGORY_ORDER if c in by_cat]
+    extra = sorted(c for c in by_cat if c not in CATEGORY_ORDER and c != UNCATEGORISED)
+    tail = [UNCATEGORISED] if UNCATEGORISED in by_cat else []
+    return [(c, sorted(by_cat[c], key=_sort_key)) for c in known + extra + tail]
+
+
+def admin_pages(data) -> list:
+    return sorted((e for e in data if is_admin_path(e.get("path") or "")),
+                  key=lambda e: e.get("name") or "")
+
+
+def _page_link(entry):
+    return create_nav_link(entry.get("icon") or DEFAULT_ICON, entry["name"], entry["path"])
+
+
+def _has_api_page(data) -> bool:
+    return any((e.get("path") or "") == "/api" for e in data)
+
+
+def _has_changelog(data) -> bool:
+    return any((e.get("path") or "") == "/changelog" for e in data)
+
+
+# ----------------------------------------------------------------- tree --
+
+
+def create_content(data, variant="desktop"):
+    """The sidebar tree. `variant` names the Admin placeholder so the
+    desktop navbar and the mobile drawer each get their own callback
+    target (a duplicate id would be a Dash error)."""
+    data = list(data)
+    blocks = [create_nav_link("fluent:home-24-regular", "Home", "/")]
+    if _has_changelog(data):
+        blocks.append(create_nav_link("tabler:history", "Changelog", "/changelog"))
+
+    for title, entries in sections_for(data):
+        blocks.append(dmc.Divider(mt="xs", mb="xs"))
+        blocks.append(create_nav_section(title, [_page_link(e) for e in entries]))
+
+    if _has_api_page(data):
+        blocks.append(dmc.Divider(mt="md", mb="sm"))
+        blocks.append(create_nav_section(
+            "API", [create_nav_link("mdi:api", "Component props", "/api")]))
+
+    blocks.append(dmc.Divider(mt="md", mb="sm"))
+    blocks.append(create_nav_section(
+        "Resources",
+        [create_nav_link(r["icon"], r["label"], r["url"], external=True)
+         for r in resources()],
+    ))
+
+    # Admin: filled per request by the callback below; an empty div for
+    # everyone else — the section does not exist for them, it is not hidden.
+    blocks.append(dmc.Box(id=f"navbar-admin-{variant}"))
 
     return dmc.ScrollArea(
         offsetScrollbars=True,
         type="scroll",
         style={"height": "100%"},
-        children=dmc.Stack(
-            [
-                *top,
-                dmc.Divider(mt="xs", mb="xs"),
-                *sections,
-
-                # Pip Components Section — the network's own package index,
-                # the catalogue a reader of these docs most likely wants next.
-                dmc.Divider(mt="md", mb="sm"),
-                create_nav_section(
-                    "Pip Components",
-                    [
-                        create_nav_link(
-                            "solar:box-bold-duotone",
-                            "Browse components",
-                            "https://2plot.dev/pip",
-                            external=True,
-                        ),
-                    ],
-                ),
-
-                dmc.Divider(mt="md", mb="sm"),
-                create_nav_section(
-                    "Resources",
-                    [
-                        create_nav_link(
-                            "simple-icons:mui",
-                            "MUI X Charts",
-                            "https://mui.com/x/react-charts/",
-                            external=True,
-                        ),
-                        create_nav_link(
-                            "fluent-mdl2:forum",
-                            "Dash Community",
-                            "https://community.plotly.com/",
-                            external=True,
-                        ),
-                        create_nav_link(
-                            "ic:baseline-design-services",
-                            "DMC",
-                            "https://www.dash-mantine-components.com/",
-                            external=True,
-                        ),
-                        # 2plot.dev, NOT pip-install-python.com — the package
-                        # index is the network host, and that domain is not a
-                        # link this app publishes.
-                        create_nav_link(
-                            "mdi:package-variant-closed",
-                            "2plot.dev",
-                            "https://2plot.dev",
-                            external=True,
-                        ),
-                    ],
-                ),
-
-                # Last, and invisible to everyone the board would reject.
-                create_admin_section(loc),
-            ],
-            gap="xs",
-            p="md",
-        ),
+        children=dmc.Stack(blocks, gap="xs", p="md"),
     )
+
+
+def admin_section(data):
+    """The Admin section for a viewer who may see it, or None."""
+    pages = admin_pages(data)
+    if not pages:
+        return None
+    return dmc.Stack(
+        [dmc.Divider(mt="md", mb="sm"),
+         create_nav_section("Admin", [_page_link(e) for e in pages])],
+        gap="xs",
+    )
+
+
+@callback(
+    Output("navbar-admin-desktop", "children"),
+    Output("navbar-admin-mobile", "children"),
+    Input("navbar-admin-desktop", "id"),
+)
+def render_admin_section(_):
+    """Fill the Admin section per page load.
+
+    The navbar tree is built once at startup with no request context, so
+    the per-user check runs here, inside a request. Non-admins get empty
+    divs. Without Clerk (local work) the section shows only when
+    ALLOW_UNGATED_ADMIN=1 — the same gate the admin pages themselves use.
+    """
+    import dash
+
+    from lib.auth import admin_access_open, clerk_enabled, is_admin_user
+
+    if clerk_enabled():
+        if not is_admin_user():
+            return None, None
+    elif not admin_access_open():
+        return None, None
+    data = list(dash.page_registry.values())
+    return admin_section(data), admin_section(data)
+
+
+# --------------------------------------------------------------- search --
+
+
+def search_data(data) -> list:
+    """Search entries: the pages the sidebar lists, and nothing else —
+    never /admin/*, never a hidden-tier page (an anonymous visitor could
+    otherwise enumerate them from the dropdown)."""
+    return [{"label": e["name"], "value": e["path"]}
+            for e in sorted((e for e in data if is_nav_page(e)), key=_sort_key)]
 
 
 def create_mobile_content(data):
@@ -344,21 +235,16 @@ def create_mobile_content(data):
                     size="md",
                     nothingFoundMessage="No pages found",
                     leftSection=DashIconify(icon="mingcute:search-3-line", width=18),
-                    data=[
-                        {"label": component["name"], "value": component["path"]}
-                        for component in data
-                        if component["name"] not in ["Home", "Not found 404"]
-                        and component["path"] not in EXCLUDED_LINKS
-                    ],
+                    data=search_data(data),
                     comboboxProps={"zIndex": 2000},
+                    **{"aria-label": "Search pages"},
                 ),
                 p="md",
                 pb="xs",
             ),
             dmc.Divider(),
             # flex/minHeight give the ScrollArea a definite box to scroll inside.
-            dmc.Box(create_content(data, loc="drawer"),
-                    style={"flex": 1, "minHeight": 0}),
+            dmc.Box(create_content(data, variant="mobile"), style={"flex": 1, "minHeight": 0}),
         ],
         gap=0,
         className="mobile-nav",
@@ -369,7 +255,7 @@ def create_mobile_content(data):
 def create_navbar(data):
     """Create the main application navbar"""
     return dmc.AppShellNavbar(
-        children=create_content(data, loc="navbar"),
+        children=create_content(data, variant="desktop"),
         style={"borderRight": "1px solid var(--mantine-color-gray-3)"}
     )
 
@@ -386,6 +272,12 @@ def create_navbar_drawer(data):
         overlayProps={"opacity": 0.55, "blur": 3},
         zIndex=1500,
         withCloseButton=False,  # removes the whole Drawer header row
+        # Always in the DOM (1.6.39): the mobile nav must not depend on a
+        # mount-on-open transition — measured on the wire, `opened` flipped
+        # true while the content never mounted in an unfocused window — and
+        # the Admin callback's mobile target (#navbar-admin-mobile) has to
+        # exist on every page load, not only after the first open.
+        keepMounted=True,
         size="300px",
         padding=0,
         children=create_mobile_content(data),
@@ -412,9 +304,3 @@ def create_navbar_drawer(data):
             "body": {"flex": 1, "minHeight": 0, "height": "100%", "padding": 0},
         },
     )
-
-# The mobile drawer search → navigate callback used to live here. It now sits
-# in components/header.py beside the drawer's own open/close callback, where
-# the template keeps it — one file owns the drawer's behaviour, and two copies
-# of a clientside callback writing the same Output is a bug waiting for the
-# next person who edits only one of them.

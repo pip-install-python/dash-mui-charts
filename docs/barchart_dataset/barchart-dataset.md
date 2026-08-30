@@ -4,6 +4,7 @@ description: "BarChart dataset mode: pass table-format data once and reference c
 endpoint: /barchart-dataset
 package: dash_mui_charts
 category: BarChart
+order: 2
 icon: mdi:table
 ---
 

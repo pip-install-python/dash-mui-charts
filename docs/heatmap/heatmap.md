@@ -4,6 +4,7 @@ description: "Heatmap (MUI X Pro) demos: activity grids, a correlation matrix, c
 endpoint: /heatmap
 package: dash_mui_charts
 category: Heatmap
+order: 1
 icon: mdi:grid
 ---
 

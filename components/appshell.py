@@ -1,6 +1,8 @@
 import dash_mantine_components as dmc
-from dash import Output, Input, clientside_callback, dcc, page_container, State
+from dash import Output, Input, callback, clientside_callback, dcc, page_container, State
 
+from components.footer import FOOTER_HEIGHT, create_footer
+from lib.aside import aside_config
 from components.header import create_header
 from components.navbar import create_navbar, create_navbar_drawer
 from lib.constants import PRIMARY_COLOR, HEADER_HEIGHT
@@ -188,22 +190,23 @@ def create_appshell(data):
                         # visible viewport and the page starts life scrolled.
                         # HEADER_HEIGHT rather than 70 — the header, the
                         # navbar drawer offset and this all read one number.
-                        style={"minHeight": f"calc(100dvh - {HEADER_HEIGHT}px)"}
+                        style={"minHeight": f"calc(100dvh - {HEADER_HEIGHT + FOOTER_HEIGHT}px)"}
                     ),
+                    create_footer(),
                 ],
                 id="m2d-appshell",
                 header={"height": HEADER_HEIGHT},
+                footer={"height": FOOTER_HEIGHT},
                 padding="xl",
                 navbar={
                     "width": 280,
                     "breakpoint": "md",  # Collapse on medium screens and below
                     "collapsed": {"mobile": True},
                 },
-                aside={
-                    "width": 280,
-                    "breakpoint": "xl",
-                    "collapsed": {"desktop": False, "mobile": True},
-                },
+                # Collapsed wherever the page renders no TOC — the
+                # callback at the foot of this file re-evaluates it per
+                # navigation (lib/aside.py).
+                aside=aside_config("/"),
                 withBorder=True,
             ),
         ],
@@ -314,3 +317,14 @@ clientside_callback(
     Input("url", "pathname"),
     State("desktop-navbar-collapsed", "data"),
 )
+
+
+@callback(
+    Output("m2d-appshell", "aside"),
+    Input("url", "pathname"),
+)
+def _collapse_aside_without_toc(pathname):
+    """Full width for pages that render no aside (sync item 16's visual
+    pass): /changelog, /api, home, the admin pages. The docs pages keep
+    their TOC column."""
+    return aside_config(pathname)

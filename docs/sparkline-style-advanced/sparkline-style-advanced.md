@@ -4,6 +4,7 @@ description: "Advanced SparklineChart demo: a liquid glass (glassmorphism) stock
 endpoint: /sparkline-style-advanced
 package: dash_mui_charts
 category: SparklineChart
+order: 3
 icon: mdi:blur
 ---
 

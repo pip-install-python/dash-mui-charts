@@ -4,6 +4,7 @@ description: "TreeView appearance: custom expand/collapse/end icons, itemChildre
 endpoint: /tree-icons
 package: dash_mui_charts
 category: TreeView
+order: 6
 icon: mdi:palette-outline
 ---
 
