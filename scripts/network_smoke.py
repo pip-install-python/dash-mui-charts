@@ -81,7 +81,22 @@ try:
     from lib.constants import INTERNAL_UA as _INTERNAL_UA
 except Exception:  # running outside a repo checkout — keep the token intact
     _INTERNAL_UA = "2plot-internal/1.0 (+https://2plot.ai/docs/satellite-analytics)"
-UA = _INTERNAL_UA + " network-smoke"
+# THE DEFAULT UA NAMES THE BROWSER LANE (sync item 17, found by
+# muischeduler). At dash-improve-my-llms >= 2.8 a User-Agent with no browser
+# ENGINE token is crawler-lane, so this battery's old default — the bare
+# internal token plus " network-smoke" — made every default-UA check read the
+# prerendered crawler document. A manifest-link or og:image check then goes
+# red in CD's verify job the moment a floor moves, saying nothing about the
+# lane it actually read. The internal token stays IN the string, AFTER the
+# engine token: INTERNAL_UA_TOKEN is a substring match, so the far side's
+# internal-traffic exclusion still holds and this battery is still counted
+# nowhere. CRAWLER_UA is the other lane and is deliberately untouched.
+BROWSER_UA = (
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 "
+    + _INTERNAL_UA + " network-smoke"
+)
+UA = BROWSER_UA
 CRAWLER_UA = "Mozilla/5.0 (compatible; Googlebot/2.1) " + _INTERNAL_UA
 
 # The body dash-improve-my-llms serves when a page has no prose registered.

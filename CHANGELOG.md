@@ -71,6 +71,18 @@ this fork's shape alongside items 12 and 13 below.
 
 #### Fixed
 
+- **Both live batteries were reading the wrong document.**
+  `scripts/network_smoke.py`'s default User-Agent was the bare internal
+  token, which at dash-improve-my-llms 2.8 has no browser engine token and
+  is therefore crawler-lane — so every default-UA check read the
+  prerendered crawler document rather than the page a visitor gets. It now
+  leads with a real Chrome/AppleWebKit token and keeps the internal token
+  after it (a substring match, so this host's traffic is still counted
+  nowhere on the far side); `CRAWLER_UA` is the other lane and is
+  unchanged. `scripts/smoke_live.py` already had that shape and now has a
+  test holding it there. The same rule reaches `scripts/route_parity.py`,
+  whose in-process sweep feeds a CI gate.
+
 - Code blocks inside a list item, blockquote or timeline row could widen
   the whole document at phone width. One stylesheet rule for every
   container a code block can sit in, never a per-page override.

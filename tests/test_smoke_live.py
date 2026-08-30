@@ -525,3 +525,67 @@ def test_a_broken_local_surface_still_fails_the_deploy(
     monkeypatch.setattr(smoke, "fetch", no_sitemap)
     assert wired.main(BASE) > 0
     assert "FAIL  /sitemap.xml responds 200" in capsys.readouterr().out
+
+
+def test_both_live_tools_default_to_the_browser_lane_and_stay_internal():
+    """Sync item 17 (muischeduler's finding), pinned for BOTH tools.
+
+    At dash-improve-my-llms >= 2.8 a User-Agent with no browser ENGINE token
+    is crawler-lane, so a battery whose default UA was the bare internal token
+    read the prerendered crawler document on every default-UA check — and a
+    browser-document assertion (a manifest link, an og:image count) then goes
+    red in CD's verify job saying nothing about the lane it actually read.
+    Both defaults name the browser lane FIRST and keep the internal token
+    after it (a substring match), so the far side's internal-traffic exclusion
+    still drops them; each tool's CRAWLER_UA stays the other lane.
+
+    FORK SHAPE: the item names tests/test_network_smoke.py, a module this repo
+    does not carry — the rest of the template's copy pins its Dockerfile port
+    and other fork-divergent things. The pin lives here instead, with the
+    fork's other live-tool contracts, and covers scripts/smoke_live.py too:
+    that file already had the right shape and nothing held it there.
+    """
+    from dash_improve_my_llms import classify
+
+    from lib.constants import INTERNAL_UA_TOKEN
+    from scripts import network_smoke as ns
+    from scripts import smoke_live as sl
+
+    assert classify(ns.UA)["lane"] == "browser"
+    assert ns.UA.startswith("Mozilla/5.0") and "AppleWebKit" in ns.UA
+    assert INTERNAL_UA_TOKEN in ns.UA and ns.UA.endswith("network-smoke")
+    assert classify(ns.CRAWLER_UA)["lane"] == "crawler"
+    assert INTERNAL_UA_TOKEN in ns.CRAWLER_UA
+
+    assert classify(sl.BROWSER_UA)["lane"] == "browser"
+    assert INTERNAL_UA_TOKEN in sl.BROWSER_UA
+    assert classify(sl.CRAWLER_UA)["lane"] == "crawler"
+    assert INTERNAL_UA_TOKEN in sl.CRAWLER_UA
+
+
+def test_the_in_process_route_sweep_sends_the_same_shape():
+    """The CI-gate half. scripts/route_parity.py drives every route through
+    the Flask test client, and scripts/smoke_test.py grades "every route
+    serves 200" on it — a CI gate. With no UA at all that sweep went
+    crawler-lane the day 2.8.0 could resolve and reported the mark_hidden
+    admin pages as 404s, with nothing about the app changed. Same rule,
+    same reasons, in-process: engine token first, internal token after, so
+    the sweep is a browser AND is dropped from the visitor ledger.
+    """
+    import re
+
+    from dash_improve_my_llms import classify
+
+    from lib.constants import INTERNAL_UA_TOKEN
+
+    src = (REPO_ROOT / "scripts" / "route_parity.py").read_text()
+    assert "client.get(path, headers=hdrs)" in src, (
+        "the route sweep stopped sending headers — it is crawler-lane again"
+    )
+    literal = re.search(r'BROWSER_UA = \(\n(.*?)\n    \)', src, re.S).group(1)
+    assert "AppleWebKit" in literal and "INTERNAL_UA" in literal
+    ua = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+          "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 "
+          "2plot-internal/1.0 (+https://2plot.ai/docs/satellite-analytics) route-parity")
+    assert classify(ua)["lane"] == "browser"
+    assert INTERNAL_UA_TOKEN in ua

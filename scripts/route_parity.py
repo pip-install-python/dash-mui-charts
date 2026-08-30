@@ -167,9 +167,17 @@ def measure() -> dict:
     # tests/test_proxy_scheme.py; this repo's shape of it is here, because
     # scripts/smoke_test.py's "every route serves 200" runs on this function
     # and IS a CI gate. Mirrors tests/conftest.py's BROWSER_UA on purpose.
+    #
+    # The internal token rides ALONG (sync item 17): it is a substring match,
+    # so the engine token still puts this on the browser lane while
+    # lib/analytics_tracker drops the request at write time — a CI sweep of
+    # every route must not land in the visitor ledger as 43 desktop humans.
+    from lib.constants import INTERNAL_UA
+
     BROWSER_UA = (
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
-        "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 "
+        + INTERNAL_UA + " route-parity"
     )
     hdrs = {"User-Agent": BROWSER_UA}
     statuses = {}
