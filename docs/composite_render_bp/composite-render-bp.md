@@ -3,6 +3,7 @@ name: Composite Render BP
 description: "Best-practice CompositeChart rendering for stacked discharge/temperature/pressure dashboards across 7d-live to 1yr+ date ranges (~2k to 150k+ points)."
 endpoint: /composite-render-bp
 package: dash_mui_charts
+nav: Render BP
 category: CompositeChart
 order: 3
 icon: mdi:speedometer

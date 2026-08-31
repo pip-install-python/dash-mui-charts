@@ -3,6 +3,7 @@ name: Pie Chart
 description: "PieChart demos: basic pie, donut, arc labels, styled slices, half-pie gauge, and an interactive example with clickData and highlightedItem callbacks."
 endpoint: /pie
 package: dash_mui_charts
+nav: Examples
 category: PieChart
 order: 1
 icon: mdi:chart-pie

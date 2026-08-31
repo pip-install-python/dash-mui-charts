@@ -3,6 +3,7 @@ name: Bar Chart - Basic
 description: "BarChart basics for Dash: multi-series vertical, stacked and horizontal bars, bar labels, rounded corners, custom colors and negative values."
 endpoint: /barchart-basic
 package: dash_mui_charts
+nav: Basic
 category: BarChart
 order: 1
 icon: mdi:chart-bar

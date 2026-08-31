@@ -3,6 +3,7 @@ name: LineChart Brush
 description: "Pro brush range selection on LineChart: drag to select a region, overlay types (none, default, values with % change), brushConfig and axis highlight options."
 endpoint: /linechart-brush
 package: dash_mui_charts
+nav: Brush Selection
 category: LineChart
 order: 3
 icon: mdi:brush

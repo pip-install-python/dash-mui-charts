@@ -61,6 +61,16 @@ def test_discovery_agrees_with_the_declared_icons(app):
 
 
 def _declared_lastmods() -> set[str]:
+    """Every date a HUMAN wrote down, wherever they wrote it.
+
+    Two sources, because /changelog is not a markdown docs page (sync item
+    18): its lastmod is the newest DATED RELEASE HEADING in CHANGELOG.md,
+    read by `pages.changelog.newest_date()`. That is still a declared date —
+    somebody types it when they cut a release — it just is not frontmatter.
+    The rule this test defends is "no date the project did not state", not
+    "no date outside docs/", and widening it here is what keeps the rule
+    honest rather than merely quiet.
+    """
     dates = set()
     for md in Path("docs").glob("**/*.md"):
         text = md.read_text()
@@ -68,7 +78,24 @@ def _declared_lastmods() -> set[str]:
         m = re.search(r"^lastmod:\s*(\d{4}-\d{2}-\d{2})\s*$", head, re.MULTILINE)
         if m:
             dates.add(m.group(1))
+    changelog = Path("CHANGELOG.md")
+    if changelog.exists():
+        dates |= set(re.findall(r"^## \[[^\]]+\] - (\d{4}-\d{2}-\d{2})\s*$",
+                                changelog.read_text(), re.MULTILINE))
     return dates
+
+
+def test_the_changelog_lastmod_is_the_newest_release_heading():
+    """The other end of the widening above: /changelog's date must come from
+    the file, not from a build clock. If `newest_date()` ever returns
+    something CHANGELOG.md does not contain, the pin above would accept it
+    on the strength of a source that no longer says it."""
+    from pages.changelog import newest_date
+
+    date = newest_date()
+    assert date, "no dated release heading in CHANGELOG.md"
+    assert re.search(rf"^## \[[^\]]+\] - {re.escape(date)}\s*$",
+                     Path("CHANGELOG.md").read_text(), re.MULTILINE), date
 
 
 def test_sitemap_lastmod_is_verbatim_or_absent(client):

@@ -3,6 +3,7 @@ name: Heatmap Props
 description: "Interactive Heatmap props playground (MUI X Pro): live controls for color scale, dimensions, cell style, interactions and margins on a 5x5 grid."
 endpoint: /heatmap-props
 package: dash_mui_charts
+nav: Props Explorer
 category: Heatmap
 order: 2
 icon: mdi:tune-vertical

@@ -3,6 +3,7 @@ name: Crosshair Explorer
 description: "CompositeChart crosshair tracking with live coordinate readout, right-click alert placement, and a synced three-chart dashboard with HoverCard-managed alerts."
 endpoint: /crosshair
 package: dash_mui_charts
+nav: Crosshair
 category: LineChart
 order: 9
 icon: mdi:crosshairs-gps

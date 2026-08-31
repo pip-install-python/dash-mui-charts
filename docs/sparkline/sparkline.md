@@ -3,6 +3,7 @@ name: SparklineChart
 description: "SparklineChart demos: line, area and bar sparklines for KPI cards and tables, synced multi-metric hover, custom curves and callback-driven data."
 endpoint: /sparkline
 package: dash_mui_charts
+nav: Examples
 category: SparklineChart
 order: 1
 icon: mdi:chart-line-variant

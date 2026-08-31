@@ -37,6 +37,14 @@ class Meta(BaseModel):
     package: str = "dash_mui_charts"
     category: Optional[str] = None
     icon: Optional[str] = None
+    # Short SIDEBAR label (sync item 18); default = the page name. This
+    # fork rendered "BARCHART / Bar Chart - Basic" after item 16 moved the
+    # sidebar onto the registry, because the contract renders `name` and the
+    # retired FAMILIES map had carried short labels ("Basic", "Pro
+    # Features") beside them. Shortening `name:` instead would churn
+    # <title>, og:title and the llms.txt heading — this is the seam that
+    # lets both be right, and it is why the labels were left long meanwhile.
+    nav: Optional[str] = None
     # Sidebar position within its category (sync item 16); ties break on name.
     # This is where the old components/navbar.py FAMILIES map's ordering went:
     # the sidebar is built from the registry now, so the order has to live
@@ -258,6 +266,7 @@ for file in files:
         ),
         category=metadata.category,
         order=metadata.order,
+        nav=metadata.nav,
         icon=metadata.icon,
         # Without this Dash infers an image from assets/ and finds `logo.svg` —
         # an SVG, which every social scraper rejects — then emits it ALONGSIDE

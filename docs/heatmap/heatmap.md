@@ -3,6 +3,7 @@ name: Heatmap
 description: "Heatmap (MUI X Pro) demos: activity grids, a correlation matrix, continuous and piecewise color scales, custom cell styling and click interaction."
 endpoint: /heatmap
 package: dash_mui_charts
+nav: Examples
 category: Heatmap
 order: 1
 icon: mdi:grid

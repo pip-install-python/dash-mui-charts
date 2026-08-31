@@ -7,6 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### The 1.6.41 remainder: short sidebar labels, a skip link, dated pages
+
+Sync item 18, ported into this fork's shape.
+
+#### Added
+
+- **Short sidebar labels.** Pages declare `nav:` in frontmatter, so the
+  sidebar reads "Basic / Dataset Mode / Stacking" under BARCHART while each
+  page keeps its full name in `<title>`, `og:title` and its llms.txt
+  heading. This restores exactly what the retired FAMILIES map showed —
+  the 35 labels were taken from it — and closes the redundancy the previous
+  round introduced by rendering `name` in the sidebar.
+- **A skip link.** The first tab stop jumps past the sidebar's ~45 stops
+  straight to the content, visible only on keyboard focus.
+- **`/api` and `/changelog` are dated.** Both entered the sitemap with no
+  `lastmod`: `/api` now declares one in frontmatter, `/changelog` derives
+  it from the newest dated release heading in `CHANGELOG.md`.
+- **Header identity moved to `lib/constants.py`** (`LOGO_ASSET`,
+  `LOGO_STYLE`, `WORDMARK`, `WORDMARK_COLOR`, `WORDMARK_VISIBLE_FROM`), so
+  a fork edits the identity block rather than the component.
+
+#### Fixed
+
+- **A prose section counted as a release.** The upstream changelog parser
+  was widened to accept bare `## 2.0.0 — date` headings, and the widening
+  swallowed free text: this file ends with `## Component License
+  Requirements`, which rendered a timeline card badged with that whole
+  sentence and made the page claim 15 releases where there are 14. A
+  release label is now bracketed, a version, a date, or Unreleased.
+- **The deploy battery's hidden-path list had drifted.** It probed
+  `/admin/control-board` plus two paths this app has never had, and never
+  learned about `/admin/traffic` — a 404 for a page that does not exist is
+  not evidence that a page is hidden. Pinned against the page registry.
+
+#### Recorded
+
+- The corpus sweep for admin paths found six pre-existing mentions in
+  `/llms-full.txt`, all from this changelog's own prose in code spans and
+  none of them links. The pin distinguishes a linked, reachable URL from a
+  changelog naming what it changed.
+
 ### The wall comes down, and navigation comes from one registry
 
 Sync items 15 and 16 from the template's SYNC-1.6.22-1.6.38, ported into

@@ -3,6 +3,7 @@ name: Tree Selection
 description: "TreeView selection modes: single, multi-select, checkbox selection, parent/descendant propagation, disabled selection, and controlled selectedItems."
 endpoint: /tree-selection
 package: dash_mui_charts
+nav: Selection
 category: TreeView
 order: 3
 icon: mdi:check-box-outline

@@ -446,6 +446,42 @@ rather than a copy, each deliberate:
   `lib/network_directory.py` since the retire sweep and the header was
   still sending readers there.
 
+**Sync item 18 (the 1.6.41 remainder), ported 2026-08-31.** Four seams
+where this tree differs from the item's assumptions, all recorded because
+the item's own detects point at files this fork does not have:
+
+- **The cargo-without-caller seam does not exist here.** This fork never
+  took the two-file 16+17 cargo: no `pages/api.py`, no
+  `scripts/build_api_metadata.py`, no `<pkg>/api_metadata.json`, no
+  `SLIM_METADATA`, no `slim_generated_on`, and — the one that matters —
+  **no `load_package` anywhere in the tree**. `lib/api_reference.py` here is
+  this fork's OWN docstring parser, written on 2026-08-30 for the empty-/api
+  fix, not the template's metadata reader that shares its name. Contract
+  highlight (7-amended) — "upstream `load_package` returns `[]` SILENTLY
+  when metadata.json is missing" — is therefore `not-applicable-because`
+  on this host: the mechanism needs a caller this tree does not contain,
+  and metadata.json IS committed here (116 KB, not gitignored). The empty
+  /api this fork DID have had a different cause entirely, recorded above.
+- **`nav:` closes the label question item 16 opened.** The sidebar renders
+  `entry["nav"] or entry["name"]`, so pages keep long identities
+  ("Bar Chart - Basic" in `<title>`, og:title and the llms heading) and the
+  sidebar reads "Basic" — restoring exactly what the retired FAMILIES map
+  showed, which is where the 35 labels were taken from.
+- **`/changelog`'s lastmod is not frontmatter**, because /changelog is not
+  a markdown docs page here. It is the newest dated release heading in
+  CHANGELOG.md via `newest_date()`. `tests/test_seo_icons.py`'s
+  declared-dates rule was widened to read that second source — the rule is
+  "no date the project did not state", not "no date outside docs/".
+- **The corpus sweep found a real, PRE-EXISTING mention leak** and the pin
+  was narrowed to the defect rather than the symptom. `/llms-full.txt`
+  names both admin paths six times, all from CHANGELOG.md prose in code
+  spans, none of them links — verified byte-identical at `f0b469c` before
+  the sweep existed, so it was revealed, not introduced. Note 75's actual
+  failure is a LINK (`](/admin/control-board)`) putting a reachable URL in
+  the corpus; the pin now asserts no links anywhere and no mentions from
+  anything but the changelog, whose whole subject is what changed. A
+  changelog that cannot name the page it added is not a changelog.
+
 Also retired in this pass, without replacement: the sidebar's "Pip
 Components" section (`2plot.dev/pip`) and its `2plot.dev` and Dash
 Community (`community.plotly.com`) Resources links. The network is listed
@@ -703,6 +739,12 @@ never copies. Should a release ever intend a fleet-wide settings
 change, this fork's entry belongs here on that day, not before.
 
 ```yaml byte-owned
-# Empty by audit, 2026-08-26; re-audited by md5 at template 1.6.29
-# (5589318) the same day, still empty. See above.
+# Was empty by audit through template 1.6.29 (5589318). It is not any
+# more: sync item 18's own rule is that a PORT rather than a copy belongs
+# here in the same commit, and three paths qualify. Each is a file whose
+# bytes this fork owns because its copy carries checks or a shape the
+# template's does not.
+- lib/api_reference.py  # declined: this fork's OWN docstring parser, not the template's metadata.json reader of the same name — one parser per tree
+- tests/test_layout_nesting.py  # ported: the source pin names THIS tree's composition sites; pages/home.py has no parser to pin
+- tests/test_excluded_links_hidden.py  # ported: adds the corpus sweep, and discriminates a LINK from a changelog mention
 ```

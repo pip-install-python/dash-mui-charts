@@ -32,6 +32,28 @@ SITE_SHORT_NAME = "dash-mui-charts"
 # the page title straight into og:title and twitter:title (dash/_pages.py
 # _page_meta_tags), so this is the headline on every share card the site
 # produces. Derived, not retyped, so brand and prefix cannot drift apart.
+# --- Header identity (sync item 18) ----------------------------------------
+# The header used to hardcode the logo path, its box, the wordmark colour and
+# the breakpoint its text appears from. A fork edits this identity block and
+# reasonably assumes that is the whole job — llms shipped the template's
+# wordmark beside its own logo for exactly that reason. components/header.py
+# holds no fork content now; these four do.
+#
+# LOGO_ASSET is served from assets/. This fork's avatar id `header-avatar` is
+# a contract with the per-load favicon randomiser in templates/index.html
+# (DIVERGENCES §1) — the randomiser re-points that image for browser TABS
+# only; the mark itself is stable.
+LOGO_ASSET = "favicon.ico"
+LOGO_STYLE = {"height": "28px", "width": "28px"}
+WORDMARK = "Dash MUI Charts"
+WORDMARK_COLOR = "#1976d2"
+# Below this breakpoint the wordmark text is REMOVED FROM THE TREE
+# (visibleFrom, never opacity/width): at 390px it wrapped the header onto two
+# rows. Hiding a control at a breakpoint pairs with its aria-label — the home
+# anchor carries one, because display:none takes the text out of the
+# accessibility tree and the logo is decorative.
+WORDMARK_VISIBLE_FROM = "xs"
+
 PAGE_TITLE_PREFIX = f"{SITE_SHORT_NAME} | "
 
 SITE_DESCRIPTION = (

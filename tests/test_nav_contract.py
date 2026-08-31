@@ -421,3 +421,179 @@ def test_other_apps_dropdown_is_solid_and_every_primary_app_has_an_icon(app_modu
     assert dropdown.styles["dropdown"]["backgroundColor"]
     for url in PRIMARY:
         assert ICONS.get(url) not in (None, "mdi:web"), f"{url} has no icon"
+
+
+def test_every_in_process_harness_names_a_browser_lane_ua():
+    """THE THIRD LANE (sync item 18, notes 70/74 — leaflet, muicharts,
+    emojimart). A bare `.test_client()` sends `Werkzeug/x.y`, which has no
+    browser ENGINE token and is therefore the CRAWLER lane at dimll >=2.8.
+    Every `mark_hidden` page then answers 404 and an every-page-200 loop
+    goes red — a failure that PRE-DATES any port, arriving the day the
+    floor bump lets 2.8 resolve. This host measured it: scripts/route_parity
+    reported `/admin/control-board: 404` on unmodified HEAD.
+
+    The grep is for a test client driven WITHOUT a named UA, not for a
+    missing header — and the fix is the browser-lane UA *with* the internal
+    token, so a CI sweep of every route is not also N desktop humans in the
+    ledger (this host measured 4 rows from a UA-less sweep).
+    """
+    import re
+    from pathlib import Path
+
+    repo = Path(__file__).resolve().parent.parent
+    offenders = []
+    for folder in ("scripts", "tests"):
+        for path in sorted((repo / folder).glob("*.py")):
+            raw = path.read_text()
+            if ".test_client()" not in raw:
+                continue
+            # CODE only. The first cut of this grep matched the words
+            # "User-Agent" in route_parity.py's own explanatory COMMENT, so
+            # deleting the header and keeping the comment left it green —
+            # the same vacuity that let the empty /api ship. Strip comments
+            # and docstrings before asking the question.
+            import re as _re
+
+            src = _re.sub(r'"""[\s\S]*?"""', "", raw)
+            src = "\n".join(
+                ln for ln in src.splitlines()
+                if not ln.lstrip().startswith("#")
+            )
+            # A harness that drives the REAL app must name a UA. The signal
+            # is that it reaches the page registry or boots run.py — not the
+            # file's name, which flagged tests/test_agent_key_route.py on
+            # the strength of the word "route" in it. That module builds a
+            # bare Flask app with ONE route on it and no dimll middleware,
+            # so it has no lanes to be on: nothing classifies its UA and no
+            # mark_hidden page exists to 404.
+            drives_routes = ("page_registry" in raw
+                             or "run.py" in raw
+                             or "_import_site" in raw)
+            names_a_ua = (
+                "User-Agent" in src or "HTTP_USER_AGENT" in src
+                or "BROWSER_UA" in src or "user_agent" in src
+            )
+            if drives_routes and not names_a_ua:
+                offenders.append(str(path.relative_to(repo)))
+    assert offenders == [], (
+        f"in-process harnesses driving routes with no named UA: {offenders} "
+        "— they are on the crawler lane and every mark_hidden page 404s"
+    )
+
+
+def test_the_crawler_lane_still_404s_a_hidden_page(app_module, client):
+    """The OTHER half of the same change, and the reason repairing the lane
+    alone measures strictly less: once the sweep sends a browser UA, nothing
+    is checking that a CRAWLER still gets the 404. Both, or the fix quietly
+    removes a check."""
+    from conftest import BROWSER_UA, CRAWLER_UA
+
+    import dash
+
+    admin = [p["path"] for p in dash.page_registry.values()
+             if p["path"].startswith("/admin/")]
+    assert admin, "no admin pages — the pin would be vacuous"
+    for path in admin:
+        assert client.get(path, user_agent=CRAWLER_UA).status == 404, (
+            f"{path} does not 404 on the crawler lane — mark_hidden is gone"
+        )
+        assert client.get(path, user_agent=BROWSER_UA).status == 200, (
+            f"{path} does not answer a browser (it renders its fail-closed "
+            "card at 200; a 404 here means the sweep's UA regressed)"
+        )
+
+
+def test_battery_hidden_paths_match_the_registry(app_module):
+    """Note 74: scripts/network_smoke.py cannot import the app (it probes a
+    URL), so its literal tuple drifts silently. It HAD drifted —
+    /admin/traffic was added in the ledger round and never added there,
+    while two canaries probed paths this app has never had. Pinned against
+    the registry so a page added, renamed or deleted moves it in the same
+    change."""
+    import dash
+
+    from scripts.network_smoke import HIDDEN_DOC_PATHS
+
+    admin = {p["path"] for p in dash.page_registry.values()
+             if p["path"].startswith("/admin/")}
+    assert admin, "no admin pages — the pin would be vacuous"
+    assert set(HIDDEN_DOC_PATHS) == {f"{p}/llms.txt" for p in admin}, (
+        "network_smoke.HIDDEN_DOC_PATHS drifted from the registered admin pages"
+    )
+
+
+FLEET_HEADINGS = [
+    ("## [1.4.0] - 2026-08-03", "1.4.0", "v1.4.0", "2026-08-03", ""),
+    ("## [1.0.0] — 2026-08-21", "1.0.0", "v1.0.0", "2026-08-21", ""),
+    ("## [0.9.0] – 2026-08-20", "0.9.0", "v0.9.0", "2026-08-20", ""),
+    ("## 2.0.0 — 2026-08-02", "2.0.0", "v2.0.0", "2026-08-02", ""),
+    ("## [0.2.0] — 2026-07-31 (never published)", "0.2.0", "v0.2.0", "2026-07-31", "never published"),
+    ("## [0.1.0] — unreleased", "0.1.0", "v0.1.0", "", "unreleased"),
+    ("## [2026-08-30] — the round in one line", "2026-08-30", "2026-08-30", "2026-08-30", "the round in one line"),
+    ("## [Unreleased]", "Unreleased", "Unreleased", "", ""),
+]
+
+
+def test_every_fleet_heading_shape_parses(tmp_path):
+    """Note 67a: the seven heading shapes measured on the fleet's main
+    branches, plus Unreleased — label, badge, date and note each land.
+    This fork's own CHANGELOG.md uses only two of them; the pin exists so
+    the third one someone types does not render an empty heading."""
+    import re as _re
+
+    from pages.changelog import _is_version, parse_changelog
+
+    body = "# Changelog\n\n" + "\n\n".join(h + "\n\n- a bullet" for h, *_ in FLEET_HEADINGS)
+    p = tmp_path / "CHANGELOG.md"
+    p.write_text(body)
+    versions = parse_changelog(p)
+    assert len(versions) == len(FLEET_HEADINGS)
+    for got, (_, label, badge, date, note) in zip(versions, FLEET_HEADINGS):
+        assert got["version"] == label, got
+        assert got["date"] == date, got
+        assert got["note"] == note, got
+        rendered = f"v{got['version']}" if _is_version(got["version"]) else got["version"]
+        assert rendered == badge, got
+        assert not _re.match(r"^v(Unreleased|\d{4}-)", rendered), "note 67(a): VUNRELEASED / v<date>"
+
+
+def test_a_prose_section_is_not_a_release(tmp_path):
+    """This fork's finding, 2026-08-31. 1.6.41 widened the heading match to
+    accept bare versions (pannellum's `## 2.0.0 — date`); the widening also
+    swallowed PROSE. This repo's CHANGELOG.md ends with
+    `## Component License Requirements`, which parsed as a release, rendered
+    a timeline card badged with that whole sentence, and made the page count
+    15 releases where there are 14.
+
+    A release label is bracketed, or a version, or a date, or Unreleased.
+    Anything else is a section of the release it sits under."""
+    from pages.changelog import parse_changelog
+
+    p = tmp_path / "CHANGELOG.md"
+    p.write_text(
+        "# Changelog\n\n"
+        "## [1.0.0] - 2026-01-01\n\n### Added\n- a bullet\n\n"
+        "## 2.0.0 — 2026-02-02\n\n- a bare-version release still parses\n\n"
+        "## Component License Requirements\n\nProse that is not a release.\n"
+    )
+    versions = parse_changelog(p)
+    assert [v["version"] for v in versions] == ["1.0.0", "2.0.0"], (
+        "a free-text `##` heading was parsed as a release"
+    )
+
+
+def test_this_repos_own_changelog_counts_only_real_releases():
+    """The non-vacuous half: the pin above uses a fixture, this one uses the
+    file that actually ships. Every parsed label must be bracketed in the
+    source — that is what `## [x]` means — or a bare version."""
+    import re
+    from pathlib import Path
+
+    from pages.changelog import _is_version, parse_changelog
+
+    text = (Path(__file__).resolve().parent.parent / "CHANGELOG.md").read_text()
+    bracketed = set(re.findall(r"^## \[([^\]]+)\]", text, re.M))
+    labels = [v["version"] for v in parse_changelog()]
+    assert labels, "nothing parsed"
+    stray = [x for x in labels if x not in bracketed and not _is_version(x)]
+    assert stray == [], f"parsed as releases but not release headings: {stray}"

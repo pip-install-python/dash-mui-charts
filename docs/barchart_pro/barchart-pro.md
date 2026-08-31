@@ -3,6 +3,7 @@ name: Bar Chart - Pro
 description: "BarChart Pro features with a MUI X license key: zoom with slider, zoom plus toolbar, and stacked bars with zoom on 52 weeks of data."
 endpoint: /barchart-pro
 package: dash_mui_charts
+nav: Pro Features
 category: BarChart
 order: 6
 icon: mdi:diamond-outline

@@ -1,5 +1,5 @@
 import dash_mantine_components as dmc
-from dash import Output, Input, callback, clientside_callback, dcc, page_container, State
+from dash import Output, Input, callback, clientside_callback, dcc, page_container, State, html
 
 from components.footer import FOOTER_HEIGHT, create_footer
 from lib.aside import aside_config
@@ -172,6 +172,11 @@ def create_appshell(data):
         children=[
             # The id "url" is load-bearing beyond navigation: the ad
             # client's location refresh hangs off it.
+            # a11y (sync item 18, adopted from muischeduler): the first tab
+            # stop jumps past the sidebar's ~45 stops straight to the page
+            # content; visible only on keyboard focus — .skip-link in
+            # assets/main.css.
+            html.A("Skip to content", href="#main-content", className="skip-link"),
             dcc.Location(id="url", refresh="callback-nav"),
             dcc.Store(id="color-scheme-storage", storage_type="local"),
             # Persists the desktop-navbar collapse state across reloads.
@@ -184,6 +189,7 @@ def create_appshell(data):
                     create_navbar(data),
                     create_navbar_drawer(data),
                     dmc.AppShellMain(
+                        id="main-content",   # the skip link's target
                         children=page_container,
                         # dvh, not vh: on mobile Safari/Chrome the URL bar is
                         # part of `vh`, so a 100vh shell is taller than the

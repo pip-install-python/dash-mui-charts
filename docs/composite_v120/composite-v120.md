@@ -3,6 +3,7 @@ name: CompositeChart v1.2.0
 description: "CompositeChart v1.2.0 demos: the axis tooltip fix, the highlightedAxis output, and cross-chart crosshair sync up to a 3-chart stacked dashboard."
 endpoint: /composite-v120
 package: dash_mui_charts
+nav: v1.2.1
 category: CompositeChart
 order: 2
 icon: mdi:layers-plus

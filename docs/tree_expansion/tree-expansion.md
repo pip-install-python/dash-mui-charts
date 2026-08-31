@@ -3,6 +3,7 @@ name: Tree Expansion
 description: "TreeView expansion control: content vs iconContainer triggers, controlled expandedItems with expand/collapse-all buttons, and expansion tracking."
 endpoint: /tree-expansion
 package: dash_mui_charts
+nav: Expansion
 category: TreeView
 order: 4
 icon: mdi:unfold-more-horizontal

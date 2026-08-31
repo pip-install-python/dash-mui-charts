@@ -6,7 +6,10 @@ from components.backend_badge import create_backend_badge
 from components.navbar import search_data
 from dash_mui_charts import __version__ as _COMPONENT_VERSION
 from lib.backend import get_backend_info
-from lib.constants import BASE_URL, GITHUB_URL, HEADER_HEIGHT
+from lib.constants import (
+    BASE_URL, GITHUB_URL, HEADER_HEIGHT, LOGO_ASSET, LOGO_STYLE, WORDMARK,
+    WORDMARK_COLOR, WORDMARK_VISIBLE_FROM,
+)
 
 
 def create_clerk_avatar():
@@ -199,9 +202,10 @@ def create_header(data):
                                     # for the tab. Rename both or neither.
                                     dmc.Avatar(
                                         id="header-avatar",
-                                        src="/assets/favicon.ico",
+                                        src=f"/assets/{LOGO_ASSET}",
                                         size="sm",
                                         radius="sm",
+                                        style=LOGO_STYLE,
                                     ),
                                     # visibleFrom="xs": at 390px the wordmark
                                     # plus two burgers, the avatar, the badge
@@ -212,12 +216,12 @@ def create_header(data):
                                     # stays in the DOM for anything that
                                     # addresses it by id.
                                     dmc.Text(
-                                        "Dash MUI Charts",
+                                        WORDMARK,
                                         size="lg",
                                         fw=700,
-                                        c="#1976d2",
+                                        c=WORDMARK_COLOR,
                                         id="dash-docs-title",
-                                        visibleFrom="xs",
+                                        visibleFrom=WORDMARK_VISIBLE_FROM,
                                     ),
                                     # Version from the package (package-info.json),
                                     # the same source setup.py builds from —
@@ -239,7 +243,7 @@ def create_header(data):
                             # Without this label the home link would have no
                             # name at all on a phone — the a11y half of the
                             # line above, and the reason the two ship together.
-                            **{"aria-label": "Dash MUI Charts — home"},
+                            **{"aria-label": f"{WORDMARK} — home"},
                         ),
                     ],
                     gap="md",

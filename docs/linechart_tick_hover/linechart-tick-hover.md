@@ -3,6 +3,7 @@ name: LineChart Ticks & Hover
 description: "Best practices for LineChart tooltips, reference lines, ticks and grid across week, quarter and year date ranges, with fixes for alignment at large ranges."
 endpoint: /linechart-tick-hover
 package: dash_mui_charts
+nav: Ticks & Hover
 category: LineChart
 order: 8
 icon: mdi:gesture-tap

@@ -3,6 +3,7 @@ name: Sparkline Advanced
 description: "Advanced SparklineChart demo: a liquid glass (glassmorphism) stock card with reveal animation, hover opacity effects and real-time value display."
 endpoint: /sparkline-style-advanced
 package: dash_mui_charts
+nav: Advanced
 category: SparklineChart
 order: 3
 icon: mdi:blur

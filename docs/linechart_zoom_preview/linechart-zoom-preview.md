@@ -3,6 +3,7 @@ name: Zoom Preview (0.0.8)
 description: "LineChart Pro zoom slider with a miniature full-dataset preview, zoomInteractionConfig for fine-grained zoom/pan control, and enhanced axis tick styling."
 endpoint: /linechart-zoom-preview
 package: dash_mui_charts
+nav: Zoom Preview
 category: LineChart
 order: 7
 icon: mdi:magnify-plus-outline

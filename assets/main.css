@@ -628,3 +628,24 @@ code.m2d-codespan,
     overflow-x: auto;
     max-width: 100%;
 }
+
+
+/* Skip link (sync item 18, adopted from muischeduler): the first tab stop,
+   off-screen until keyboard focus, then pinned top-left above the header.
+   This site's sidebar carries ~45 tab stops before the prose begins, which
+   is the whole reason the link exists. */
+.skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    z-index: 9999;
+    background: var(--mantine-primary-color-filled);
+    color: var(--mantine-color-white);
+    padding: 8px 14px;
+    border-radius: 0 0 8px 0;
+    font-weight: 600;
+    text-decoration: none;
+}
+.skip-link:focus {
+    left: 0;
+}

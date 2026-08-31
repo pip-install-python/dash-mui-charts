@@ -3,6 +3,7 @@ name: Candlestick Chart
 description: "CandlestickChart OHLC demos: array and dataset formats, volume overlay, candle styling, support/resistance reference lines and click events."
 endpoint: /candlestick
 package: dash_mui_charts
+nav: OHLC Charts
 category: CandlestickChart
 order: 1
 icon: mdi:chart-waterfall

@@ -3,6 +3,7 @@ name: Tree Icons
 description: "TreeView appearance: custom expand/collapse/end icons, itemChildrenIndentation, fixed height with scrolling, and sx styling."
 endpoint: /tree-icons
 package: dash_mui_charts
+nav: Icons
 category: TreeView
 order: 6
 icon: mdi:palette-outline

@@ -3,6 +3,7 @@ name: Tree Pro
 description: "TreeViewPro (MUI X Pro): drag-and-drop reordering, reorderable subsets, and per-item 0-100 sliders plus kebab action menus wired to Dash callbacks."
 endpoint: /tree-pro
 package: dash_mui_charts
+nav: Pro
 category: TreeView
 order: 8
 icon: mdi:diamond-outline

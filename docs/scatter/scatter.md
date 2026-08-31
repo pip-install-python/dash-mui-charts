@@ -3,6 +3,7 @@ name: Scatter Chart
 description: "ScatterChart demos: two-series scatter, custom marker sizes, z-axis color mapping, log-scale axes, click events, dataset-driven series and axis styling."
 endpoint: /scatter
 package: dash_mui_charts
+nav: Examples
 category: ScatterChart
 order: 1
 icon: mdi:chart-scatter-plot

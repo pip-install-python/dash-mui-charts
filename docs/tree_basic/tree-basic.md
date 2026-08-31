@@ -3,6 +3,7 @@ name: Tree Basic
 description: "TreeView basics for Dash: data-driven items, defaultExpandedItems, click and focus tracking, and custom getItemId/getItemLabel accessors."
 endpoint: /tree-basic
 package: dash_mui_charts
+nav: Basic
 category: TreeView
 order: 1
 icon: mdi:file-tree

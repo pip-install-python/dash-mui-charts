@@ -3,6 +3,7 @@ name: LineChart Basics
 description: "Fundamentals of the LineChart Dash component: grid, area and stacked-area charts, curve interpolation, dual y-axes, and click-event callbacks."
 endpoint: /linechart-basic
 package: dash_mui_charts
+nav: Basics
 category: LineChart
 order: 1
 icon: mdi:chart-line

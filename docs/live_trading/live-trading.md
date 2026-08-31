@@ -3,6 +3,7 @@ name: Live Trading Chart
 description: LiveTradingChart real-time candlestick simulation with OHLCV data, volume bars, forecast band, swing-point alert labels, and slider-controlled parameters.
 endpoint: /live-trading
 package: dash_mui_charts
+nav: Examples
 category: LiveTradingChart
 order: 1
 icon: mdi:trending-up

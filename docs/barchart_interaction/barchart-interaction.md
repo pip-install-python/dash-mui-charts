@@ -3,6 +3,7 @@ name: Bar Chart - Interaction
 description: "BarChart interaction in Dash: bar and axis click callbacks, series highlighting, axis highlight modes, and axis vs item tooltip triggers."
 endpoint: /barchart-interaction
 package: dash_mui_charts
+nav: Interaction
 category: BarChart
 order: 4
 icon: mdi:cursor-default-click-outline

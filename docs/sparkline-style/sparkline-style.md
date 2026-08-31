@@ -3,6 +3,7 @@ name: Sparkline Style
 description: "Interactive SparklineChart styling playground: tweak color, plot type, curve, area, size and highlights with a live preview and generated code."
 endpoint: /sparkline-style
 package: dash_mui_charts
+nav: Styling
 category: SparklineChart
 order: 2
 icon: mdi:palette-outline

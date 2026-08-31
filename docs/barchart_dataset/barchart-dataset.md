@@ -3,6 +3,7 @@ name: Bar Chart - Dataset
 description: "BarChart dataset mode: pass table-format data once and reference columns by dataKey, with stacked series and bar/category gap control."
 endpoint: /barchart-dataset
 package: dash_mui_charts
+nav: Dataset Mode
 category: BarChart
 order: 2
 icon: mdi:table

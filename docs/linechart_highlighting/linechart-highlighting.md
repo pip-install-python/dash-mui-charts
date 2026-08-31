@@ -3,6 +3,7 @@ name: LineChart Highlighting
 description: "Controlled highlighting on LineChart: set highlightedItem and highlightedAxis from Dash callbacks, plus per-series highlightScope highlight/fade behavior."
 endpoint: /linechart-highlighting
 package: dash_mui_charts
+nav: Highlighting
 category: LineChart
 order: 5
 icon: mdi:lightbulb-on-outline

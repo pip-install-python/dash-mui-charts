@@ -3,6 +3,7 @@ name: LineChart Reference Lines
 description: "Horizontal and vertical reference lines on LineChart: targets, thresholds, label alignment, dash styles, multi-axis axisId, and dynamic updates via callbacks."
 endpoint: /linechart-referencelines
 package: dash_mui_charts
+nav: Reference Lines
 category: LineChart
 order: 4
 icon: mdi:chart-timeline-variant

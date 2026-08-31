@@ -118,7 +118,11 @@ def admin_pages(data) -> list:
 
 
 def _page_link(entry):
-    return create_nav_link(entry.get("icon") or DEFAULT_ICON, entry["name"], entry["path"])
+    # `nav` is the short sidebar label; `name` is the page's own identity
+    # (title, og:title, the llms.txt heading) and must not be shortened to
+    # fit a sidebar.
+    return create_nav_link(entry.get("icon") or DEFAULT_ICON,
+                           entry.get("nav") or entry["name"], entry["path"])
 
 
 def _has_api_page(data) -> bool:
@@ -214,7 +218,7 @@ def search_data(data) -> list:
     """Search entries: the pages the sidebar lists, and nothing else —
     never /admin/*, never a hidden-tier page (an anonymous visitor could
     otherwise enumerate them from the dropdown)."""
-    return [{"label": e["name"], "value": e["path"]}
+    return [{"label": e.get("nav") or e["name"], "value": e["path"]}
             for e in sorted((e for e in data if is_nav_page(e)), key=_sort_key)]
 
 

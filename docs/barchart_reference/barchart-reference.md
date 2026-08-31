@@ -3,6 +3,7 @@ name: Bar Chart - Reference Lines
 description: "BarChart reference lines and styling: target and threshold markers, vertical reference lines, skip animation, hidden legend and custom color palettes."
 endpoint: /barchart-reference
 package: dash_mui_charts
+nav: Reference Lines
 category: BarChart
 order: 5
 icon: mdi:chart-bar

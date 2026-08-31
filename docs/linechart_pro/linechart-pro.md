@@ -3,6 +3,7 @@ name: LineChart Pro
 description: "MUI X Pro features on LineChart: zoom and pan with a slider, zoom configuration options, biaxial zoom, and controlled zoom state via Dash callbacks."
 endpoint: /linechart-pro
 package: dash_mui_charts
+nav: Pro Features
 category: LineChart
 order: 2
 icon: mdi:diamond-outline

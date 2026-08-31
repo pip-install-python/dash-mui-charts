@@ -4,6 +4,10 @@ description: Every prop of all 13 dash-mui-charts components — generated from 
 endpoint: /api
 package: dash_mui_charts
 category: Reference
+# The prop tables are generated from the installed package, so this page's
+# content moves when the package does. Dated by hand on the release that
+# moved it — never scripted from mtimes (dimll >=2.6.0 emits it verbatim).
+lastmod: 2026-08-31
 order: 1
 icon: mdi:api
 ---

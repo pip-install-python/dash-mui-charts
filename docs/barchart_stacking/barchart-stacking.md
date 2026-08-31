@@ -3,6 +3,7 @@ name: Bar Chart - Stacking
 description: "BarChart stacking options: standard, normalized (expand) and diverging stack offsets, multiple stack groups, and horizontal stacked bars."
 endpoint: /barchart-stacking
 package: dash_mui_charts
+nav: Stacking
 category: BarChart
 order: 3
 icon: mdi:chart-bar-stacked

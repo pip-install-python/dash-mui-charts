@@ -3,6 +3,7 @@ name: Composite Chart (0.0.8)
 description: "CompositeChart demos layering scatter and line series on one surface: trend overlays, reference lines, multi-axis charts and Pro zoom with slider preview."
 endpoint: /composite
 package: dash_mui_charts
+nav: Examples
 category: CompositeChart
 order: 1
 icon: mdi:layers-outline

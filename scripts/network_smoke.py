@@ -127,15 +127,24 @@ DEFAULT_BASE_URL = "http://localhost:8550"
 PROSE_DOC_PATH = "/sparkline/llms.txt"
 
 # Owner-only surfaces that must 404 their llms.txt to an anonymous reader.
-# `/admin/control-board` is the real one as of the gate wave — the board can
-# hide any page on this site, and `mark_hidden` in pages/control_board.py is
-# what keeps it out of the sitemap, the llms.txt family, MCP and the
-# prerender. The other two are canaries for surfaces this app does not have
-# yet. Add real paths here in the same change that marks them hidden.
+# EVERY registered /admin/ page, and nothing else (sync item 18, note 74).
+# `mark_hidden` in each page's own module is what keeps these out of the
+# sitemap, the llms.txt family, MCP and the prerender; this tuple is what
+# the battery probes to prove it on the wire.
+#
+# It is a LITERAL because the battery is a standalone script that runs
+# against a URL without importing the app — so it cannot read the registry,
+# and it drifts silently instead. It had drifted: `/admin/traffic` was added
+# in the ledger round and never added here, while two canary paths
+# (`/admin/llms.txt`, `/analytics/llms.txt`) probed surfaces this app has
+# never had — a 404 for a page that does not exist is not evidence that a
+# page is hidden. `tests/test_nav_contract.py::
+# test_battery_hidden_paths_match_the_registry` now holds this tuple equal
+# to the registry, so a page added, renamed or deleted moves it in the same
+# change.
 HIDDEN_DOC_PATHS = (
     "/admin/control-board/llms.txt",
-    "/admin/llms.txt",
-    "/analytics/llms.txt",
+    "/admin/traffic/llms.txt",
 )
 
 # The hub one level up the chain. A satellite's llms.txt must name it — that

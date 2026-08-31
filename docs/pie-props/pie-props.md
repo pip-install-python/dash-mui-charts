@@ -3,6 +3,7 @@ name: Pie Chart Props
 description: Interactive playground for nested two-ring PieCharts on Titanic survival data with live controls for dimensions, radii, ring gap, labels and highlighting.
 endpoint: /pie-props
 package: dash_mui_charts
+nav: Props Explorer
 category: PieChart
 order: 2
 icon: mdi:tune-variant

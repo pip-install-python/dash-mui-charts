@@ -3,6 +3,7 @@ name: Tree Simple
 description: "SimpleTreeView examples: itemId/label items, checkbox multi-select, per-item disabled flags, custom icons, and the iconContainer expansion trigger."
 endpoint: /tree-simple
 package: dash_mui_charts
+nav: Simple
 category: TreeView
 order: 2
 icon: mdi:view-list-outline
