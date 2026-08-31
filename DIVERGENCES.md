@@ -158,6 +158,38 @@ reaches the promote step in roughly 100 s (103 s on the run above), so the
 wire beat it by seconds, not minutes. The conclusion survives and is now
 measured rather than reasoned; the reasoning that reached it did not.
 
+### The four-run dataset (2026-08-30/31)
+
+Every run this host has made on the release-branch road, kept together
+because the ordering is only legible as a series. `ref` and `wire` are
+seconds from the run's own creation timestamp; both were sampled at 5 s
+from this seat, and the 0224479 and ca2fb64 rows were sampled
+independently by the ops seat, agreeing within one second.
+
+| sha | CD run | conclusion | dur | ref at | wire at | ordering |
+|-----|--------|-----------|-----|--------|---------|----------|
+| 9928ba0 | 33334818928 | success | 153 s | absent at 128 s | 108 s | **wire first** |
+| 0224479 | 33335418597 | success | 214 s | 103 s | 189 s | ref first by 86 s |
+| b4e8718 | 33350527043 | success | 272 s | 122 s | 222 s | ref first by 100 s |
+| ca2fb64 | 33360409237 | success | 284 s | 131 s | 236 s | ref first by 105 s |
+
+The owner set Render's Branch to `release` between rows 1 and 2. That is
+the only variable that changed: same host, same cache-busting build class,
+opposite ordering. Row 1 is the pre-click state and is the one that proves
+Render was building `main` — `release` did not exist when the wire had
+already moved, so it cannot have been the source.
+
+What the series does NOT prove, and should not be read as proving: all
+four runs were GREEN. The road's actual claim is that a RED run leaves
+`release` and the wire untouched, and no run here has been red yet. Until
+one is, this is consistent-with, not demonstrated.
+
+Rows 2, 3 and 4 are each a fast-forward of an EXISTING `release`, so
+template `bf1fde2`'s `fetch-depth: 0` is exercised three times. A FIRST
+promote can never test it — creating a ref works from a shallow clone —
+which is why row 1 does not count toward that.
+
+
 Lineage note, not a divergence: this repo's build-match wait is the
 origin of the fleet's. It shipped here as `commit` and the template
 adopted the idea under the name `build`; the 2.7.1 floor round renamed
