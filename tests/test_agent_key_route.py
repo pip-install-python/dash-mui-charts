@@ -24,7 +24,17 @@ class _App:
 def route_client():
     server = flask.Flask(__name__)
     agent_key.register_agent_key_route(_App(server), "flask")
-    return server.test_client()
+    client = server.test_client()
+    # This is a bare Flask app with ONE route and no dash-improve-my-llms
+    # middleware, so it has no lanes to get wrong. It names a UA anyway:
+    # "every test client names a UA" is a simpler rule to hold than "every
+    # test client that matters", and an exemption carved into a fleet pin
+    # is a thing someone later has to re-derive.
+    client.environ_base["HTTP_USER_AGENT"] = (
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    )
+    return client
 
 
 def test_anonymous_gets_204_with_no_store(route_client):

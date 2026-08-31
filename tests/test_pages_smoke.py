@@ -338,6 +338,13 @@ def test_healthz_is_live_not_a_snapshot(monkeypatch):
     stub = SimpleNamespace(server=Flask("healthz_snapshot_pin"))
     register_health_route(stub, "flask")
     probe = stub.server.test_client()
+    # A stub Flask app carrying only register_health_route — no dimll
+    # middleware, so no lane to get wrong. Named anyway; see the note in
+    # tests/test_agent_key_route.py.
+    probe.environ_base["HTTP_USER_AGENT"] = (
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    )
     assert probe.get("/healthz").get_json()["app"] == "before"
 
     monkeypatch.setenv("SATELLITE_APP_KEY", "after")

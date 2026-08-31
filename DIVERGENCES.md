@@ -473,7 +473,11 @@ the item's own detects point at files this fork does not have:
   declared-dates rule was widened to read that second source — the rule is
   "no date the project did not state", not "no date outside docs/".
 - **The corpus sweep found a real, PRE-EXISTING mention leak** and the pin
-  was narrowed to the defect rather than the symptom. `/llms-full.txt`
+  was narrowed to the defect rather than the symptom. (Consolidation 2: the
+  fleet then shipped this reasoning as the reference shape with BOTH clauses
+  link-shaped, and this fork adopted it — dropping its own second clause,
+  which compared corpus lines against CHANGELOG.md text and would have
+  false-positived the moment a line reflowed differently in the two.) `/llms-full.txt`
   names both admin paths six times, all from CHANGELOG.md prose in code
   spans, none of them links — verified byte-identical at `f0b469c` before
   the sweep existed, so it was revealed, not introduced. Note 75's actual
@@ -745,6 +749,6 @@ change, this fork's entry belongs here on that day, not before.
 # bytes this fork owns because its copy carries checks or a shape the
 # template's does not.
 - lib/api_reference.py  # declined: this fork's OWN docstring parser, not the template's metadata.json reader of the same name — one parser per tree
-- tests/test_layout_nesting.py  # ported: the source pin names THIS tree's composition sites; pages/home.py has no parser to pin
-- tests/test_excluded_links_hidden.py  # ported: adds the corpus sweep, and discriminates a LINK from a changelog mention
+- tests/test_layout_nesting.py  # ported: the source pin names THIS tree's composition sites; pages/home.py has no parser to pin (the positive control is the template's registry-derived one)
+- tests/test_excluded_links_hidden.py  # ported: the positive control is this fork's, the corpus sweep is now the template's shipped shape
 ```

@@ -55,6 +55,32 @@ def test_admin_paths_absent_from_sitemap_llms_and_sidebar(client, app):
             leaked.append(f"{path} in the startup sidebar tree")
     assert leaked == [], f"admin pages published: {leaked}"
 
+    # The CORPUS, not only the index (llms, note 75; the gap measured by
+    # email, 2026-08-31 — the spec asked forks to sweep the tier docs while
+    # this reference file swept only /llms.txt). Prose leaks what structure
+    # hides: hyperlinking an admin path from five docs pages put it into the
+    # corpus while every sitemap and sidebar pin passed.
+    #
+    # LINKS only, deliberately (muicharts, 2026-08-31): a changelog that
+    # cannot name the page it added is not a changelog, and every mention it
+    # found was prose in a code span. A link is what makes the path
+    # REACHABLE, which is the defect. Narrowing a pin to reach green is
+    # normally the suspect move, so the reasoning is here rather than in a
+    # commit message.
+    # BOTH clauses link-shaped (llms, 2026-08-31): the first cut left the
+    # machine path as a bare substring, so a changelog code span naming
+    # `/admin/x/llms.txt` — documenting the very battery fix that hid it —
+    # tripped a pin whose other half already made the prose/reachability
+    # distinction. A fork that cannot describe its own admin pages goes red
+    # for being honest.
+    for tier in ("/llms-small.txt", "/llms-full.txt"):
+        body = client.get(tier).text
+        linked = [
+            p for p in _admin_paths()
+            if f"]({p})" in body or f"]({p}/llms.txt)" in body
+        ]
+        assert linked == [], f"admin pages linked from {tier}: {linked}"
+
     # Positive control: a real page IS listed, so an empty sitemap or a
     # broken llms.txt cannot make the assertions above pass vacuously.
     # Derived from the sidebar's own first page, never named, so this file
@@ -67,60 +93,3 @@ def test_admin_paths_absent_from_sitemap_llms_and_sidebar(client, app):
     assert f"{control}</loc>" in sitemap
     assert control in llms
     assert control in tree
-
-
-def test_admin_paths_absent_from_the_WHOLE_corpus(client, app):
-    """The corpus half (sync item 18, llms's note 75): PROSE can leak what
-    STRUCTURE hides. Hyperlinking /admin/control-board from five docs pages
-    put the path into that host's /llms.txt while every navbar, sitemap and
-    mark_hidden pin passed — the page was hidden and its URL was published
-    anyway, in the body text.
-
-    So sweep the corpus documents themselves, not just the index: the tier
-    docs are where a fork's prose actually lands.
-    """
-    docs = {
-        "/llms.txt": client.get("/llms.txt").text,
-        "/llms-small.txt": client.get("/llms-small.txt").text,
-        "/llms-full.txt": client.get("/llms-full.txt").text,
-    }
-    served = {k: v for k, v in docs.items() if v and len(v) > 200}
-    assert served, "no corpus document came back — the sweep would be vacuous"
-
-    # TWO strictnesses, because the defect is a REACHABLE url and not the
-    # mere appearance of a string.
-    #
-    # 1. A LINK to an admin path, anywhere in the corpus. This is note 75's
-    #    actual failure — `](/admin/control-board)` in five docs pages —
-    #    and it is what the template's sitemap/llms pin already keys on.
-    linked = []
-    for path in _admin_paths():
-        for name, body in served.items():
-            if f"]({path})" in body or f'href="{path}"' in body or f"{path}/llms.txt" in body:
-                linked.append(f"{path} linked in {name}")
-    assert linked == [], (
-        f"admin paths LINKED from the corpus: {linked} — structure hid the "
-        "page and prose published a reachable URL anyway. Fix the PROSE "
-        "(drop the link), not the pin."
-    )
-
-    # 2. A bare MENTION, from anywhere except the changelog. A docs page has
-    #    no reason to name an admin path even without linking it; the
-    #    changelog does, because its whole subject is what changed, and a
-    #    changelog that cannot name the page it added is not a changelog.
-    #    Measured 2026-08-31: this host's /llms-full.txt carries six such
-    #    mentions, ALL from CHANGELOG.md prose (code spans, no links), and
-    #    they predate this pin — verified byte-identical at f0b469c before
-    #    the sweep existed. That is disclosure of a path whose page fails
-    #    closed and 404s to crawlers, not access.
-    changelog_body = (REPO / "CHANGELOG.md").read_text() if (REPO / "CHANGELOG.md").exists() else ""
-    stray = []
-    for path in _admin_paths():
-        for name, body in served.items():
-            for line in body.split("\n"):
-                if path in line and line.strip() not in changelog_body:
-                    stray.append(f"{path} in {name}: {line.strip()[:70]}")
-    assert stray == [], (
-        f"admin paths named in the corpus by something other than the "
-        f"changelog: {stray}"
-    )

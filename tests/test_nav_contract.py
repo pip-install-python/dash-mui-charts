@@ -423,62 +423,78 @@ def test_other_apps_dropdown_is_solid_and_every_primary_app_has_an_icon(app_modu
         assert ICONS.get(url) not in (None, "mdi:web"), f"{url} has no icon"
 
 
-def test_every_in_process_harness_names_a_browser_lane_ua():
-    """THE THIRD LANE (sync item 18, notes 70/74 — leaflet, muicharts,
-    emojimart). A bare `.test_client()` sends `Werkzeug/x.y`, which has no
-    browser ENGINE token and is therefore the CRAWLER lane at dimll >=2.8.
-    Every `mark_hidden` page then answers 404 and an every-page-200 loop
-    goes red — a failure that PRE-DATES any port, arriving the day the
-    floor bump lets 2.8 resolve. This host measured it: scripts/route_parity
-    reported `/admin/control-board: 404` on unmodified HEAD.
+_REQUEST_METHODS = ("get", "post", "open", "request", "put", "delete", "head")
 
-    The grep is for a test client driven WITHOUT a named UA, not for a
-    missing header — and the fix is the browser-lane UA *with* the internal
-    token, so a CI sweep of every route is not also N desktop humans in the
-    ledger (this host measured 4 rows from a UA-less sweep).
+
+def _code_only(src: str) -> str:
+    """Source with docstrings and `#` comments removed.
+
+    muicharts, 2026-08-31: the words pass while the header is gone — its
+    grep matched "User-Agent" inside an explanatory COMMENT, so deleting
+    the real header left the pin green. This one proved the point on
+    itself: the comment below describing the chained form made the pin
+    flag its own file.
     """
-    import re
-    from pathlib import Path
+    src = re.sub(r'"""[\s\S]*?"""|\'\'\'[\s\S]*?\'\'\'', "", src)
+    return re.sub(r"#[^\n]*", "", src)
 
-    repo = Path(__file__).resolve().parent.parent
+
+def _client_names_a_ua(src: str, var: str) -> bool:
+    """Does `var` — a bound `.test_client()` — name a UA on the wire?
+
+    Either the client carries one for every request (`environ_base`), or
+    every request call on it passes `headers=`. A client that issues no
+    requests in this file cannot get the lane wrong here.
+    """
+    if re.search(re.escape(var) + r"\.environ_base\b[^\n]*HTTP_USER_AGENT", src):
+        return True
+    calls = [c for m in _REQUEST_METHODS for c in _calls(src, f"{var}.{m}")]
+    return bool(calls) and all("headers=" in c for c in calls)
+
+
+def test_every_test_client_user_names_headers():
+    """Notes 70/74: a bare test client sends `Werkzeug/x.y` — crawler lane
+    at dimll ≥ 2.8 — so a mark_hidden page 404s and an every-page-200 loop
+    goes red at the floor bump. Any file that drives `.test_client()` must
+    pass a named UA.
+
+    Resolved per CALL SITE, not per file (pannellum, 2026-08-31): the
+    substring form this pin shipped with — `"headers=" in src` — read the
+    whole file, so a tool whose `headers=` sat on a DIFFERENT code path
+    (urllib probes) passed while all three of its in-process fetches were
+    bare, and it flagged a bare-app test with no dimll middleware and no
+    lane to get wrong. It missed the only real offender in the tree that
+    measured it.
+    """
     offenders = []
-    for folder in ("scripts", "tests"):
-        for path in sorted((repo / folder).glob("*.py")):
-            raw = path.read_text()
-            if ".test_client()" not in raw:
+    for folder in ("tests", "scripts"):
+        for path in sorted((REPO / folder).glob("*.py")):
+            src = _code_only(path.read_text())
+            if ".test_client()" not in src:
                 continue
-            # CODE only. The first cut of this grep matched the words
-            # "User-Agent" in route_parity.py's own explanatory COMMENT, so
-            # deleting the header and keeping the comment left it green —
-            # the same vacuity that let the empty /api ship. Strip comments
-            # and docstrings before asking the question.
-            import re as _re
-
-            src = _re.sub(r'"""[\s\S]*?"""', "", raw)
-            src = "\n".join(
-                ln for ln in src.splitlines()
-                if not ln.lstrip().startswith("#")
-            )
-            # A harness that drives the REAL app must name a UA. The signal
-            # is that it reaches the page registry or boots run.py — not the
-            # file's name, which flagged tests/test_agent_key_route.py on
-            # the strength of the word "route" in it. That module builds a
-            # bare Flask app with ONE route on it and no dimll middleware,
-            # so it has no lanes to be on: nothing classifies its UA and no
-            # mark_hidden page exists to 404.
-            drives_routes = ("page_registry" in raw
-                             or "run.py" in raw
-                             or "_import_site" in raw)
-            names_a_ua = (
-                "User-Agent" in src or "HTTP_USER_AGENT" in src
-                or "BROWSER_UA" in src or "user_agent" in src
-            )
-            if drives_routes and not names_a_ua:
-                offenders.append(str(path.relative_to(repo)))
-    assert offenders == [], (
-        f"in-process harnesses driving routes with no named UA: {offenders} "
-        "— they are on the crawler lane and every mark_hidden page 404s"
-    )
+            # `(?!\s*\.)` — a CHAINED call binds the RESPONSE, not the
+            # client (`body = app.server.test_client().get(...)`), and the
+            # first cut of this pin read `body` as an unnamed client with no
+            # requests and flagged a line that already passed headers (llms,
+            # 2026-08-31, measured on its test_prerender_idempotency.py).
+            bound = set(re.findall(r"(\w+)\s*=\s*[\w.]*\.test_client\(\)(?!\s*\.)", src))
+            bound |= set(re.findall(r"\.test_client\(\)\s+as\s+(\w+)", src))
+            # Chained calls still get checked — on the call itself, since
+            # there is no client name to follow.
+            for meth in _REQUEST_METHODS:
+                for call in _calls(src, f".test_client().{meth}"):
+                    if "headers=" not in call:
+                        offenders.append(f"{folder}/{path.name}::<chained {meth}>")
+            if not bound:
+                # Wrapped in place (conftest hands the raw client to a Client
+                # that always sends one) — no name to follow, so fall back.
+                if "headers=" not in src and "HTTP_USER_AGENT" not in src:
+                    offenders.append(f"{folder}/{path.name}")
+                continue
+            for var in sorted(bound):
+                if not _client_names_a_ua(src, var):
+                    offenders.append(f"{folder}/{path.name}::{var}")
+    assert offenders == [], offenders
 
 
 def test_the_crawler_lane_still_404s_a_hidden_page(app_module, client):
