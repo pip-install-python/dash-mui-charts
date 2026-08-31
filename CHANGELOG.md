@@ -80,13 +80,14 @@ this fork's shape alongside items 12 and 13 below.
   stripped. Measured on the wire: `/api/llms.txt` 2681 bytes with no table
   rows, the prerender with no `<table>`, while a real browser's rendered
   DOM showed 13 tables and 371 rows. Verified on the wire after the fix:
-  `/api/llms.txt` 59921 bytes with 384 rows, and 13 tables / 384 rows in
-  the crawler document and the prerender alike. On the one page whose whole purpose is the prop
+  `/api/llms.txt` 59967 bytes carrying all 371 properties, and 13 tables
+  with 384 `<tr>` (371 data rows plus one header each) in the crawler
+  document and the prerender alike. On the one page whose whole purpose is the prop
   list, every agent and every crawler got nothing. `pages/markdown.py` now
   expands `.. kwargs::` into a markdown table exactly as it already did for
   `.. source::`, and both the directive and that expansion read ONE parse
-  in the new `lib/api_reference.py` — 384 rows in every lane, with a test
-  that fails if the two ever disagree.
+  in the new `lib/api_reference.py` — all 371 properties in every lane,
+  with a test that fails if the two ever disagree.
 
 - **Both live batteries were reading the wrong document.**
   `scripts/network_smoke.py`'s default User-Agent was the bare internal

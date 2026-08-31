@@ -404,7 +404,11 @@ rather than a copy, each deliberate:
   Closed by giving `.. kwargs::` the same treatment `pages/markdown.py`
   already gave `.. source::` — expansion into the prose — over a single
   shared parse in `lib/api_reference.py` that both the directive and the
-  expansion call. One parse, two renderings: 384 rows in every lane, and
+  expansion call. One parse, two renderings: **371 properties** in every
+  lane — quoted as 384 `<tr>` where each of the 13 tables adds a header
+  row, and as 397 lines by a `grep '^|'` that also catches the 13 markdown
+  separator rows. Three true numbers for one fact; 371 is the one that
+  means "properties documented". The lanes agree on it exactly, and
   `test_the_two_lanes_report_the_same_number_of_props` fails the moment a
   second implementation appears.
   `API_PACKAGES = ["dash_mui_charts"]` IS set — it drives the header's
