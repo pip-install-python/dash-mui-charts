@@ -380,7 +380,13 @@ rather than a copy, each deliberate:
   directive line is stripped. Measured on the wire 2026-08-30 at build
   `0224479`: `/api/llms.txt` 2681 bytes with ZERO table rows, the crawler
   document zero `<table>`, the prerender block 9259 bytes with zero
-  `<table>` — while a real Chrome showed 13 tables and 371 rows. Thirteen
+  `<table>` — while a real Chrome's RENDERED DOM showed 13 tables and 371
+  rows. Name which of the two you measured, always: the HTML Chrome
+  RECEIVES has zero tables as well (curl with a Chrome UA runs no
+  JavaScript and gets the same app shell), so "zero tables in the browser
+  lane" and "13 tables in the browser lane" are both true statements about
+  different artifacts, and a report that does not say which is unreadable.
+  The defect was never in the DOM. Thirteen
   headings and nothing under them, for every agent and every reader
   without JavaScript, on the one page whose entire purpose is the prop
   list.

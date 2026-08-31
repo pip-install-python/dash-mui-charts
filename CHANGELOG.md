@@ -78,8 +78,9 @@ this fork's shape alongside items 12 and 13 below.
   (`/api/llms.txt`, the crawler document) and the non-JS prerender are all
   built from the page's markdown *source*, where the directive line is
   stripped. Measured on the wire: `/api/llms.txt` 2681 bytes with no table
-  rows, the prerender with no `<table>`, while a real browser showed 13
-  tables and 371 rows. On the one page whose whole purpose is the prop
+  rows, the prerender with no `<table>`, while a real browser's rendered
+  DOM showed 13 tables and 371 rows — the HTML that browser *receives* has
+  no tables either, since React builds them client-side. On the one page whose whole purpose is the prop
   list, every agent and every crawler got nothing. `pages/markdown.py` now
   expands `.. kwargs::` into a markdown table exactly as it already did for
   `.. source::`, and both the directive and that expansion read ONE parse
