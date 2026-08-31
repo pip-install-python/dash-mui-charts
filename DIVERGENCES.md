@@ -381,12 +381,23 @@ rather than a copy, each deliberate:
   `0224479`: `/api/llms.txt` 2681 bytes with ZERO table rows, the crawler
   document zero `<table>`, the prerender block 9259 bytes with zero
   `<table>` — while a real Chrome's RENDERED DOM showed 13 tables and 371
-  rows. Name which of the two you measured, always: the HTML Chrome
-  RECEIVES has zero tables as well (curl with a Chrome UA runs no
-  JavaScript and gets the same app shell), so "zero tables in the browser
-  lane" and "13 tables in the browser lane" are both true statements about
-  different artifacts, and a report that does not say which is unreadable.
-  The defect was never in the DOM. Thirteen
+  rows. **Name which artifact you measured, always — and there are THREE
+  on the browser lane, not two.** This entry said two when it was written,
+  and the seat then made a wrong prediction from it, caught only by
+  measuring after the deploy:
+
+      1. the app-shell markup React hydrates      0 tables before AND after
+      2. the dimll prerender block, inside the
+         SAME received HTML                       0 before -> 13 after
+      3. the rendered DOM, after JavaScript       13 before AND after
+
+  "The HTML a browser receives" spans 1 and 2, so it went 0 -> 13 with the
+  fix: a `curl -A '<Chrome UA>' /api` reads ZERO tables at build `0224479`
+  and THIRTEEN at `b4e8718`, having run no JavaScript either time. The
+  measurement that isolates the defect is 2 — the prerender — because 3
+  was healthy throughout and 1 never carries tables at all. A report that
+  does not name its artifact is unreadable, and one that collapses 1 and 2
+  predicts the wrong number. The defect was never in the DOM. Thirteen
   headings and nothing under them, for every agent and every reader
   without JavaScript, on the one page whose entire purpose is the prop
   list.
