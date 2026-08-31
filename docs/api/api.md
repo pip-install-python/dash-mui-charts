@@ -5,9 +5,14 @@ endpoint: /api
 package: dash_mui_charts
 category: Reference
 # The prop tables are generated from the installed package, so this page's
-# content moves when the package does. Dated by hand on the release that
-# moved it — never scripted from mtimes (dimll >=2.6.0 emits it verbatim).
-lastmod: 2026-08-31
+# content moves when the PACKAGE does — not when the docs are rebuilt.
+# So this is dash_mui_charts 1.4.0's release date, NOT the day the tables
+# were last regenerated (muischeduler's correction, carried to this fork by
+# the template seat 2026-08-31: it was briefly 2026-08-31, the day of the
+# port, which would have had the sitemap assert a content date that was not
+# one). tests/test_seo_icons.py holds it to the CHANGELOG entry for the
+# INSTALLED version, so bumping the package moves this in the same change.
+lastmod: 2026-08-03
 order: 1
 icon: mdi:api
 ---

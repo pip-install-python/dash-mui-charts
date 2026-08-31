@@ -146,3 +146,33 @@ def test_apple_touch_icon_is_opaque():
         "apple-touch-icon.png carries a tRNS transparency chunk — iOS will "
         "composite it onto an unpredictable background."
     )
+
+
+def test_the_api_lastmod_is_the_packages_release_date():
+    """/api's tables are generated from the installed component package, so
+    its content date is the PACKAGE's, never the day someone regenerated
+    them (muischeduler's correction). A fleet that stamps its adoption day
+    publishes as many simultaneous lies as it has forks.
+
+    Derived here rather than asserted, so bumping dash_mui_charts moves this
+    page's lastmod in the same change or goes red.
+    """
+    import re
+    from pathlib import Path
+
+    import dash_mui_charts
+
+    repo = Path(__file__).resolve().parent.parent
+    version = dash_mui_charts.__version__
+    released = re.search(rf"^## \[{re.escape(version)}\] - (\d{{4}}-\d{{2}}-\d{{2}})",
+                         (repo / "CHANGELOG.md").read_text(), re.M)
+    assert released, f"CHANGELOG.md has no dated heading for the installed {version}"
+
+    head = (repo / "docs" / "api" / "api.md").read_text().split("---")[1]
+    declared = re.search(r"^lastmod:\s*(\d{4}-\d{2}-\d{2})\s*$", head, re.M)
+    assert declared, "/api declares no lastmod"
+    assert declared.group(1) == released.group(1), (
+        f"/api says {declared.group(1)}, but dash_mui_charts {version} was "
+        f"released {released.group(1)} — the page's content moves with the "
+        "package, not with the docs build"
+    )
