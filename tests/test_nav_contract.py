@@ -231,12 +231,18 @@ def test_changelog_page_is_the_file(app_module, client):
 
 def test_the_api_page_documents_the_declared_package(app_module, client):
     """Contract 7, PORTED (see DIVERGENCES): this fork does not use the
-    template's generated pages/api.py + lib/api_reference.py. `/api` is a
-    markdown doc whose `.. kwargs::` directive builds one table per
+    template's generated pages/api.py + lib/api_reference generator. `/api`
+    is a markdown doc whose `.. kwargs::` directive builds one table per
     component from the SAME source the generator would read — the installed
     package's own metadata — so the page cannot disagree with the wheel the
-    docs image installs from this tree. The contract is the behaviour: one
-    table per exported component, prop / type / default / description.
+    docs image installs from this tree.
+
+    THIS TEST WAS VACUOUS UNTIL 2026-08-30 and let a real defect ship. It
+    asserted that each component NAME appeared in the layout and in
+    /api/llms.txt. Both were true with ZERO property rows anywhere: the
+    names come from the page's own `### LineChart` headings. Assert the
+    ROWS, and assert a row's CONTENT — a table with headers and no body is
+    exactly what shipped.
     """
     import dash
 
@@ -245,9 +251,6 @@ def test_the_api_page_documents_the_declared_package(app_module, client):
     assert API_PACKAGES == ["dash_mui_charts"]
     assert "/api" in [p["path"] for p in dash.page_registry.values()]
 
-    # The rendered LAYOUT, not the served browser HTML: /api is a Dash page,
-    # so the browser lane ships the app shell and React fills it in. The
-    # crawler lane below is the one a machine reads.
     entry = next(p for p in dash.page_registry.values() if p["path"] == "/api")
     layout = entry["layout"]
     tree = str(layout() if callable(layout) else layout)
@@ -258,16 +261,94 @@ def test_the_api_page_documents_the_declared_package(app_module, client):
     assert exported, "the package exports no components"
     missing = [n for n in exported if n not in tree]
     assert missing == [], f"components with no table on /api: {missing}"
-    # the kwargs directive's tables, and the four columns the contract names
-    assert "m2d-block-kwargs" in tree
-    for column in ("Prop", "Type", "Default", "Description"):
-        assert column in tree, column
 
-    # and the crawler document carries the same tables as prose
-    doc = client.get("/api/llms.txt",
-                     user_agent="Mozilla/5.0 (compatible; Googlebot/2.1)")
-    assert doc.status == 200
-    assert all(name in doc.text for name in exported)
+    # ROWS, not headers. One table per component and a real body in each.
+    assert tree.count("m2d-block-kwargs") == len(exported), (
+        f"{tree.count('m2d-block-kwargs')} tables for {len(exported)} components"
+    )
+    assert tree.count("TableTr") > 20 * len(exported), (
+        "the tables have no body rows — the props parse returned nothing"
+    )
+    # a prop that only the real docstring can supply
+    assert "The ID used to identify this component in Dash callbacks." in tree
+
+
+def test_the_api_props_reach_the_machine_lane_too(app_module, client):
+    """THE DEFECT, pinned. A markdown2dash directive renders COMPONENTS, so
+    `.. kwargs::` output lived only in the browser's React tree: on the wire
+    2026-08-30, /api/llms.txt was 2681 bytes with zero table rows and the
+    non-JS prerender had zero `<table>`, while a real Chrome showed 13
+    tables and 371 rows. Every agent, every crawler and every reader without
+    JavaScript got 13 headings and nothing under them.
+
+    pages/markdown.py expands the directive into a markdown table for the
+    lane built from the SOURCE, the same way it already did for
+    `.. source::`. Both lanes read ONE parse (lib/api_reference).
+    """
+    import re
+
+    from conftest import BROWSER_UA, CRAWLER_UA
+
+    llms = client.get("/api/llms.txt", user_agent=CRAWLER_UA)
+    assert llms.status == 200
+    rows = [ln for ln in llms.text.split("\n")
+            if ln.startswith("| ") and set(ln) - set("| -")]
+    assert len(rows) > 100, f"only {len(rows)} markdown table rows in /api/llms.txt"
+    assert rows[0] == "| Name | Type | Description |"
+    assert any("The ID used to identify this component in Dash callbacks." in r
+               for r in rows)
+    # the raw directive must not survive into the prose either
+    assert ".. kwargs::" not in llms.text
+
+    crawler = client.get("/api", user_agent=CRAWLER_UA)
+    assert crawler.text.count("<table") >= 13, "the crawler document has no tables"
+
+    prerender = re.search(r'<div id="dimll-prerender".*?</div>\s*(?=<script|</body)',
+                          client.get("/api", user_agent=BROWSER_UA).text, re.S)
+    assert prerender and prerender.group(0).count("<table") >= 13, (
+        "the non-JS prerender has no tables — a text reader still gets nothing"
+    )
+
+
+def test_the_two_lanes_report_the_same_number_of_props(app_module, client):
+    """The parity that makes the fix durable: one parse, two renderings. If
+    these ever disagree, someone has grown a second props implementation —
+    which is the state that produced the original defect."""
+    from conftest import CRAWLER_UA
+
+    import dash
+
+    entry = next(p for p in dash.page_registry.values() if p["path"] == "/api")
+    layout = entry["layout"]
+    browser_rows = str(layout() if callable(layout) else layout).count("TableTr")
+
+    llms = client.get("/api/llms.txt", user_agent=CRAWLER_UA).text
+    machine_rows = len([ln for ln in llms.split("\n")
+                        if ln.startswith("| ") and set(ln) - set("| -")])
+
+    assert browser_rows == machine_rows, (
+        f"browser lane {browser_rows} rows, machine lane {machine_rows} — "
+        "the lanes have drifted apart again"
+    )
+
+
+def test_every_kwargs_directive_in_the_docs_resolves(app_module):
+    """A `.. kwargs::` naming a component that cannot be read renders as
+    NOTHING in the browser (markdown2dash's render returns None on empty
+    data) and as an HTML comment in the prose. Silence either way — so the
+    emptiness has to be caught here."""
+    import re
+    from pathlib import Path
+
+    from lib.api_reference import props_for
+
+    repo = Path(__file__).resolve().parent.parent
+    specs = []
+    for md in sorted((repo / "docs").glob("**/*.md")):
+        specs += re.findall(r"^\.\. kwargs::(.+?)$", md.read_text(), re.M)
+    assert specs, "no .. kwargs:: directives found — this pin would be vacuous"
+    empty = sorted({s.strip() for s in specs if not props_for(s.strip())})
+    assert empty == [], f"kwargs directives that resolve to no props: {empty}"
 
 
 def test_the_version_badge_reads_the_declared_package(app_module):

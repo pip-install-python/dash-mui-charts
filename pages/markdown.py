@@ -73,6 +73,14 @@ class Meta(BaseModel):
 
 
 _SOURCE_DIRECTIVE = re.compile(r'^\.\. source::(.+?)$', re.MULTILINE)
+# The SAME treatment for `.. kwargs::` (2026-08-30). A markdown2dash
+# directive renders Dash COMPONENTS, so its output reaches the browser's
+# React tree and nothing else: the machine lane and the non-JS prerender are
+# both built from this markdown SOURCE, where the directive line is stripped.
+# /api served 13 component headings and ZERO property rows to every agent,
+# every crawler and every reader without JavaScript, while a JS browser saw
+# 371 rows — measured on the wire. See lib/api_reference.py.
+_KWARGS_DIRECTIVE = re.compile(r'^\.\. kwargs::(.+?)$', re.MULTILINE)
 _LANG_MAP = {
     'py': 'python', 'pyi': 'python',
     'js': 'javascript', 'jsx': 'jsx',
@@ -89,7 +97,16 @@ _LANG_MAP = {
 
 
 def _expand_source_directives(markdown_content: str) -> str:
-    """Inline `.. source::path` directives with the referenced file content.
+    """Inline `.. source::path` and `.. kwargs::Pkg.Component` directives.
+
+    Both produce the prose dash-improve-my-llms serves at
+    `/<page>/llms.txt` and renders into the crawler document and the
+    prerender. `.. kwargs::` joined in 2026-08-30 for the reason the
+    module docstring of lib/api_reference.py records: its table existed
+    only in the component tree, so every non-JS reader got a heading with
+    nothing under it.
+
+    Inline `.. source::path` directives with the referenced file content.
 
     This produces the prose that dash-improve-my-llms 2.0 will serve at
     `/<page>/llms.txt`. Replacing the directive with the real file content
@@ -111,6 +128,15 @@ def _expand_source_directives(markdown_content: str) -> str:
     ported because the first page that documents the directive would
     otherwise reintroduce the defect silently, on the lane nobody looks at.
     """
+    def kwargs_expansion(directive_line: str) -> str:
+        from lib.api_reference import props_markdown
+
+        spec = _KWARGS_DIRECTIVE.match(directive_line).group(1).strip()
+        try:
+            return props_markdown(spec)
+        except Exception as exc:                      # pragma: no cover
+            return f'\n<!-- Error reading props for {spec}: {exc} -->\n'
+
     def expansion(directive_line: str) -> str:
         file_path = _SOURCE_DIRECTIVE.match(directive_line).group(1).strip()
         try:
@@ -135,6 +161,12 @@ def _expand_source_directives(markdown_content: str) -> str:
             fence = None
         elif fence is None and _SOURCE_DIRECTIVE.match(line):
             out.append(expansion(line))
+            continue
+        # Fence-aware for the same reason: a page DOCUMENTING the directive
+        # shows it inside a fence, and expanding that would inject a table
+        # into a code block.
+        elif fence is None and _KWARGS_DIRECTIVE.match(line):
+            out.append(kwargs_expansion(line))
             continue
         out.append(line)
     return '\n'.join(out)

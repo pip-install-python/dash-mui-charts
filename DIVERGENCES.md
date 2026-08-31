@@ -365,20 +365,39 @@ holds NO content in them, which is the evidence sync item 16 asks for
 before it reclasses them as cargo. Four places the tree required a port
 rather than a copy, each deliberate:
 
-- **`/api` is a markdown page here, not a generated one.** The template
-  adds `pages/api.py` + `lib/api_reference.py`, which read the installed
-  package's `metadata.json`. This fork already had `/api`: a markdown doc
-  whose `.. kwargs::` directive builds one table per component — prop,
-  type, default, description — from that same metadata, wrapped in the
-  site's own prose and carrying its own `.. toc::`. Contract 7 is met by
-  behaviour; installing the generator would replace a richer page with a
-  thinner one, drop the prose, and orphan the CSS divergence in §6 (the
-  `m2d-block-kwargs` selector exists because of these very tables).
+- **`/api` is a markdown page here, not a generated one — and the half of
+  contract 7 that is about the MACHINE LANE was missed on the first pass.**
+  The template adds `pages/api.py` + a generator whose `as_markdown()`
+  exists precisely so the llms doc carries the same tables. This fork has
+  `/api` as a markdown doc whose `.. kwargs::` directive builds one table
+  per component from the installed package's own docstrings, wrapped in the
+  site's prose and carrying its own `.. toc::`. Keeping that page is still
+  right — the generator would replace a richer page with a thinner one and
+  orphan §6's `m2d-block-kwargs` selector — but the report that said
+  "contract 7 is met by behaviour" was **true of the browser lane only**.
+  A markdown2dash directive renders Dash COMPONENTS; the machine lane and
+  the non-JS prerender are built from the markdown SOURCE, where the
+  directive line is stripped. Measured on the wire 2026-08-30 at build
+  `0224479`: `/api/llms.txt` 2681 bytes with ZERO table rows, the crawler
+  document zero `<table>`, the prerender block 9259 bytes with zero
+  `<table>` — while a real Chrome showed 13 tables and 371 rows. Thirteen
+  headings and nothing under them, for every agent and every reader
+  without JavaScript, on the one page whose entire purpose is the prop
+  list.
+  Closed by giving `.. kwargs::` the same treatment `pages/markdown.py`
+  already gave `.. source::` — expansion into the prose — over a single
+  shared parse in `lib/api_reference.py` that both the directive and the
+  expansion call. One parse, two renderings: 384 rows in every lane, and
+  `test_the_two_lanes_report_the_same_number_of_props` fails the moment a
+  second implementation appears.
   `API_PACKAGES = ["dash_mui_charts"]` IS set — it drives the header's
-  version badge and the sidebar's API section, and
-  `tests/test_nav_contract.py::test_the_api_page_documents_the_declared_package`
-  pins the behaviour on this fork's page. Consequence: `has_aside("/api")`
-  is True here and False on the template.
+  version badge and the sidebar's API section. Consequence:
+  `has_aside("/api")` is True here and False on the template.
+  **The lesson, and it is about the test rather than the page**: the pin
+  that should have caught this asserted each component NAME appeared in
+  the layout and in `/api/llms.txt`. Both were true with zero rows — the
+  names come from the page's own `### LineChart` headings. A test that
+  checks a table's headers and not its body certifies an empty table.
 - **`SAME_AS` keeps the PyPI project.** The template ships
   `SAME_AS = [GITHUB_URL]` because it publishes no package. This host
   documents one, so the sameAs loop names GitHub *and*

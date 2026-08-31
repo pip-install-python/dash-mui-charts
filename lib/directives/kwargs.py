@@ -1,83 +1,27 @@
-import importlib
-import inspect
+"""`.. kwargs::Package.Component` — the browser lane's props table.
+
+The parse lives in `lib/api_reference.py` and is shared with the machine
+lane's markdown expansion in `pages/markdown.py`. It used to live here,
+which is precisely why the two lanes could disagree: this directive
+rendered 371 rows into the React tree while `/api/llms.txt` and the
+prerender carried none, because a markdown2dash directive produces
+COMPONENTS and the machine lane is built from the markdown SOURCE.
+
+One parse, two renderings. Do not reintroduce a second one here.
+"""
 from markdown2dash.src.directives.kwargs import Kwargs as KwargsBase
 
-
-def convert_docstring_to_dict(docstring):
-    """Convert numpy style parameter docstring to a list of dicts with keys name, type, description"""
-
-    lines: list[str] = docstring.split("----------\n")[-1].split("\n")
-
-    params = []
-    new_param = None
-    for line in lines:
-        if not line.startswith("    "):
-            if new_param is not None:
-                params.append(new_param)
-            name, type = line.split(": ", 1)
-            new_param = {"name": name, "type": type, "description": ""}
-        else:
-            new_param["description"] += " " + line.strip()
-    params.append(new_param)
-
-    return params
+from lib.api_reference import props_for
 
 
 class Kwargs(KwargsBase):
 
     def hook(self, md, state):
-        sections = []
-
-        for tok in state.tokens:
-            if tok["type"] == self.block_name:
-                sections.append(tok)
-
-        for section in sections:
+        for section in state.tokens:
+            if section["type"] != self.block_name:
+                continue
             attrs = section["attrs"]
-
-            # Parse the component specification (e.g., "dmc.Button" or "html.Div")
-            component_spec = attrs["title"]
-
-            # Common package name mappings
-            package_map = {
-                "dmc": "dash_mantine_components",
-                "html": "dash.html",
-                "dcc": "dash.dcc",
-                "dash": "dash"
-            }
-
-            # Try to parse package.Component format
-            if "." in component_spec:
-                package_abbr, component_name = component_spec.rsplit(".", 1)
-                package = package_map.get(package_abbr, package_abbr)
-            else:
-                # If no package specified, use default or library attribute
-                package = attrs.pop("library", "dash_mantine_components")
-                component_name = component_spec
-
-            try:
-                imported = importlib.import_module(package)
-                component = getattr(imported, component_name)
-                docstring = inspect.getdoc(component)
-
-                if docstring and "----------" in docstring:
-                    # numpy-style (dash-mantine-components hand-written docs)
-                    docstring = docstring.split("----------\n")[-1]
-                    attrs["kwargs"] = convert_docstring_to_dict(docstring)
-                elif docstring and "Keyword arguments:" in docstring:
-                    # dash-generate-components style — every dash_mui_charts
-                    # wrapper. The base package ships a parser for exactly
-                    # this format; the numpy override above shadowed it.
-                    from markdown2dash.src.utils import (
-                        convert_docstring_to_dict as dash_convert,
-                    )
-
-                    attrs["kwargs"] = dash_convert(
-                        docstring.split("Keyword arguments:")[-1]
-                    )
-                else:
-                    attrs["kwargs"] = []
-            except Exception:
-                # Import failed or the component has no usable docstring;
-                # a props table is a nice-to-have, not worth failing a page for.
-                attrs["kwargs"] = []
+            # `library:` stays supported for the bare-name form; a dotted
+            # spec ("dash_mui_charts.LineChart") names its own package.
+            default_package = attrs.pop("library", "dash_mantine_components")
+            attrs["kwargs"] = props_for(attrs["title"], default_package)

@@ -71,6 +71,21 @@ this fork's shape alongside items 12 and 13 below.
 
 #### Fixed
 
+- **`/api` served thirteen headings and zero property rows to everything
+  that does not run JavaScript.** `.. kwargs::` is a markdown2dash
+  directive, and a directive renders Dash *components* — so its tables
+  existed only in the browser's React tree. The machine lane
+  (`/api/llms.txt`, the crawler document) and the non-JS prerender are all
+  built from the page's markdown *source*, where the directive line is
+  stripped. Measured on the wire: `/api/llms.txt` 2681 bytes with no table
+  rows, the prerender with no `<table>`, while a real browser showed 13
+  tables and 371 rows. On the one page whose whole purpose is the prop
+  list, every agent and every crawler got nothing. `pages/markdown.py` now
+  expands `.. kwargs::` into a markdown table exactly as it already did for
+  `.. source::`, and both the directive and that expansion read ONE parse
+  in the new `lib/api_reference.py` — 384 rows in every lane, with a test
+  that fails if the two ever disagree.
+
 - **Both live batteries were reading the wrong document.**
   `scripts/network_smoke.py`'s default User-Agent was the bare internal
   token, which at dash-improve-my-llms 2.8 has no browser engine token and
