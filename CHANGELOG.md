@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Internal traffic stops counting itself in the read ledger
+
+Sync 1.6.43, ported into this fork's shape.
+
+#### Fixed
+
+- **The network's own probes were the busiest "vendor" on this host's
+  ledger.** `AnalyticsTracker.record_read` — the hook that keeps a row for
+  every corpus document served — never applied the internal-traffic drop
+  that `track_visit` has always applied. So the hub's hourly health sweep,
+  every link audit and every post-deploy battery landed in the `reads`
+  table and rode the daily rollup to the network board. "Counted nowhere"
+  now includes the read table. The drop keys on the event's `ua` field,
+  which is what the package calls it — a drop keyed on `user_agent` would
+  be a silent no-op, so a test asserts the field name against the resolved
+  wheel rather than trusting the spec.
+
+#### Recorded
+
+- `vendor_class` joined the package's read-event fields between 2.9.0 and
+  2.9.4. `lib/traffic_rollup.py` already read it, so the rollup's vendor
+  `class` column starts carrying real values rather than nulls, with no
+  code change here.
+
 ### The 1.6.41 remainder: short sidebar labels, a skip link, dated pages
 
 Sync item 18, ported into this fork's shape.

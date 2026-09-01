@@ -98,6 +98,85 @@ def test_internal_ua_is_counted_nowhere(client):
     assert len(_ledger_visits()) == before
 
 
+# ------------------------------------------------------- the READ table too --
+
+
+def _ledger_reads():
+    tracker.flush()
+    try:
+        with open(analytics_path()) as f:
+            return json.load(f).get("reads", [])
+    except FileNotFoundError:
+        return []
+
+
+def test_the_read_event_carries_ua_not_user_agent():
+    """The fix keys on `ua`, so prove that is the field name IN THE RESOLVED
+    WHEEL rather than trusting the spec (1.6.43 item 1).
+
+    A drop keyed on a name the package does not use is silently a no-op —
+    this item's own failure mode — and it would fail OPEN in production
+    while passing in CI if the two resolved different versions. So the
+    assertion is against whatever version is actually installed, and the
+    version is printed beside it.
+    """
+    from dash_improve_my_llms import __version__ as pkg_version
+    from dash_improve_my_llms._ledger import EVENT_FIELDS
+
+    print(f"\n[read-ledger] dash-improve-my-llms resolved: {pkg_version}")
+    print(f"[read-ledger] EVENT_FIELDS: {EVENT_FIELDS}")
+    assert "ua" in EVENT_FIELDS, (
+        f"the read event has no `ua` field at {pkg_version} — record_read's "
+        "internal-traffic drop is keyed on it and would be a silent no-op"
+    )
+    assert "user_agent" not in EVENT_FIELDS, (
+        "a `user_agent` field appeared; the drop keys on `ua` and the two "
+        "must not diverge silently"
+    )
+
+
+def test_internal_traffic_is_dropped_from_the_READ_table(client):
+    """1.6.43 item 1: "counted nowhere" includes the read table.
+
+    BOTH DIRECTIONS in one test, because a drop that discards everything
+    passes the negative half on its own — and the counts are PRINTED, since
+    a bare "no rows" is the negative this round learned not to trust.
+
+    The crawler probe deliberately carries the internal token ALONGSIDE the
+    vendor token: that is the network's convention for a probe, and a bare
+    vendor UA would write an unverified vendor row into a real ledger. The
+    row it must still produce is the one from the un-tokened fetch.
+    """
+    from dash_improve_my_llms import __version__ as pkg_version
+
+    # 1. token-carrying corpus fetches — must write NOTHING
+    before = len(_ledger_reads())
+    client.get("/llms.txt", user_agent=internal_ua("network-smoke"))
+    client.get("/llms-full.txt", user_agent=INTERNAL_UA)
+    client.get("/api/llms.txt", user_agent=internal_ua("link-audit"))
+    after_internal = len(_ledger_reads())
+    print(f"\n[read-ledger] dimll {pkg_version}: 3 internal-token corpus "
+          f"fetches -> reads rows {before} -> {after_internal} "
+          f"(delta {after_internal - before})")
+    assert after_internal == before, (
+        f"{after_internal - before} internal-traffic row(s) reached the read "
+        "table; the network's own probes would be the busiest vendor on the board"
+    )
+
+    # 2. a real crawler — must write EXACTLY ONE, so the pin cannot pass by
+    #    dropping everything
+    client.get("/llms.txt", user_agent=CRAWLER_UA)
+    after_crawler = len(_ledger_reads())
+    print(f"[read-ledger] one crawler fetch -> reads rows {after_internal} -> "
+          f"{after_crawler} (delta {after_crawler - after_internal})")
+    assert after_crawler == after_internal + 1, (
+        f"expected exactly one read row from a real crawler, got "
+        f"{after_crawler - after_internal} — the drop is discarding "
+        "everything and the negative above proves nothing"
+    )
+    assert _ledger_reads()[-1]["path"] == "/llms.txt"
+
+
 def test_a_crawler_shaped_probe_carrying_the_token_stays_internal(client):
     """The battery's crawler probe exercises the bot path deliberately.
 
