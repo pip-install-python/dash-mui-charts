@@ -1,6 +1,6 @@
 """
 Visitor Analytics Tracker
-Tracks visitor information including device type, bot detection, and geolocation.
+Tracks device type, bot classification and coarse location — never an address.
 
 This ledger is the raw material for two things:
 
@@ -10,7 +10,7 @@ This ledger is the raw material for two things:
 
 Because the hub compares apps side by side, the fields written here match the
 hub's own ledger exactly: ``{timestamp, path, device_type, user_agent,
-bot_type?, ip_address?, location?}``. Crawler rows (``device_type == "bot"``)
+visitor_key, bot_type?, location?}``. Crawler rows (``device_type == "bot"``)
 additionally carry ``{vendor_key, vendor_class, verified, lane}`` since
 1.6.34; human rows are unchanged.
 
@@ -38,13 +38,17 @@ Accuracy notes (these are the things that quietly wreck the numbers):
   before device detection — the network's internal-traffic contract
   (https://2plot.ai/docs/satellite-analytics). ``/healthz`` is dropped there
   too. Both are write-time rules on purpose; see the comment in ``track_visit``.
-- **Client IP** comes from the proxy headers first (``CF-Connecting-IP``,
-  ``X-Forwarded-For``, ...). Behind Cloudflare/Render, ``remote_addr`` is the
-  *proxy*, so every visitor would collapse into one and geolocation would point
-  at a datacenter.
-- **Country** prefers Cloudflare's ``CF-IPCountry`` header — free, accurate and
-  instant. The ip-api.com lookup is only a fallback (set
-  ``ANALYTICS_GEO_LOOKUP=0`` to disable it entirely).
+- **The client address is never stored** (sync 1.6.44 item 16). It is read
+  from the proxy headers — behind Cloudflare/Render ``remote_addr`` is the
+  *proxy*, so every visitor would otherwise collapse into one — hashed with a
+  per-deployment salt into ``visitor_key``, and discarded. Set
+  ``ANALYTICS_KEEP_CLIENT_IP=1`` to keep the raw value; the default is off,
+  and it is the same switch ``record_read`` already honoured.
+- **Location comes only from the edge headers** the CDN attached
+  (``CF-IPCountry``, ``CF-IPCity``). There is no outbound lookup: the
+  ip-api.com call that used to POST every reader's address to a third party
+  over plaintext HTTP is gone. A request with neither header carries no
+  location, which is what this host actually knows.
 - **Writes are buffered, locked and pruned.** Multiple gunicorn/uvicorn workers
   share this file; without an ``flock`` around the read-modify-write they
   silently overwrite each other's hits. The buffer keeps a docs site from
@@ -55,11 +59,10 @@ import json
 import os
 import threading
 import time
+import hashlib
+import secrets
 from pathlib import Path
 from datetime import datetime, timedelta
-from functools import lru_cache
-
-import requests
 
 from dash_improve_my_llms import classify
 from dash_improve_my_llms._ledger import EVENT_FIELDS
@@ -147,70 +150,107 @@ def header_country(headers=None):
     return cc if cc and cc not in ("XX", "T1") else None
 
 
-_geo_cache: dict = {}
-_geo_inflight: set = set()
-_geo_lock = threading.Lock()
-_GEO_MAX_INFLIGHT = 4
+# ---------------------------------------------------------------------------
+# THE VISITOR KEY (sync 1.6.44 item 16 — privacy by design)
+# ---------------------------------------------------------------------------
+# No raw client address is stored, and no address ever leaves this process.
+#
+# What was here until 2026-09-05, and why it is gone: `_geolocate` POSTed
+# every non-bot visitor's IP address to `http://ip-api.com` — a third party,
+# over PLAINTEXT HTTP — to turn it into a city, and `geo_for` /
+# `_backfill_geo` ran that lookup on a background thread so the round trip
+# did not block a page view. The visit row then stored the raw
+# `ip_address` alongside it. Three separate problems in one path: a
+# third-party disclosure of the reader's address that nothing on the site
+# disclosed, in cleartext, plus an identifier in the ledger that makes every
+# row personally identifying for as long as retention holds it.
+#
+# What replaces it: nothing outbound at all. Location comes only from the
+# edge headers the CDN already attached to the request (`cf-ipcountry`, and
+# `cf-ipcity` where present) — facts this host was told, not facts it went
+# and looked up. Identity across requests comes from a SALTED HASH of the
+# address, computed here and never stored in reverse.
+#
+# The salt lives in a file that is gitignored IN THE SAME COMMIT that
+# introduced it. A committed salt would make every visitor_key in every fork
+# recomputable by anyone holding the repo, which undoes the item entirely —
+# the hash would be a slower way of storing the address.
+VISITOR_SALT_FILE = Path(
+    os.getenv("VISITOR_SALT_FILE")
+    or (_REPO_ROOT / ".visitor_salt")
+)
+
+_salt_lock = threading.Lock()
+_salt_cache: dict = {}
 
 
-@lru_cache(maxsize=2000)
-def _geolocate(ip_address):
-    """Geolocate an IP via ip-api.com (free, 45 req/min). Cached, including
-    misses, so one slow lookup never repeats for the same visitor."""
-    if not ip_address or ip_address in ('127.0.0.1', 'localhost', '::1'):
-        return None
-    if ip_address.startswith(_PRIVATE_PREFIXES):
-        return None
-    try:
-        response = requests.get(f'http://ip-api.com/json/{ip_address}', timeout=2)
-        if response.status_code == 200:
-            data = response.json()
-            if data.get('status') == 'success':
-                return {
-                    'country': data.get('country'),
-                    'country_code': data.get('countryCode'),
-                    'region': data.get('regionName'),
-                    'city': data.get('city'),
-                    'latitude': data.get('lat'),
-                    'longitude': data.get('lon'),
-                    'timezone': data.get('timezone'),
-                }
-    except Exception as e:
-        # Silently fail - geolocation is optional
-        print(f"Geolocation failed for {ip_address}: {e}")
-    return None
+def _visitor_salt() -> bytes:
+    """The per-deployment salt, created on first use.
 
-
-def geo_for(ip_address):
-    """Non-blocking geolocation.
-
-    Returns the cached result if we already know this IP, otherwise kicks the
-    lookup off in the background and returns ``None``. Hits sit in the write
-    buffer for up to ``FLUSH_INTERVAL_S`` before landing on disk, and ``flush``
-    backfills whatever resolved in the meantime — so the country still gets
-    recorded without ever putting an HTTP round trip in front of a page view.
+    Regenerating it (a fresh container with no disk, say) rotates every
+    visitor key — returning readers look new. That is the correct trade for a
+    documentation site's ledger: the salt is not a secret that must survive,
+    it is the thing that stops the hash being reversible by anyone who can
+    guess an address, and rotation only costs continuity of a count.
     """
-    if not ip_address:
-        return None
-    with _geo_lock:
-        if ip_address in _geo_cache:
-            return _geo_cache[ip_address]
-        # Bounded: a crawler sweep must not spawn a thread per address.
-        if ip_address in _geo_inflight or len(_geo_inflight) >= _GEO_MAX_INFLIGHT:
-            return None
-        _geo_inflight.add(ip_address)
-
-    def _resolve():
+    with _salt_lock:
+        cached = _salt_cache.get("salt")
+        if cached:
+            return cached
+        salt = None
         try:
-            result = _geolocate(ip_address)
+            salt = VISITOR_SALT_FILE.read_bytes().strip() or None
         except Exception:
-            result = None
-        with _geo_lock:
-            _geo_cache[ip_address] = result
-            _geo_inflight.discard(ip_address)
+            salt = None
+        if not salt:
+            salt = secrets.token_hex(32).encode()
+            try:
+                VISITOR_SALT_FILE.parent.mkdir(parents=True, exist_ok=True)
+                VISITOR_SALT_FILE.write_bytes(salt)
+                os.chmod(VISITOR_SALT_FILE, 0o600)
+            except Exception:
+                # A read-only filesystem is not a reason to start storing
+                # addresses. An in-memory salt still hashes; it just rotates
+                # on restart.
+                pass
+        _salt_cache["salt"] = salt
+        return salt
 
-    threading.Thread(target=_resolve, name="geo-lookup", daemon=True).start()
-    return None
+
+def visitor_key_for(ip_address, user_agent) -> str:
+    """A stable, non-reversible per-visitor identifier.
+
+    Salted SHA-256 over address + User-Agent, truncated. The User-Agent is in
+    the hash for the same reason the OLD composite key used it: two readers
+    behind one NAT are not one reader.
+    """
+    material = b"|".join([
+        _visitor_salt(),
+        (ip_address or "?").encode("utf-8", "replace"),
+        (user_agent or "?").encode("utf-8", "replace"),
+    ])
+    return hashlib.sha256(material).hexdigest()[:16]
+
+
+def header_location(headers=None):
+    """Location from the EDGE HEADERS only — never a lookup.
+
+    Country where the CDN gave one, city too where it gave that. A request
+    with neither header carries no location at all, which is the honest
+    answer: this host does not know.
+    """
+    lower = _lower_headers(headers)
+    cc = header_country(headers)
+    city = (lower.get("cf-ipcity") or "").strip() or None
+    if not cc and not city:
+        return None
+    out = {}
+    if cc:
+        out["country"] = cc
+        out["country_code"] = cc
+    if city:
+        out["city"] = city
+    return out
 
 
 class AnalyticsTracker:
@@ -284,17 +324,6 @@ class AnalyticsTracker:
         from, so what the site SAYS about a vendor and what it COUNTS agree."""
         return _classify(user_agent, client_ip)["bot_type"] or "unknown"
 
-    def get_geolocation(self, ip_address):
-        """Get geolocation data from IP address (ip-api.com fallback path).
-
-        Non-blocking: see ``geo_for``. Disable entirely with
-        ``ANALYTICS_GEO_LOOKUP=0`` (deployments behind Cloudflare don't need
-        it — ``CF-IPCountry`` already answers the question).
-        """
-        if os.getenv("ANALYTICS_GEO_LOOKUP", "1") == "0":
-            return None
-        return geo_for(ip_address)
-
     def track_visit(self, path, user_agent, ip_address=None, headers=None):
         """Track a visitor.
 
@@ -364,21 +393,21 @@ class AnalyticsTracker:
             for key in _VENDOR_KEYS:
                 visit_data[key] = c.get(key)
 
-        if ip_address:
+        # THE ADDRESS IS HASHED, NEVER STORED (sync 1.6.44 item 16). The row
+        # keeps a salted, non-reversible `visitor_key` so sessionisation and
+        # visitor counts still work, and `ip_address` is written only when an
+        # operator has explicitly opted in — the same switch record_read
+        # already honours, so both tables obey one rule.
+        visit_data["visitor_key"] = visitor_key_for(ip_address, user_agent)
+        if ip_address and KEEP_CLIENT_IP:
             visit_data["ip_address"] = ip_address
 
-        # Country first from the edge header (free + instant), then ip-api.
-        cc = header_country(headers)
-        if cc:
-            visit_data["location"] = {"country": cc, "country_code": cc}
-        elif ip_address and device_type != "bot":
-            geo_data = self.get_geolocation(ip_address)
-            if geo_data:
-                visit_data["location"] = geo_data
-            else:
-                # Lookup is in flight — flush() backfills it before the record
-                # hits disk (the marker never survives into the ledger).
-                visit_data["_geo_pending"] = ip_address
+        # Location from the EDGE HEADERS ONLY — no outbound lookup exists any
+        # more. A request the CDN told us nothing about carries no location,
+        # which is the honest answer rather than a guess.
+        location = header_location(headers)
+        if location:
+            visit_data["location"] = location
 
         self._enqueue(self._buffer, visit_data)
 
@@ -452,7 +481,6 @@ class AnalyticsTracker:
         if not pending and not reads:
             return
         try:
-            self._backfill_geo(pending)
             self._write(pending, reads)
         except Exception:
             # Never lose the app over analytics; put the hits back so the next
@@ -460,23 +488,6 @@ class AnalyticsTracker:
             with self._buffer_lock:
                 self._buffer = pending + self._buffer
                 self._reads_buffer = reads + self._reads_buffer
-
-    @staticmethod
-    def _backfill_geo(pending):
-        """Attach any background lookup that resolved while hits were buffered.
-
-        The marker is left in place — a flush that fails to write puts these
-        records back on the buffer, and the next attempt gets another chance at
-        a lookup that has since landed. ``_write`` strips it before serialising.
-        """
-        for v in pending:
-            ip = v.get("_geo_pending")
-            if not ip or v.get("location"):
-                continue
-            with _geo_lock:
-                loc = _geo_cache.get(ip)
-            if loc:
-                v["location"] = loc
 
     def _write(self, pending, reads=()):
         self._ensure_file_exists()
@@ -500,10 +511,7 @@ class AnalyticsTracker:
             # A ledger written before 1.6.34 has no `reads`; absence is empty.
             read_rows = data.setdefault("reads", [])
             stats = data.setdefault("stats", {})
-            # Internal markers stay on the buffered copy (for a retry) and
-            # never reach the ledger.
-            visits.extend({k: val for k, val in v.items() if k != "_geo_pending"}
-                          for v in pending)
+            visits.extend(pending)
             for v in pending:
                 dt = v["device_type"]
                 stats[dt] = stats.get(dt, 0) + 1

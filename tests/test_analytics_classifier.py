@@ -81,13 +81,25 @@ def test_claudebot_is_training_and_unverifiable(tracker):
 
 
 def test_a_browser_row_carries_no_vendor_keys(tracker):
-    """Human rows are byte-for-byte what v3 wrote — the rollup's tests must
-    not move on adoption."""
+    """Human rows carry no vendor identity — that half is unchanged.
+
+    THE KEY SET MOVED AT SYNC 1.6.44 ITEM 16, and this assertion failing is
+    how the item landed rather than a regression: `ip_address` left the
+    default row (it is now hashed into `visitor_key` and discarded), and
+    `visitor_key` joined it. The item names this exactly — "the row-key set
+    is a fork-owned seam and it WILL fail on your tree".
+
+    `ip_address` stays in the allowed set because `ANALYTICS_KEEP_CLIENT_IP=1`
+    may still put it back; what matters is that it is not there by DEFAULT,
+    which tests/test_privacy_by_design.py asserts directly.
+    """
     assert tracker.is_bot(CHROME) is False
     row = _one(tracker, CHROME)
     assert row["device_type"] == "desktop"
     assert set(row) <= {"timestamp", "path", "device_type", "user_agent",
-                        "ip_address", "location"}, row
+                        "visitor_key", "ip_address", "location"}, row
+    # The vendor keys are the thing this test is actually about.
+    assert not ({"vendor_key", "vendor_class", "verified", "lane"} & set(row))
 
 
 def test_internal_traffic_is_still_dropped_before_classification(tracker):

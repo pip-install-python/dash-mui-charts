@@ -100,3 +100,11 @@ KICKOFF-*.md
 !.claude/CLAUDE.md
 !.claude/settings.json
 !.claude/skills/
+
+# The visitor-key salt (sync 1.6.44 item 16). Generated on first use, never
+# committed: a committed salt makes every visitor_key in every fork of this
+# repo recomputable by anyone holding the tree, which would make the hash a
+# slower way of storing the address it exists to avoid storing. Ignored in
+# the SAME COMMIT that introduced the file, deliberately — the template
+# nearly committed its own with `git add -A`.
+.visitor_salt

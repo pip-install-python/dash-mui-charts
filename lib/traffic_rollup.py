@@ -110,6 +110,24 @@ def load_visits(path=None):
 
 
 def visitor_key(v):
+    """A row's visitor identity — the STORED key first, the old composite next.
+
+    THE FALLBACK IS LOAD-BEARING (sync 1.6.44 item 16). Rows written before
+    the tracker stopped storing addresses have no ``visitor_key`` and an
+    ``ip_address``; rows written after have the key and no address. Without
+    the fallback every pre-item row inside the 45-day retention window would
+    collapse to `"?|<ua-hash>"` — i.e. to its User-Agent — so a month of
+    history would report a handful of visitors, one per distinct browser
+    string, and the drop would look like a traffic cliff rather than a schema
+    change.
+
+    Both branches are pinned in tests/test_privacy_by_design.py; a
+    "prefer" that never falls back and a "fall back" that never prefers both
+    pass a one-sided check.
+    """
+    stored = v.get("visitor_key")
+    if stored:
+        return stored
     ua = hashlib.md5((v.get("user_agent") or "?").encode()).hexdigest()[:8]
     return f"{v.get('ip_address') or '?'}|{ua}"
 
