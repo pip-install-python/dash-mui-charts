@@ -49,6 +49,28 @@ logger = logging.getLogger(__name__)
 TIERS = ("public", "auth", "admin", "hidden")
 
 
+def normalize_tier(tier) -> str:
+    """A tier string reduced to its canonical form, or ``""`` if it is none.
+
+    Sync 1.6.44 item 18: **reject case and whitespace lookalikes of a tier,
+    never one literal.** Locally declared tiers already go through
+    `strip().lower()` and a TIERS membership check at registration, but a
+    tier arriving from the HUB does not — it is a value this host received
+    over the network. A comparison like `hub_tier not in ("auth", "admin",
+    "hidden")` answers TRUE for `"Auth"`, for `" auth "`, and for
+    `"auth\n"`, and each of those would leave a machine lane open on a page
+    the network had restricted.
+
+    Returns "" rather than the input for anything that is not a tier, so a
+    caller cannot accidentally propagate an unrecognised value as if it
+    were one.
+    """
+    if not isinstance(tier, str):
+        return ""
+    candidate = tier.strip().lower()
+    return candidate if candidate in TIERS else ""
+
+
 def _default_tier() -> str:
     tier = (os.getenv("PAGE_DEFAULT_TIER") or "public").strip().lower()
     if tier not in TIERS:

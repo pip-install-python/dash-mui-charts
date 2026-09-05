@@ -67,7 +67,11 @@ def _raw_tier(path: str) -> str:
     """Local tier (override-aware) with the hub's ceiling applied, no
     degradation. The ceiling only ever RAISES: a board override can loosen a
     local declaration, never what the network restricted."""
-    hub_tier = hub_client.hub_tiers().get(path)
+    # Normalised at the network boundary for the reason item 18 gives: an
+    # unrecognised or lookalike value must not reach `more_restrictive`,
+    # where it would be compared against the canonical tiers and silently
+    # lose. "" means the hub said nothing, which is the ceiling's no-op.
+    hub_tier = page_tiers.normalize_tier(hub_client.hub_tiers().get(path))
     local = local_tier(path)
     return page_tiers.more_restrictive(local, hub_tier) if hub_tier else local
 
@@ -119,7 +123,15 @@ def check(path: str) -> str:
     # this page above public, the machine lane must stay bound too — a
     # satellite's env default cannot loosen what the network restricted.
     if tier == "auth" and llms_public(path):
-        hub_tier = hub_client.hub_tiers().get(path)
+        # NORMALISED (sync 1.6.44 item 18). `hub_tier` arrives over the
+        # network, so it is not the already-validated value a local
+        # registration produces: an unnormalised `not in` answers True for
+        # "Auth", " auth " and "auth\n" alike, and every one of those would
+        # leave this machine lane OPEN on a page the network restricted.
+        # normalize_tier returns "" for anything that is not a tier, which
+        # fails to the permissive branch only when the hub genuinely said
+        # nothing — the same meaning `.get(path)` returning None has.
+        hub_tier = page_tiers.normalize_tier(hub_client.hub_tiers().get(path))
         if hub_tier not in ("auth", "admin", "hidden"):
             return "allow"
 
@@ -131,6 +143,25 @@ def check(path: str) -> str:
         return "allow"
 
     # No session: an agent, or an anonymous browser. Only a key can help now.
+    #
+    # A VERIFY VERDICT IS METERING EVIDENCE, AND HERE IT IS ALSO AUTHORISING
+    # (sync 1.6.44 item 18), so the host-held secret is named beside it:
+    # `hub_client.verify` reaches the hub ONLY when
+    # **CROSS_APP_WEBHOOK_SECRET** is set on this host. Without it,
+    # `hub_client.enabled()` is False and verify returns "gated" without a
+    # network call — so an attacker who can forge a `?key=` still cannot
+    # open anything, because the answer never depends on the key alone.
+    # That is what makes this a legitimate authorisation point rather than
+    # a verdict trusted from outside: the trust is anchored in a secret this
+    # host holds, not in the token the caller presented.
+    #
+    # The failure this guards against, stated so nobody relaxes it: if
+    # verify's closed fallbacks were loosened — returning "allow" on a
+    # timeout, on an unparseable body, or when the secret is absent — the
+    # gate would open for anyone who sends any key at all. Those fallbacks
+    # are SOURCE-PINNED in tests/test_verify_is_not_authorisation.py, not
+    # merely exercised, because a behavioural suite cannot see a default
+    # restored above its own guard.
     key = _request_key()
     if not key:
         return "gated"

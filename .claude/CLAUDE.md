@@ -477,4 +477,32 @@ they win.
   template 28` listed nine missing of which TWO were false positives
   this fork carries in its own words (the `release` build-proof trap
   and the resolved-version rule).
+- A VERIFY VERDICT IS METERING EVIDENCE, NEVER SOLE AUTHORISATION (1.6.44
+  item 18). A hub verdict says a key was presented and what the hub thought
+  of it; on its own it is a claim from OUTSIDE this host. A route may act
+  on it only where a HOST-HELD SECRET anchors the answer — here
+  `CROSS_APP_WEBHOOK_SECRET`, without which `hub_client.enabled()` is False
+  and `verify` returns "gated" before any network call, so a forged `?key=`
+  opens nothing. Name that secret beside any route consulting `verify` for
+  access, or document the route as metering-only. `lib/access.check` is
+  this fork's one such call site and now names it.
+  Three sub-rules, each learned from a way the pin can be present and
+  useless:
+  * SOURCE-PIN THE CLOSED FALLBACKS, do not merely exercise them. A
+    behavioural suite cannot see a default restored ABOVE its own guard —
+    put `return "allow"` as the first line of `verify` and every mocked-hub
+    test still passes, because none of them reaches the code it believes it
+    is testing. Walk the AST and assert every literal return is the closed
+    verdict, plus one non-literal return so "gated always" cannot pass.
+  * PIN THE GOOD ROWS BESIDE THE BYPASS ROWS. "deny stays denied" passes on
+    an implementation that denies everything, which is a different outage
+    rather than a fix.
+  * REJECT CASE AND WHITESPACE LOOKALIKES OF A TIER, not one literal. A
+    tier from the hub arrives over the network and is NOT the validated
+    value a local registration produces: `hub_tier not in ("auth", "admin",
+    "hidden")` answers True for "Auth", " auth " and "auth\n" alike, and
+    every one of those leaves a machine lane OPEN on a page the network
+    restricted. Found live here 2026-09-05, both hub-tier reads in
+    `lib/access.py`; `page_tiers.normalize_tier` returns "" for a non-tier
+    so an unrecognised value can never propagate as though it were one.
 
