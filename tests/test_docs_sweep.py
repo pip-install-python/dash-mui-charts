@@ -8,16 +8,26 @@ The item's stated premise does not hold here. It says `.flake8` excludes
 docs exclusion, `docs` is already on CI's flake8 line, and that file is
 reported `E902 TokenError` and fails the step.
 
-What survives is narrower and was measured rather than assumed: flake8
-catches MOST syntax errors and not all. These two are compile-time
-SyntaxErrors that flake8 reports nothing whatsoever for —
+What survives is narrower: flake8 catches MOST syntax errors and not all.
+The shape that is genuinely silent is a duplicate keyword argument —
 
-    print(a=1, a=2)         duplicate keyword argument   flake8 0 / compile 1
-    def f(): nonlocal q     no binding for nonlocal      flake8 0 / compile 1
+    print(a=1, a=2)         flake8 exit 0, NOTHING reported / py_compile exit 1
 
-— so a docs example carrying either would pass lint, ship, and raise at
-render time inside `.. exec::` on a page nobody re-opened. That is the gap
-the sweep closes here.
+— so a docs example carrying it would pass lint, ship, and raise at render
+time inside `.. exec::` on a page nobody re-opened. That is the gap the
+sweep closes here.
+
+VERSION MATTERS, and this file got it wrong once. The first draft also
+pinned `def f(): nonlocal q` as silent. It IS silent on the flake8 this
+seat measured on — **flake8 3.9.2 / pyflakes 2.3.1**, borrowed from a
+sibling venv and years behind — and it is NOT silent on a current one: the
+ops seat measured flake8 7.3.0 / pyflakes 3.4 reporting
+``F824 `nonlocal q` is unused: name is never assigned in scope`` (pyflakes
+gained it at 3.2). Pinning that shape would have gone red the day the venv
+upgraded, while asserting something false in the meantime. Only the
+duplicate-keyword shape is pinned, and the version it was measured on is
+recorded here so the next person can tell a real regression from a
+toolchain move.
 """
 from __future__ import annotations
 
@@ -33,9 +43,14 @@ DOCS = REPO_ROOT / "docs"
 
 # The shapes flake8 does NOT report, measured. If a future flake8 starts
 # flagging one, this list is what should be revisited — not the sweep.
+# Measured on flake8 3.9.2 / pyflakes 2.3.1 (this seat) and confirmed still
+# silent on flake8 7.3.0 / pyflakes 3.4 (the ops seat, 2026-09-05).
+#
+# `def f(): nonlocal q` was here and was REMOVED: pyflakes >= 3.2 reports it
+# as F824, so it is a blind spot only on an old toolchain. See the module
+# docstring — a pin that encodes one venv's age is worse than no pin.
 FLAKE8_BLIND_SPOTS = {
     "duplicate keyword argument": "print(a=1, a=2)\n",
-    "nonlocal with no binding": "def f():\n    nonlocal q\n",
 }
 
 

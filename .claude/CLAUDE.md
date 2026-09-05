@@ -340,11 +340,19 @@ they win.
   `E902 TokenError` and fails the step. The RULE stands; the example was
   stale, and a trap carrying an unreproducible fact spends somebody's
   afternoon. What is still true here, and is now what item 7's sweep
-  exists for, was measured the same day: flake8 catches most syntax
-  errors and NOT all — `print(a=1, a=2)` (duplicate keyword argument) and
-  `def f(): nonlocal q` (no binding) are compile-time SyntaxErrors that
-  flake8 reports NOTHING for, exit 0, while `py_compile` exits 1. Same
-  family, same day: a naive
+  exists for: flake8 catches most syntax errors and NOT all —
+  `print(a=1, a=2)` (duplicate keyword argument) is a compile-time
+  SyntaxError that flake8 reports NOTHING for, exit 0, while `py_compile`
+  exits 1. **AND PIN THE TOOL VERSION WHEN YOU PIN A TOOL'S BLIND SPOT.**
+  This seat first recorded `def f(): nonlocal q` as a second blind spot;
+  it is one on the flake8 available here — **3.9.2 / pyflakes 2.3.1**,
+  borrowed from a sibling venv and years behind — and NOT on a current
+  one, where pyflakes >= 3.2 reports `F824`. Caught by the ops seat
+  re-measuring on 7.3.0 before it reached a spec. A blind-spot pin taken
+  on an old toolchain asserts something false and goes red the day the
+  venv upgrades, so record the version beside the measurement — the same
+  rule as printing the resolved package version, applied to the linter.
+  Same family, same day: a naive
   substring count read fenced documentation as defects (this seat), a
   file-scoped grep matched prose ABOUT the defect it was hunting
   (muicharts, clerkhook), a `git show … && diff` printed "(empty = same)"
