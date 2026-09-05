@@ -555,7 +555,19 @@ explicit removal.
 
 ---
 
-## Checked, and NOT divergent
+## Recorded conventions (not divergences)
+
+**Renamed from "Checked, and NOT divergent" at sync 1.6.44 item 9**, and
+widened: this is now the single place a guard entry belongs.
+
+A GUARD ENTRY documents something this fork deliberately MATCHES, or
+deliberately does NOT carry. It is not a divergence — that is the point of
+giving it its own section — but it needs writing down for the same reason a
+divergence does: **nothing in a diff distinguishes a considered decision from
+an accident**, so a later sync "restores" it and the decision is silently
+undone. The fan-out and the sync authors read THIS FILE. A test docstring is
+invisible to both, which is why a guard that lives only in `tests/` is not
+recorded at all.
 
 Recorded because a reader has reason to wonder:
 
@@ -584,7 +596,7 @@ Recorded because a reader has reason to wonder:
   `agent_key`, the control board, ship-dark via `PAGE_DEFAULT_TIER` —
   all template shape.
 
-## The a11y block's per-host outcomes (sync 1.6.44 item 6)
+### The a11y block's per-host outcomes (sync 1.6.44 item 6)
 
 Recorded because two sub-items resolved to a DECISION rather than a change,
 and a diff cannot tell a considered decision from an omission — so a later

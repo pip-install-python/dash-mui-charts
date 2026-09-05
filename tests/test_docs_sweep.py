@@ -164,3 +164,32 @@ def test_no_docs_page_emits_its_own_order_1_title(pages):
         f"pages emitting their own order=1 under markdown.py's order=2 "
         f"(a double heading): {offenders}"
     )
+
+
+# ------------------------------------------------------------ item 9 --------
+
+def test_divergences_has_a_recorded_conventions_section():
+    """SYNC 1.6.44 item 9. A guard entry needs a home in THIS file.
+
+    The reason it is not enough to leave guards in test docstrings: the
+    fan-out and the sync authors read DIVERGENCES.md and nothing else, so a
+    deliberate match recorded only in `tests/` is, to them, indistinguishable
+    from an accident — and the next sync restores it.
+    """
+    text = (REPO_ROOT / "DIVERGENCES.md").read_text()
+    assert "## Recorded conventions (not divergences)" in text
+
+
+def test_the_guard_entries_actually_live_under_it():
+    """Non-vacuity: the header alone is not the item.
+
+    An empty section would satisfy a header check while leaving every guard
+    where it was.
+    """
+    text = (REPO_ROOT / "DIVERGENCES.md").read_text()
+    section = text.split("## Recorded conventions (not divergences)", 1)[1]
+    section = section.split("\n## ", 1)[0]
+    bullets = [ln for ln in section.splitlines() if ln.startswith("- **")]
+    assert len(bullets) >= 3, f"only {len(bullets)} guard entries recorded"
+    # And the a11y outcomes were moved under it rather than left as a peer.
+    assert "### The a11y block's per-host outcomes" in section
