@@ -191,3 +191,62 @@ def test_cd_is_the_one_that_owns_main():
     triggers = _triggers(CD)
     branches = (triggers.get("push") or {}).get("branches") or []
     assert "main" in branches, "nothing runs on a push to main"
+
+
+# --------------------------------------------------- sync 1.6.44 item 17 ----
+
+def test_the_timing_trap_names_its_concrete_form():
+    """The detect: three phrases, matched with WHITESPACE FLATTENED.
+
+    Flattened because the kit is hard-wrapped prose — "eight samples at 45"
+    wraps across a line in the source, so an unflattened search for it finds
+    nothing on a file that says it. That is the item's own note, and it is
+    the reason this test does not simply grep.
+    """
+    text = (REPO / ".claude" / "CLAUDE.md").read_text()
+    flat = re.sub(r"\s+", " ", text)
+    for phrase in ("eight samples at 45", "completed_at", "unreadable"):
+        assert phrase in flat, f"trap 3(a) does not mention {phrase!r}"
+
+
+def test_the_trap_was_amended_not_appended():
+    """The item says AMEND IN PLACE; do not append a second entry.
+
+    Two entries about the same measurement is how a traps section grows to
+    the point where nobody reads it, and how a fork ends up with the old
+    diagnosis still sitting above the correction.
+    """
+    text = (REPO / ".claude" / "CLAUDE.md").read_text()
+    flat = re.sub(r"\s+", " ", text)
+    assert flat.count("Which branch Render actually builds") == 1
+    # The concrete form must live INSIDE that entry, not in one of its own.
+    entry = flat.split("Which branch Render actually builds", 1)[1]
+    entry = entry.split("- Verify the artifact the claim is about", 1)[0]
+    assert "eight samples at 45" in entry, (
+        "the sampler was appended as a separate trap instead of amending 3(a)"
+    )
+
+
+def test_the_sampler_exists_and_points_at_this_host():
+    sampler = REPO / "scripts" / "promote_sampler.py"
+    assert sampler.is_file()
+    src = sampler.read_text()
+    assert "muicharts.2plot.dev" in src, "the sampler still points at the template"
+    assert "boilerplate.2plot.dev" not in src
+
+
+def test_the_sampler_refuses_a_bracket_it_did_not_observe():
+    """The item's note: a single "new" sample cannot say what it followed."""
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "_sampler", REPO / "scripts" / "promote_sampler.py"
+    )
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+
+    # `unreadable` must be a state of its own, never folded into `old`.
+    assert mod.UNREADABLE != mod.OLD != mod.NEW
+    assert mod.classify(None, "abc") == mod.UNREADABLE
+    assert mod.classify("abc", "abc") == mod.NEW
+    assert mod.classify("def", "abc") == mod.OLD
