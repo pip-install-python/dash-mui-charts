@@ -550,17 +550,49 @@ def _prune(rows, stamp=_visit_stamp):
     return rows
 
 
+def _vendor_class_from_registry(vendor_key):
+    """``vendors.get_vendor(key).cls``, or None.
+
+    THE PACKAGE'S OWN REGISTRY, never a local map (sync 1.6.44 item 8). A
+    second copy of this mapping in this repo is the same defect as the UA
+    list the tracker used to carry: it goes stale silently, and the value it
+    reports is then this app's opinion rather than the classification the
+    rest of the network is grouping by.
+    """
+    if not vendor_key:
+        return None
+    try:
+        from dash_improve_my_llms import vendors
+
+        vendor = vendors.get_vendor(vendor_key)
+    except Exception:
+        return None
+    return getattr(vendor, "cls", None) or None
+
+
 def _classify(user_agent, client_ip=None):
-    """The one classifier, made total: never raises, always has ``lane``."""
+    """The one classifier, made total: never raises, always has ``lane``.
+
+    ``vendor_class`` PREFERS what the package emitted and derives only where
+    it is absent (sync 1.6.44 item 8). Both halves are load-bearing, and the
+    reason is this fork's `>=2.8.0` floor: `vendor_class` joined
+    ``EVENT_FIELDS`` between dimll 2.9.0 and 2.9.4, so a resolved wheel below
+    that emits a `vendor_key` with NO class, and a pure pass-through wrote
+    nulls into every crawler row while the registry knew the answer all
+    along. Preferring the event keeps the package authoritative when it does
+    speak; deriving fills the gap when it does not.
+    """
     try:
         c = classify(user_agent or "", client_ip)
     except Exception:
         c = {}
+    vendor_key = c.get("vendor_key")
     return {
         "lane": c.get("lane") or "browser",
         "bot_type": c.get("bot_type"),
-        "vendor_key": c.get("vendor_key"),
-        "vendor_class": c.get("vendor_class"),
+        "vendor_key": vendor_key,
+        "vendor_class": (c.get("vendor_class")
+                         or _vendor_class_from_registry(vendor_key)),
         "verified": c.get("verified") or "n/a",
     }
 
