@@ -130,6 +130,7 @@ from lib.constants import (  # noqa: E402
     SAME_AS,
     SITE_BRAND,
     SITE_DESCRIPTION,
+    SITE_SHORT_NAME,
     require_owned_base_url,
 )
 from lib.satellite_reporter import start_reporter  # noqa: E402
@@ -484,7 +485,64 @@ ACCESS_ENABLED = _access.configure(
                or os.environ.get("LLMS_PUBLIC_DEFAULT"))
 )
 
-add_llms_routes(app, LLMSConfig(warn_missing_llms_doc=True))
+# The API surface's own identity (sync 1.6.44 item 1, the `openapi_*`
+# knobs). The package cannot read `/healthz` and must not guess: without
+# these the FastAPI lane's OpenAPI document is titled "FastAPI" with
+# version "0.1.0", which is what an agent discovering a host through
+# `/openapi.json` would read as the app's name. The knobs exist so identity
+# flows one way — from this repo's constants, the same ones the browser
+# title, the og: tags and the network registry read.
+#
+# `openapi_version` is the API SURFACE's version, not the package's and not
+# this app's release: it moves when the routes change shape, so it is pinned
+# here rather than wired to a changelog. `llms_version` on `/healthz` is
+# where the resolved PACKAGE version is reported — two different questions,
+# deliberately not the same field.
+#
+# THIS FORK SERVES FLASK, so no `/openapi.json` is mounted and the knobs are
+# inert today. They are applied anyway: the seam is one env var wide (the
+# commented `[fastapi]` extra in requirements.txt), and a host that acquires
+# the lane should not also have to remember to acquire its identity.
+#
+# GUARDED ON THE SIGNATURE, and this is not defensive padding — it is the
+# difference between working and a boot crash. `LLMSConfig` gained these
+# three parameters in dash-improve-my-llms 2.9.4; on 2.8.0 it has ZERO
+# openapi parameters, and passing an unknown one is a TypeError AT IMPORT,
+# not a warning. This fork's requirements line is a `>=2.8.0` FLOOR, not the
+# fleet's `==` pin (that lands at 1.6.45), so a venv, a Docker layer or a CI
+# leg is entitled to resolve below 2.9.4 and must still boot. Raising
+# LLMS_PKG_FLOOR to (2, 9, 4) instead would be a brick, not a guard: a boot
+# floor above what requirements.txt guarantees refuses to start on a
+# dependency set the repo itself declares legal.
+#
+# DELETE THIS GUARD when the `==` pin lands — at that point the floor and
+# the requirement agree and the branch is dead code. `tests/test_openapi_
+# identity.py` pins both directions.
+
+
+def _openapi_kwargs(config_cls=LLMSConfig) -> dict:
+    """The three ``openapi_*`` knobs, or ``{}`` where the package predates them.
+
+    All-or-nothing by design: no released ``LLMSConfig`` has ever carried a
+    strict subset of the three, so a partial pass would be inventing a shape
+    to handle rather than describing one that exists.
+    """
+    try:
+        params = inspect.signature(config_cls).parameters
+    except (TypeError, ValueError):  # unintrospectable — treat as pre-2.9.4
+        return {}
+    knobs = {
+        "openapi_title": f"{SITE_SHORT_NAME} API",
+        "openapi_description": SITE_DESCRIPTION,
+        "openapi_version": "1.0",
+    }
+    return knobs if all(name in params for name in knobs) else {}
+
+
+add_llms_routes(app, LLMSConfig(
+    warn_missing_llms_doc=True,
+    **_openapi_kwargs(),
+))
 
 # The ledger row (sync item 12, dimll 2.8.0): the package emits one event per
 # corpus document it serves and does no I/O with it; the tracker keeps it as

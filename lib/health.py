@@ -43,6 +43,30 @@ def _resolved_country() -> str:
         return "unavailable"
 
 
+def _llms_version() -> dict:
+    """``{"llms_version": "2.10.0"}``, or ``{}`` if the package cannot be read.
+
+    Omitted rather than reported as "unknown": a health payload that invents
+    a version is worse than one silent about it, and run.py's boot floor
+    already refuses to start below the floor — so an absent key here means
+    the import broke AFTER boot, which is itself the finding.
+
+    Why it is worth a wire field at all: this fork pins a `>=` FLOOR, so the
+    resolved version is a build-time fact that no public surface reported.
+    "Which dash-improve-my-llms is production actually running?" had no
+    answer from outside the container, which made every version-dependent
+    diagnosis a guess — including whether a CI leg and production had
+    resolved the same wheel at all.
+    """
+    try:
+        import dash_improve_my_llms as _pkg
+
+        version = getattr(_pkg, "__version__", None)
+        return {"llms_version": version} if version else {}
+    except Exception:
+        return {}
+
+
 def health_payload(backend: str) -> dict:
     payload = {
         "ok": True,
@@ -57,6 +81,9 @@ def health_payload(backend: str) -> dict:
         # scripts/network_smoke.py holds this minor against the Dockerfile's
         # FROM tag, so image and declaration cannot part ways silently again.
         "python": platform.python_version(),
+        # WHICH dash-improve-my-llms resolved into the running image (sync
+        # 1.6.44 item 1). Additive and omitted on failure — see _llms_version.
+        **_llms_version(),
     }
     # Which commit the RUNNING instance was built from. This is what lets CD
     # verify the artifact it shipped rather than whichever build happens to
