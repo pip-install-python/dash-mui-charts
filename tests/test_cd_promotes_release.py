@@ -124,3 +124,70 @@ def test_the_posture_fence_declares_the_road():
     text = (REPO / "DIVERGENCES.md").read_text()
     fence = re.search(r"^```yaml posture[ \t]*\n(.*?)^```", text, re.M | re.S).group(1)
     assert re.search(r"^deploy:\s*release-branch\s*$", fence, re.M), fence
+
+
+# --------------------------------------------------- sync 1.6.44 item 12 ----
+
+CI = REPO / ".github" / "workflows" / "ci.yml"
+
+
+def _triggers(path: Path) -> dict:
+    """A workflow's `on:` block, read past PyYAML's boolean trap.
+
+    THE TRAP, and it is the whole reason this helper exists: YAML 1.1 parses
+    an unquoted `on:` key as the BOOLEAN True, so `workflow["on"]` raises
+    KeyError on every workflow file ever written. A test that catches that
+    and moves on asserts NOTHING — it reports green on a file it never read,
+    which is exactly the shape item 12 warns about.
+    """
+    doc = yaml.safe_load(path.read_text())
+    for key in (True, "on"):
+        if key in doc:
+            return doc[key] or {}
+    raise AssertionError(
+        f"{path.name}: no `on:` block found under either the boolean True "
+        f"key or the string 'on' — the parse is wrong, not the file"
+    )
+
+
+def test_the_boolean_on_key_trap_is_real():
+    """Non-vacuity for the helper: prove the KeyError actually happens.
+
+    Without this, `_triggers` looks like defensive padding and the next
+    person simplifies it back to `doc["on"]`.
+    """
+    doc = yaml.safe_load(CI.read_text())
+    assert True in doc, "PyYAML no longer folds `on:` to the boolean True"
+    assert "on" not in doc
+
+
+def test_cd_calls_ci_as_a_reusable_workflow():
+    """Half one of the detect."""
+    jobs = _cd()["jobs"]
+    calls = [j for j in jobs.values()
+             if str(j.get("uses", "")).endswith(".github/workflows/ci.yml")]
+    assert len(calls) == 1, "cd.yml must call ci.yml exactly once"
+
+
+def test_ci_does_not_also_run_itself_on_a_push_to_main():
+    """Half two — and the defect the pair produces.
+
+    cd.yml runs on push to main and its first job `uses:` ci.yml. If ci.yml
+    ALSO triggered on that push, one push would start two runs contending
+    for the same concurrency group and cancelling each other. A
+    `workflow_call` must create no run of its own.
+    """
+    triggers = _triggers(CI)
+    push = triggers.get("push")
+    assert not push, (
+        f"ci.yml triggers on push ({push!r}) while cd.yml calls it — one push "
+        f"would start two contending runs"
+    )
+    assert "workflow_call" in triggers, "ci.yml is not callable by cd.yml"
+
+
+def test_cd_is_the_one_that_owns_main():
+    """The complement: main must still be covered by something."""
+    triggers = _triggers(CD)
+    branches = (triggers.get("push") or {}).get("branches") or []
+    assert "main" in branches, "nothing runs on a push to main"
