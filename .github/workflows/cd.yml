@@ -37,6 +37,20 @@ concurrency:
 env:
   PIP_DISABLE_PIP_VERSION_CHECK: "1"
   SITE_URL: ${{ inputs.target_url || 'https://muicharts.2plot.dev' }}
+  # The fleet probe convention (sync 1.6.44 item 4). Every curl in this
+  # workflow fetches a LIVE network host, and until now they sent no
+  # User-Agent at all — which is the gap the item predicts, because the
+  # scripts had carried the outbound token since 1.6.40 and the workflows
+  # were never looked at. A UA-less request is not exempt from counting: it
+  # lands in the far side's ledger as an unidentified crawler-lane client,
+  # so a CD run was quietly adding rows to the host it was verifying.
+  #
+  # `curl/8` LEADS because probe_ua() requires a real engine token — a
+  # string carrying only the internal suffix classifies crawler-lane and
+  # would change which document the probe is answered with. The
+  # `2plot-internal` substring inside `2plot-internal/probe` is what makes
+  # the far side drop the row at write time.
+  PROBE_UA: "curl/8 2plot-internal/probe cd-wait"
 
 jobs:
   test:
@@ -121,7 +135,7 @@ jobs:
           # here in the 2.7.1 floor round. The fallback below covers the one
           # deploy where the running build still answers the old name.
           live_build() {
-            curl -fsS --max-time 20 "$SITE_URL/healthz" 2>/dev/null \
+            curl -fsS --max-time 20 -A "$PROBE_UA" "$SITE_URL/healthz" 2>/dev/null \
               | python3 -c 'import json,sys; print((json.load(sys.stdin) or {}).get("build") or "")' 2>/dev/null \
               || true
           }
@@ -135,7 +149,7 @@ jobs:
             sleep 120
             ok=0
             for _ in $(seq 1 40); do
-              if curl -fsS "$SITE_URL/healthz" > /dev/null; then
+              if curl -fsS -A "$PROBE_UA" "$SITE_URL/healthz" > /dev/null; then
                 ok=$((ok + 1))
                 [ "$ok" -ge 5 ] && break
               else
@@ -191,7 +205,7 @@ jobs:
         # workflow_dispatch against another host (its shas are not ours).
         if: github.event_name == 'push' || inputs.target_url == ''
         run: |
-          build="$(curl -fsS "$SITE_URL/healthz" | python3 -c 'import sys,json;print(json.load(sys.stdin).get("build",""))')"
+          build="$(curl -fsS -A "$PROBE_UA" "$SITE_URL/healthz" | python3 -c 'import sys,json;print(json.load(sys.stdin).get("build",""))')"
           if [ "$build" != "$GITHUB_SHA" ]; then
             echo "::error::verify refuses: $SITE_URL serves build '${build:-<none>}', this run is $GITHUB_SHA — nothing this run shipped is on the wire to verify"
             exit 1

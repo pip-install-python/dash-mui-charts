@@ -78,9 +78,21 @@ def _ssl_context() -> ssl.SSLContext:
 
 SSL_CONTEXT = _ssl_context()
 try:
-    from lib.constants import INTERNAL_UA as _INTERNAL_UA
+    from lib.constants import probe_ua as _probe_ua
 except Exception:  # running outside a repo checkout — keep the token intact
-    _INTERNAL_UA = "2plot-internal/1.0 (+https://2plot.ai/docs/satellite-analytics)"
+    def _probe_ua(engine, caller=""):
+        """Standalone mirror of ``lib.constants.probe_ua``.
+
+        This battery runs against production from a checkout that may not be
+        importable (CD copies the script alone), so the fallback must produce
+        the SAME string — the token is the contract and a drifted fallback
+        silently re-enters the far side's ledger.
+        """
+        engine = (engine or "").strip()
+        if not engine:
+            raise ValueError("probe_ua() needs a vendor-or-engine token")
+        ua = f"{engine} 2plot-internal/probe"
+        return f"{ua} {caller}".strip() if caller else ua
 # THE DEFAULT UA NAMES THE BROWSER LANE (sync item 17, found by
 # muischeduler). At dash-improve-my-llms >= 2.8 a User-Agent with no browser
 # ENGINE token is crawler-lane, so this battery's old default — the bare
@@ -91,13 +103,21 @@ except Exception:  # running outside a repo checkout — keep the token intact
 # engine token: INTERNAL_UA_TOKEN is a substring match, so the far side's
 # internal-traffic exclusion still holds and this battery is still counted
 # nowhere. CRAWLER_UA is the other lane and is deliberately untouched.
-BROWSER_UA = (
+#
+# 1.6.44 item 4 moves both strings onto `probe_ua()`, which is the `/probe`
+# spelling of the same token — "a host checking itself", distinct in the far
+# side's log from `internal_ua()`'s "a host using another host". Suppression
+# is unchanged: INTERNAL_UA_TOKEN is still a substring of the suffix, so the
+# far side drops these rows at write time exactly as before.
+BROWSER_UA = _probe_ua(
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
-    "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 "
-    + _INTERNAL_UA + " network-smoke"
+    "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "network-smoke",
 )
 UA = BROWSER_UA
-CRAWLER_UA = "Mozilla/5.0 (compatible; Googlebot/2.1) " + _INTERNAL_UA
+CRAWLER_UA = _probe_ua(
+    "Mozilla/5.0 (compatible; Googlebot/2.1)", "network-smoke"
+)
 
 # The body dash-improve-my-llms serves when a page has no prose registered.
 # Matched in full, deliberately: a substring check on "requires JavaScript"

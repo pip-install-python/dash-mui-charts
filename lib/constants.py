@@ -235,6 +235,62 @@ def internal_ua(caller: str = "") -> str:
     return f"{INTERNAL_UA} {caller}" if caller else INTERNAL_UA
 
 
+# The fleet probe convention (sync 1.6.44 item 4)
+# ---------------------------------------------------------------------------
+# A PROBE is machinery fetching a network host to CHECK it: a workflow's
+# `curl /healthz`, a smoke battery, a link audit, the Dockerfile HEALTHCHECK.
+# That is not the same shape as `internal_ua()`, which names this app calling
+# a peer server-to-server, and the difference earns a spelling of its own so
+# whoever reads the far side's log can tell "a host checking itself" from "a
+# host using another host".
+#
+# The rule, and BOTH halves matter:
+#
+#   * the string LEADS with a real vendor-or-engine token — Chrome, Googlebot,
+#     curl — because dash_improve_my_llms classifies on those tokens and a
+#     probe must exercise the SAME LANE as the thing it is checking serves;
+#   * it is GENERIC-WORD-FREE otherwise. `2plot-monitoring/1` is not a probe
+#     UA: measured on dimll 2.9.4, that string classifies `bot_type='monitor'`
+#     off the word "monitoring" alone, so a probe named that way changes the
+#     document it was sent to measure.
+#
+# Suppression is the TRACKER's job, not the UA's: PROBE_UA_SUFFIX carries
+# INTERNAL_UA_TOKEN, so `track_visit` and `record_read` drop the row at write
+# time. Lane, vendor and class therefore hold by construction — measured on
+# dimll 2.9.4, appending the suffix moves none of the three. This fork
+# re-measures that table in `tests/test_internal_traffic.py` on the RESOLVED
+# wheel rather than trusting the comment, because a floor bump is exactly
+# what would move it.
+PROBE_UA_SUFFIX = f"{INTERNAL_UA_TOKEN}/probe"
+
+
+def probe_ua(engine: str, caller: str = "") -> str:
+    """A fleet probe UA: ``engine`` token, ``PROBE_UA_SUFFIX``, then ``caller``.
+
+    ``engine`` is REQUIRED and must be a real vendor-or-engine token. A probe
+    carrying only the internal suffix classifies crawler-lane at dimll >= 2.8
+    whatever it meant, which silently swaps the document under a browser-lane
+    check — so this refuses rather than returning a string that would measure
+    the wrong lane.
+
+    ``caller`` names which probe this is — ``"network-smoke"``, ``"link-audit"``
+    — for whoever reads the far side's log, exactly as ``internal_ua()``'s
+    suffix does. It is not part of the contract: only the token is, and the
+    caller tag must never be a generic word (see the ``2plot-monitoring``
+    measurement above).
+    """
+    engine = (engine or "").strip()
+    if not engine:
+        raise ValueError(
+            "probe_ua() needs a vendor-or-engine token: a UA carrying only "
+            "the internal suffix classifies crawler-lane and changes which "
+            "document the probe is answered with"
+        )
+    caller = (caller or "").strip()
+    ua = f"{engine} {PROBE_UA_SUFFIX}"
+    return f"{ua} {caller}" if caller else ua
+
+
 def require_owned_base_url(base_url: str = BASE_URL) -> None:
     """Fail fast in production when BASE_URL isn't this app's real origin.
 
