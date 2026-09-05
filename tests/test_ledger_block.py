@@ -58,7 +58,24 @@ def test_persistent_is_false_for_a_path_inside_the_tree(monkeypatch):
     assert health._ledger_block()["persistent"] is False
 
 
-def test_persistent_is_true_for_a_path_outside_the_tree(tmp_path, monkeypatch):
+# A path that is outside the repository BY CONSTRUCTION, not by assumption.
+#
+# The first version of this used pytest's `tmp_path`, and that is fragile in
+# exactly the environment ops's verification standard prescribes: under
+# `env -i` there is no TMPDIR, Python's tempdir fallback resolved to the
+# REPOSITORY ROOT ITSELF, and `tmp_path` therefore landed INSIDE the tree —
+# so `persistent` correctly reported False and the test failed while the
+# code was right. Caught only by running from a clean clone with a stripped
+# environment; every normal local run has a TMPDIR outside the repo and
+# passed.
+#
+# The file need not exist: a missing ledger reports zero counts, and
+# `persistent` is computed from the PATH, which is the whole point of it
+# being a filesystem fact rather than a declaration.
+DISK_PATH = "/var/data/visitor_analytics.json"
+
+
+def test_persistent_is_true_for_a_path_outside_the_tree(monkeypatch):
     """A mounted disk. THE OTHER DIRECTION — the item requires both.
 
     A boolean pinned in only one direction is satisfied by a constant, and a
@@ -67,9 +84,13 @@ def test_persistent_is_true_for_a_path_outside_the_tree(tmp_path, monkeypatch):
     """
     import lib.health as health
 
-    monkeypatch.setenv("TRAFFIC_ANALYTICS_FILE",
-                       str(tmp_path / "visitor_analytics.json"))
+    monkeypatch.setenv("TRAFFIC_ANALYTICS_FILE", DISK_PATH)
     assert health._ledger_block()["persistent"] is True
+
+
+def test_the_disk_path_really_is_outside_the_tree():
+    """Non-vacuity for the fixture above, since the last one was not."""
+    assert not str(DISK_PATH).startswith(str(REPO_ROOT))
 
 
 def test_a_declared_disk_does_not_make_it_true(tmp_path, monkeypatch):
@@ -250,7 +271,7 @@ def test_the_guard_mirrors_the_existing_boot_line_prefix():
     assert "[muicharts] WARNING: TRAFFIC_ANALYTICS_FILE" in src
 
 
-def test_the_guard_and_the_block_AGREE(tmp_path, monkeypatch):
+def test_the_guard_and_the_block_AGREE(monkeypatch):
     """Item 22's own note: assert they agree rather than pinning either value.
 
     The guard fires exactly when the block would report persistent=False for
@@ -262,9 +283,10 @@ def test_the_guard_and_the_block_AGREE(tmp_path, monkeypatch):
     monkeypatch.delenv("TRAFFIC_ANALYTICS_FILE", raising=False)
     assert health._ledger_block()["persistent"] is False
 
-    # Set to a disk: guard silent, block says persistent.
-    monkeypatch.setenv("TRAFFIC_ANALYTICS_FILE", str(tmp_path / "v.json"))
+    # Set to a disk: guard silent, block says persistent. DISK_PATH rather
+    # than tmp_path, for the reason recorded above it.
+    monkeypatch.setenv("TRAFFIC_ANALYTICS_FILE", DISK_PATH)
     assert health._ledger_block()["persistent"] is True
 
-    r = _boot({"TRAFFIC_ANALYTICS_FILE": str(tmp_path / "v.json")})
+    r = _boot({"TRAFFIC_ANALYTICS_FILE": DISK_PATH})
     assert "is unset" not in r.stdout
