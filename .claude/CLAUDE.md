@@ -366,3 +366,29 @@ they win.
   borrowed from the sibling boilerplate venv by APPENDING to
   `sys.path` — so say which interpreter and which site-packages produced
   a count before quoting it.
+- WHEN A DETECT HUNTS A STRING, PARSE — do not grep (1.6.44 item 13,
+  whose file target `sync/README.md` this fork does not have: it
+  consumes specs and authors none). The rule is worth carrying anyway
+  because it recurs for a structural reason: **a good comment explains
+  the ABSENCE of the thing a detect hunts**, so the better-documented
+  the code, the more reliably a raw grep reports the very defect the
+  comment documents the fixing of. Strip comments AND STRINGS, or use
+  `ast.parse` — a comment strip alone still matches a live DOCSTRING
+  saying the same words. Flatten whitespace before matching prose: a
+  fragment that WRAPS across a line, or sits under a blockquote's `> `
+  markers, is otherwise invisible. And read case-insensitively.
+  FOUR instances in ONE session on this seat, 2026-09-05, each caught
+  only because the sweep went red on its own fix:
+    * `"HeadAsGet" in py.read_text()` over the whole tree matched the
+      test file's own prose about the shim it was proving absent;
+    * a workflow curl sweep matched the workflow's COMMENT about curl
+      and the `PROBE_UA:` value containing the string `curl/8`;
+    * `'trigger="hover"' not in text` matched the comment explaining
+      that `trigger="hover"` had been the defect — fixed with an AST
+      walk for the keyword argument;
+    * `"pointer: coarse" in css` found the CSS COMMENT above the rule
+      rather than the rule — fixed by stripping `/* */` first.
+  A fifth, from the same session and the same family: a whole-file
+  regex that matched NOTHING and would have reported a clean sweep, if
+  the non-empty-corpus assertion had not been there to catch it.
+

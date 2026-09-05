@@ -596,6 +596,18 @@ Recorded because a reader has reason to wonder:
   `agent_key`, the control board, ship-dark via `PAGE_DEFAULT_TIER` —
   all template shape.
 
+### This fork authors no sync specs (sync 1.6.44 item 13)
+
+`sync/` does not exist here and is not missing — this repo CONSUMES specs
+and authors none, which `tests/test_claude_kit.py` already encodes as a skip
+rather than a failure. Item 13 edits `sync/README.md`, so it has no file to
+land in on this fork.
+
+The item's RULE was ported to `.claude/CLAUDE.md`'s traps instead, because
+it applies to every detect a session writes here and it fired four times in
+the session that ported this drop. Recorded so a later sync does not read
+the absent `sync/README.md` as unported work.
+
 ### The a11y block's per-host outcomes (sync 1.6.44 item 6)
 
 Recorded because two sub-items resolved to a DECISION rather than a change,
