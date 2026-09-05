@@ -141,25 +141,46 @@ def test_no_docs_page_emits_its_own_order_1_title(pages):
             continue
         titles = [c for c in component_iter(layout)
                   if isinstance(c, dmc.Title)]
-        # THE DISCRIMINATOR is markdown.py's own heading, which it marks
-        # `className="m2d-heading"` — not "this page has both an order 1 and
-        # an order 2". The first cut used that co-occurrence and flagged `/`
-        # and `/time-clock-lab`, which are pages with an h1 and h2 SECTIONS,
-        # i.e. ordinary correct documents. A page that does not render
-        # through markdown.py is entitled to its own order=1, which is
-        # exactly what the rider says.
-        through_markdown = [
-            t for t in titles
-            if getattr(t, "order", None) == 2
+        # THE DISCRIMINATOR IS markdown.py's EXACT CONSTRUCTION, and getting
+        # here took three attempts, each instructive:
+        #
+        #   1. "has both an order 1 and an order 2" — that is simply what a
+        #      correct document looks like. Flagged `/`.
+        #   2. "has an order=2 Title classed m2d-heading" — looked precise,
+        #      is not: markdown2dash marks EVERY `##` heading m2d-heading,
+        #      so /terms and /privacy were flagged for having an h1 and an
+        #      h2 like every other document on earth.
+        #   3. `entry["module"] == "pages.markdown"` — the registry stores
+        #      the page NAME there for these pages, not a module path, so
+        #      NOTHING matched and the corpus guard caught it.
+        #
+        # markdown.py builds the page title as
+        # `dmc.Title(metadata.name, order=2, className="m2d-heading")`, so
+        # the page's own registered NAME appearing as that heading's text is
+        # what identifies it. A page not rendered that way is entitled to
+        # its own order=1, which is exactly what the rider says.
+        name = entry.get("name")
+        rendered_by_markdown_py = any(
+            getattr(t, "order", None) == 2
             and "m2d-heading" in (getattr(t, "className", "") or "")
-        ]
-        if not through_markdown:
+            and getattr(t, "children", None) == name
+            for t in titles
+        )
+        if not rendered_by_markdown_py:
             continue
         checked += 1
         if any(getattr(t, "order", None) == 1 for t in titles):
             offenders.append(path)
 
-    assert checked, "no page renders through markdown.py — nothing was checked"
+    # QUANTITATIVE, not merely non-zero. Discriminator #3 above satisfied a
+    # bare `assert checked` with a count of zero only because the guard
+    # existed at all; a discriminator matching ONE page would have satisfied
+    # a non-zero check while measuring almost nothing. Most of this site's
+    # pages render through markdown.py, so the count should be large.
+    assert checked > 25, (
+        f"only {checked} pages identified as markdown.py-rendered — the "
+        f"discriminator is probably wrong again"
+    )
     assert offenders == [], (
         f"pages emitting their own order=1 under markdown.py's order=2 "
         f"(a double heading): {offenders}"

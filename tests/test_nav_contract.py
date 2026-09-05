@@ -57,14 +57,28 @@ def test_code_highlight_copy_button_has_a_name():
 def test_no_dcc_where_dmc_has_the_component():
     """Requirement 10, fleet-wide: `dcc.` only for Location, Store,
     Interval, Upload, Graph (no DMC equivalent)."""
+    import ast
+
+    # PARSED, NOT GREPPED (sync 1.6.44 item 13). This used to strip `#`
+    # comment lines and regex the rest, which is the middle of the three
+    # options item 13 names and the one that looks safe: a DOCSTRING saying
+    # "render through the site's pipeline, not `dcc.Markdown`" is not a
+    # comment line, so it matched, and pages/legal.py was reported as an
+    # offender for the sentence explaining that it is not one. An AST walk
+    # sees attribute access and nothing else.
     offenders = []
+    swept = 0
     for folder in ("pages", "components"):
         for path in sorted((REPO / folder).glob("*.py")):
-            code = "\n".join(line for line in path.read_text().splitlines()
-                             if not line.lstrip().startswith("#"))
-            for m in re.finditer(r"\bdcc\.([A-Za-z]+)", code):
-                if m.group(1) not in ALLOWED_DCC:
-                    offenders.append(f"{folder}/{path.name}: dcc.{m.group(1)}")
+            swept += 1
+            tree = ast.parse(path.read_text())
+            for node in ast.walk(tree):
+                if (isinstance(node, ast.Attribute)
+                        and isinstance(node.value, ast.Name)
+                        and node.value.id == "dcc"
+                        and node.attr not in ALLOWED_DCC):
+                    offenders.append(f"{folder}/{path.name}: dcc.{node.attr}")
+    assert swept > 5, f"only {swept} modules swept"
     assert offenders == [], offenders
 
 
@@ -206,7 +220,14 @@ def test_footer_is_the_contract(app_module):
         assert href in text
     assert GITHUB_URL not in text, "the repo link is the top bar's; the footer links the profile"
     assert "/changelog" not in text, "the sidebar's single Changelog link is the one"
-    assert "/terms" not in text and "/privacy" not in text
+    # FLIPPED AT SYNC 1.6.44 ITEM 15, which predicts exactly this: the
+    # assertion was `"/terms" not in text and "/privacy" not in text`, and it
+    # was CORRECT while those pages did not exist — a footer must not link a
+    # soft 404. Now they are registered pages with real llms.txt documents on
+    # both lanes, so the contract inverts: the links must be PRESENT.
+    assert "/terms" in text and "/privacy" in text, (
+        "the Legal links left the footer"
+    )
 
 
 # ------------------------------------------------------- changelog --

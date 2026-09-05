@@ -163,6 +163,12 @@ CATEGORY_ORDER = [
     "CompositeChart",
     "TreeView",
     "Date & Time Pickers",
+    # LAST, and that is the same position the drop's "between Components and
+    # Admin" names (sync 1.6.44 item 15): this fork has no Components
+    # category — its component pages ARE the categories above — and Admin is
+    # built separately by components/navbar.py rather than living in this
+    # list. So the end of this list is where Legal sits relative to both.
+    "Legal",
 ]
 
 # Network-wide community links — identical on every host.

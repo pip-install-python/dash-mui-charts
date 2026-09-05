@@ -35,7 +35,23 @@ def create_footer():
         dmc.Container(
             dmc.Group(
                 [
-                    dmc.Text(f"© {datetime.now().year} {PUBLISHER}", size="sm", c="dimmed"),
+                    dmc.Group(
+                        [
+                            dmc.Text(f"© {datetime.now().year} {PUBLISHER}",
+                                     size="sm", c="dimmed"),
+                            # Legal links (sync 1.6.44 item 15). Plain
+                            # anchors to registered pages so they resolve in
+                            # BOTH lanes: a browser follows them, and each
+                            # has a real /llms.txt behind it for the machine
+                            # lane.
+                            dmc.Anchor("Terms", href="/terms", size="sm",
+                                       c="dimmed", underline="hover"),
+                            dmc.Anchor("Privacy", href="/privacy", size="sm",
+                                       c="dimmed", underline="hover"),
+                        ],
+                        gap="md",
+                        wrap="wrap",
+                    ),
                     dmc.Group(
                         [
                             _icon_link("radix-icons:github-logo", GITHUB_PROFILE_URL, "Pip Install Python on GitHub"),

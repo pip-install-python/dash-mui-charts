@@ -82,7 +82,40 @@ def _declared_lastmods() -> set[str]:
     if changelog.exists():
         dates |= set(re.findall(r"^## \[[^\]]+\] - (\d{4}-\d{2}-\d{2})\s*$",
                                 changelog.read_text(), re.MULTILINE))
+
+    # A THIRD source since sync 1.6.44 item 15: /terms and /privacy are not
+    # markdown docs pages either, and each declares its own `UPDATED` date in
+    # its module — a human types it when the document changes, and the page
+    # PRINTS it to the reader, which is a stronger declaration than
+    # frontmatter. Widened here for the reason the docstring above gives:
+    # the rule is "no date the project did not state", and narrowing it to
+    # docs/ would make this test quiet rather than honest.
+    #
+    # Read from the SOURCE, not by importing, so this stays usable without a
+    # booted app — and so a date that is only computed at runtime could
+    # never satisfy it.
+    for module in ("terms", "privacy"):
+        path = Path("pages") / f"{module}.py"
+        if not path.exists():
+            continue
+        m = re.search(r'^UPDATED\s*=\s*"(\d{4}-\d{2}-\d{2})"\s*$',
+                      path.read_text(), re.MULTILINE)
+        if m:
+            dates.add(m.group(1))
     return dates
+
+
+def test_the_declared_set_is_not_empty():
+    """Note 88 applied to the helper every lastmod assertion depends on.
+
+    If `_declared_lastmods()` ever returned an empty set — a moved docs
+    directory, a changed frontmatter key — the sitemap test above would fail
+    LOUDLY rather than pass quietly, which is the right direction. This pins
+    that it is genuinely finding dates, so a future refactor cannot make the
+    set trivially large either.
+    """
+    dates = _declared_lastmods()
+    assert len(dates) >= 3, f"only {len(dates)} declared dates found: {dates}"
 
 
 def test_the_changelog_lastmod_is_the_newest_release_heading():

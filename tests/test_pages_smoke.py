@@ -24,7 +24,7 @@ from conftest import CRAWLER_UA, REPO_ROOT, STUB_MARKER, layout_text, page_layou
 # tests/test_control_board.py owns its assertions. scripts/smoke_test.py
 # deliberately says 42 — it asks "which page modules import and render on
 # this Dash version", where the board belongs. Two numbers, two questions.
-EXPECTED_ROUTES = 41
+EXPECTED_ROUTES = 43
 
 # Routes whose demos read MUI_PRO_API_KEY (17, measured 2026-08-02). Pinned
 # by ROUTE, not by source file: the boilerplate migration moves a page's

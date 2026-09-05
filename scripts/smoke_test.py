@@ -43,7 +43,7 @@ sys.path.insert(0, str(REPO))
 # import and render under this exact Dash version", and an admin page that
 # explodes on Dash 4.1 is exactly the kind of thing this matrix exists to
 # catch. It renders its fail-closed layout with no Clerk and serves 200.
-EXPECTED_ROUTES = 43
+EXPECTED_ROUTES = 45
 # dash_mui_charts component instances across all pages: 194 on 2026-08-02,
 # with and without a Pro key (Pro pages mount their charts unlicensed and add
 # a banner). The floor has slack for demo edits but fails on "a whole
