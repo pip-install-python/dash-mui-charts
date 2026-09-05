@@ -505,4 +505,33 @@ they win.
     restricted. Found live here 2026-09-05, both hub-tier reads in
     `lib/access.py`; `page_tiers.normalize_tier` returns "" for a non-tier
     so an unrecognised value can never propagate as though it were one.
+- A PROXIED robots.txt IS NOT YOUR robots.txt (1.6.44 item 19). The file a
+  crawler receives is whatever the EDGE chose to serve, and a CDN may
+  manage it. Two shapes, both invisible to a battery that fetches the URL
+  and looks for its expected lines: an INJECTED STANZA (rules the app never
+  wrote — additional, so nothing is missing) and a MARKER WITH NOTHING
+  UNDER IT (a managed block adding no rule — so nothing is missing
+  either). The check must therefore be TWO-DIRECTIONAL: every directive
+  the app writes is served, AND every directive served is one the app
+  writes. Generate the app's side through the PACKAGE'S OWN
+  `generate_robots_txt` with the registered config — a reimplementation
+  compares the edge against your BELIEFS about the config and agrees with
+  the wire exactly when both are wrong the same way. `ai_bot_posture` in
+  `scripts/network_smoke.py`; the config is declared once in
+  `lib/robots_expected.py` and run.py reads it from there.
+  TWO TRAPS INSIDE THE TRAP, both hit here on the first live run:
+  * THE ROW NEEDS THE APP'S DEPENDENCIES INSTALLED BESIDE IT. CD's verify
+    job did checkout + setup-python and no install, so the generator was
+    unimportable and the row would have SKIPPED FOREVER — green, having
+    compared nothing. cd.yml now installs requirements before the battery.
+  * COMPARE ONLY AT THE SAME PACKAGE VERSION. The expectation is generated
+    by the dimll resolved where the battery RUNS; the served file by
+    whatever the deployed image resolved, and a `>=` floor lets those
+    differ legitimately. Measured 2026-09-05 against production: the row
+    reported `content-signal: search=yes, ai-input=yes, ai-train=yes` as
+    MISSING — a directive 2.10.0 emits and the deployed build's older
+    version does not. Version skew, not a proxy, and reporting it as one
+    sends somebody hunting a CDN that is doing nothing. `llms_version` on
+    `/healthz` (item 1) is the discriminator: absent or different -> SKIP
+    and say which versions; equal -> a difference can only be the edge.
 

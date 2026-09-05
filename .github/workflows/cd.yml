@@ -212,6 +212,18 @@ jobs:
           fi
           echo "::notice::verifying build $build (this run's sha)"
 
+      # SYNC 1.6.44 item 19's rider: the battery's `ai_bot_posture` row
+      # generates this app's OWN robots.txt through the package's generator
+      # and compares it against the served file in BOTH directions. Without
+      # the app's dependencies present it cannot import the generator, and
+      # the row SKIPS FOREVER — reading green while comparing nothing. This
+      # job previously did checkout + setup-python and no install.
+      - name: Install the app so the battery can generate its own robots.txt
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install --no-deps markdown2dash==0.1.2
+
       # The network battery first: it is the same script, with the same
       # check names, that CI ran against the container this deploy shipped.
       # A name that passed in CI and fails here isolates the fault to the

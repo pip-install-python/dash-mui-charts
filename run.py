@@ -73,7 +73,6 @@ from dash_improve_my_llms import (  # noqa: E402
     __version__ as LLMS_PKG_VERSION,
     add_llms_routes,
     LLMSConfig,
-    RobotsConfig,
     on_document_read,
     register_page_metadata,
 )
@@ -117,6 +116,7 @@ from dash_mui_charts import __version__ as _COMPONENT_VERSION  # noqa: E402
 # counted until the network ports the doc/spa split everywhere at once —
 # the x402 data window needs every satellite counting the same way.)
 from lib import network_directory  # noqa: E402
+from lib.robots_expected import ROBOTS_CONFIG as _ROBOTS_CONFIG  # noqa: E402
 from lib.analytics_tracker import tracker  # noqa: E402
 from lib.constants import (  # noqa: E402
     APP_TITLE,
@@ -396,13 +396,12 @@ network_directory.apply(BASE_URL)
 # 200/200/200, and the wire before the flip was the same 403/200/403 — so
 # every 403 this host ever served was the app's own middleware. There is no
 # edge wall in front of muicharts.2plot.dev.
-app._robots_config = RobotsConfig(
-    block_ai_training=False,      # training crawlers allowed; the ledger records every read
-    allow_ai_search=True,         # Allow Claude-User/-SearchBot, ChatGPT-User, ...
-    allow_traditional=True,       # Allow Googlebot, Bingbot, etc.
-    crawl_delay=10,
-    disallowed_paths=[],
-)
+# ONE DECLARATION, TWO CONSUMERS (sync 1.6.44 item 19). The config moved to
+# lib/robots_expected.py so the standalone battery can generate this app's
+# expected robots.txt from the SAME object the app serves from — a battery
+# holding its own copy would compare the edge against somebody's beliefs
+# about the config rather than against the config.
+app._robots_config = _ROBOTS_CONFIG
 
 # ============================================================================
 # Site identity for the CRAWLER document (dash-improve-my-llms 2.5.0+).
