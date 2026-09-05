@@ -87,7 +87,13 @@ def test_py_compile_catches_what_flake8_does_not(label, tmp_path):
     try:
         from flake8.main.cli import main as flake8_main
     except ImportError:  # pragma: no cover
-        pytest.skip("flake8 not importable — the correction cannot be measured")
+        pytest.skip(
+            "flake8 unavailable here — CI runs it in the LINT job, not the "
+            "test job, so the test job legitimately has no flake8 to call. "
+            "The measurement this test records is a property of flake8, not "
+            "of this repo; the py_compile half above is unconditional and is "
+            "what actually guards docs/."
+        )
 
     buf = io.StringIO()
     try:
