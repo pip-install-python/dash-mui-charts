@@ -105,9 +105,16 @@ def create_other_apps_menu():
                 }},
             ),
         ],
-        trigger="hover",
-        openDelay=100,
-        closeDelay=200,
+        # POINTER-ONLY WAS THE DEFECT (sync 1.6.44 item 6a). The target is
+        # already a real Button, so the menu looked accessible — but
+        # `trigger="hover"` means it opens on pointer entry and nothing
+        # else: a keyboard user tabbing to the control could focus it and
+        # never open it, and a touch user got a menu that depended on a
+        # hover state their device does not have. `click` is operable by
+        # pointer, keyboard (Enter/Space) and touch alike, which is the
+        # whole of the fix — the delays go with the hover behaviour they
+        # existed to smooth.
+        trigger="click",
     )
 
 

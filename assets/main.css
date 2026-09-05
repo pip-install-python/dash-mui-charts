@@ -649,3 +649,46 @@ code.m2d-codespan,
 .skip-link:focus {
     left: 0;
 }
+
+/* ===========================================================================
+   Accessibility block — sync 1.6.44 item 6
+   =========================================================================== */
+
+/* 6c — TOUCH TARGET SIZE AT PHONE WIDTH.
+   dmc.ActionIcon size="lg" computes to 34px, which is under the 44px
+   iOS/Android minimum. The site chrome (theme toggle, GitHub link, the
+   hamburger, the footer's icon links) is built entirely from those, so on a
+   phone every control in the header and footer was below the minimum while
+   the mobile drawer's rows — which already carry the rule above — were not.
+
+   Scoped to the coarse pointer rather than applied everywhere: on a desktop
+   with a mouse a 34px icon button is comfortable, and inflating the whole
+   chrome to 44px there would change the header's proportions for no
+   accessibility gain. `pointer: coarse` is the media query that actually
+   asks "is this a finger?", which is the question the 44px number answers. */
+@media (pointer: coarse) {
+    .mantine-Header-root .mantine-ActionIcon-root,
+    .mantine-AppShell-header .mantine-ActionIcon-root,
+    footer .mantine-ActionIcon-root {
+        min-width: 44px;
+        min-height: 44px;
+    }
+}
+
+/* 6b — PROSE LINK UNDERLINES, SCOPED TO THE PAGE BODY.
+   Underlining every anchor is the accessible default: colour alone must not
+   be the only thing distinguishing a link from its surrounding text. But
+   applied globally it REPAINTS THE CHROME — the navbar rows, the header's
+   icon anchors and the footer's link groups are all anchors too, and they
+   are already distinguishable by position, shape and hover state.
+
+   So the rule is scoped to the rendered document. `.m2d-block` is
+   markdown2dash's own wrapper around rendered prose, which makes this
+   follow the content rather than a hand-kept list of page containers. */
+.m2d-block a:not(.mantine-Button-root):not(.mantine-ActionIcon-root) {
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+}
+.m2d-block a:hover {
+    text-decoration-thickness: 2px;
+}

@@ -343,6 +343,24 @@ def track_visitor():
         pass
 
 
+@server.after_request
+def _asset_cache_lifetime(response):
+    """Give ``/assets/`` a lifetime (sync 1.6.44 item 6g).
+
+    Measured on this host first: `/assets/main.css` came back
+    `cache-control: no-cache` + `cf-cache-status: DYNAMIC`, so the edge was
+    storing nothing and every visitor revalidated the stylesheet on every
+    page load. Only unfingerprinted static assets are given a window;
+    documents keep revalidating. See ``lib/static_cache``.
+    """
+    from lib.static_cache import cache_control_for
+
+    value = cache_control_for(_flask_request.path)
+    if value and response.status_code == 200:
+        response.headers["Cache-Control"] = value
+    return response
+
+
 start_reporter()
 
 # ============================================================================

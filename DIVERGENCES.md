@@ -584,6 +584,42 @@ Recorded because a reader has reason to wonder:
   `agent_key`, the control board, ship-dark via `PAGE_DEFAULT_TIER` —
   all template shape.
 
+## The a11y block's per-host outcomes (sync 1.6.44 item 6)
+
+Recorded because two sub-items resolved to a DECISION rather than a change,
+and a diff cannot tell a considered decision from an omission — so a later
+sync would "restore" a fix for a defect this host does not have.
+
+- **6d — NOT REPRODUCED here**, as on the template. The item's own note says
+  *record, do not assume*, so this is the record: the sub-item's finding does
+  not occur on this fork, nothing was changed for it, and a future sync must
+  not install a fix for it without re-measuring first. If it ever does
+  reproduce, this entry is what should be edited.
+- **6e — unminified assets are a RECORDED DECISION, not an oversight.**
+  `assets/main.css` ships unminified and stays that way: the wire serves it
+  `content-encoding: gzip` (measured 2026-09-05 alongside the 6g headers), so
+  minification buys a fraction of an already-compressed payload while costing
+  the thing this file is actually optimised for — being readable by the next
+  person who has to find a hashed selector in it. The template records the
+  same decision for the same reason.
+- **6f — the attributes cannot ship on this Dash, and the pin says so.**
+  `loading` and `decoding` are not props of dash 4.4.1's `html.Img`; Dash
+  raises `TypeError` on either (measured, `tests/test_a11y_block.py`). Only
+  the PIN was ported, never the attributes. This tree's single `html.Img` is
+  the ad creative, whose dimensions are unknown at render time because the
+  `src` is filled by a callback — so intrinsic `width`/`height` cannot be
+  written either, and the box is reserved with `aspectRatio` instead. That
+  reservation is pinned so it is not silently dropped.
+- **6g — the defect reproduced here and is fixed.** Measured before porting,
+  as the item requires: `/assets/main.css` answered `cache-control: no-cache`
+  with `cf-cache-status: DYNAMIC`, so the edge stored nothing and every
+  visitor revalidated on every page load. `lib/static_cache.py` plus an
+  `after_request` hook now give `/assets/` a one-hour window with a day of
+  `stale-while-revalidate`. Documents are deliberately excluded — a page,
+  `/llms.txt`, `/healthz` and anything under `/admin` or `/api` are answers
+  about right now. **Wire acceptance is owed after the push**; the header on
+  the deployed host is the only thing that closes this one.
+
 ## Known drift — NOT divergence. Take these on the next sync.
 
 Listed here because this is where a syncing session looks; none of it is
