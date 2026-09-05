@@ -9,6 +9,16 @@ so the two systems can be eyeballed together.
 
 Reads ``visitor_analytics.json`` directly — no hub call, last 14 days.
 
+**A READ IS NOT A SERVE, and this page says which** (sync 1.6.44 item 3).
+Every row the package emits carries a ``verdict`` — one of ``served``,
+``priced``, ``gated``, ``denied``, ``blocked``, ``rate_limited`` — and a
+board that renders hits without it reports a vendor that was turned away at
+the door identically to one that was handed the document. That is the single
+number an operator is most likely to misread, because "ClaudeBot: 412 hits"
+is a very different fact depending on which of those it was. The vendor
+table therefore breaks out by verdict and labels each row, and the headline
+counts serves separately from total reads.
+
 Access: the control board's exact gate (``lib.auth.is_admin_user`` /
 ``admin_access_open()``); fails CLOSED without Clerk, exactly as
 ``pages/control_board.py`` does and for the same reason. Set
@@ -46,6 +56,9 @@ TRAFFIC_PATH = "/admin/traffic"
 DAYS = 14
 TOP_VENDORS = 8
 TOP_PATHS = 10
+# Same cap the v4 vendors[] block uses, so the board and the wire report
+# truncate at the same place even though they fold at different grain.
+VENDOR_ROWS_MAX = 40
 
 try:
     # Same treatment as the control board: sitemap exclusion, llms.txt 404,
@@ -158,17 +171,79 @@ def vendor_day_table(reads, days):
     return _table(head, body, id="traffic-vendor-day")
 
 
+def verdict_rows(reads_day) -> list[dict]:
+    """``vendor_rows``' fold, split one level finer — by ``verdict`` too.
+
+    DELIBERATELY PAGE-LOCAL, not a change to ``lib.traffic_rollup.vendor_rows``
+    (sync 1.6.44 item 3). That function builds the v4 ``vendors[]`` block this
+    host POSTs to 2plot.ai, so widening its key would change the network
+    payload's shape for every consumer of it — a fleet-wide contract change
+    smuggled in as a page improvement. The board can be more granular than
+    the wire report without the wire report moving.
+
+    ``verdict`` is normalised to ``"served"`` where the package emitted
+    nothing, which is what ``_ledger.verdict_for_status`` does for any
+    unlisted status: rows written before the field existed read as serves
+    rather than vanishing into an "unknown" bucket that never existed.
+    """
+    from dash_improve_my_llms._ledger import TIERS
+
+    acc: dict[tuple, dict] = {}
+    for r in reads_day:
+        key = r.get("vendor_key")
+        verified = r.get("verified") or "n/a"
+        policy = r.get("policy") or "default"
+        verdict = r.get("verdict") or "served"
+        row = acc.get((key, verified, policy, verdict))
+        if row is None:
+            row = acc[(key, verified, policy, verdict)] = {
+                "key": key,
+                "class": r.get("vendor_class") or None,
+                "verified": verified,
+                "policy": policy,
+                "verdict": verdict,
+                "hits": 0,
+                "bytes": 0,
+                "tiers": {t: 0 for t in TIERS},
+            }
+        row["hits"] += 1
+        try:
+            row["bytes"] += int(r.get("bytes") or 0)
+        except (TypeError, ValueError):
+            pass
+        tier = r.get("tier")
+        if tier in row["tiers"]:
+            row["tiers"][tier] += 1
+    # Serves first within a vendor, then loudest: an operator scanning the
+    # table should meet the turned-away rows as a break in the pattern.
+    return sorted(
+        acc.values(),
+        key=lambda v: (-v["hits"], v["key"] or "~", v["verdict"]),
+    )[:VENDOR_ROWS_MAX]
+
+
+def _verdict_cell(verdict: str):
+    """`served` stays plain; anything else is the thing worth seeing."""
+    if verdict == "served":
+        return dmc.Text("served", size="xs", c="dimmed")
+    return dmc.Badge(verdict, size="sm", variant="light", color="orange")
+
+
 def vendor_tier_table(reads_day):
     from dash_improve_my_llms._ledger import TIERS
 
-    rows = vendor_rows(reads_day)
-    head = ["vendor", "class", "verified", "policy", "hits", "bytes"] + list(TIERS)
+    rows = verdict_rows(reads_day)
+    head = (
+        ["vendor", "class", "verified", "policy", "verdict", "hits", "bytes"]
+        + list(TIERS)
+    )
     body = [
         [
             str(r["key"] or "(unidentified)"),
             str(r["class"] or "—"),
             r["verified"],
             r["policy"],
+            _verdict_cell(r["verdict"]),
             str(r["hits"]),
             _fmt_bytes(r["bytes"]),
         ]
@@ -251,15 +326,22 @@ def people_block(day: date):
     )
 
 
-def headline_block(day: date):
-    """The v3 crawler numbers for the same day, beside the ledger's own."""
+def headline_block(day: date, reads_day=()):
+    """The v3 crawler numbers for the same day, beside the ledger's own.
+
+    ``served`` is broken out from ``reads`` (sync 1.6.44 item 3): the two are
+    equal on a host that turns nobody away, and the day they are not is
+    exactly the day an operator needs to see it without opening the table.
+    """
     from lib.satellite_reporter import app_key
 
     payload = daily_rollup(app_key(), day) or {}
+    served = sum(1 for r in reads_day if (r.get("verdict") or "served") == "served")
     return _stat_cards([
         ("bot hits", payload.get("bot_hits", 0)),
         ("bot visitors", payload.get("bot_visitors", 0)),
         ("reads", payload.get("reads", 0)),
+        ("served", served),
     ])
 
 
@@ -273,7 +355,7 @@ def day_view(day: date, reads=None):
             dmc.Text(f"Selected day: {day.isoformat()}", size="sm", c="dimmed"),
             people_block(day),
             dmc.Title("Crawlers", order=4),
-            headline_block(day),
+            headline_block(day, reads_day),
             dmc.Title("Vendor → tier", order=4),
             vendor_tier_table(reads_day),
             dmc.Title("Top paths per vendor", order=4),
