@@ -421,3 +421,49 @@ def test_divergences_posture_fence_is_wellformed():
                     "wrong about this repo's own tree"
                 )
                 break
+
+
+def test_the_traps_section_is_not_behind_the_template(tmp_path):
+    """SYNC 1.6.44 item 14 — the fork's own currency check, run on itself.
+
+    Only the SHAPE is asserted here, not a number against the template: the
+    template checkout is not reachable from CI, and a test that silently
+    passed when it could not find one would be the exact defect note 88
+    describes. The pair comparison is a seat tool; this pins that the tool
+    works and that this fork's section is non-empty.
+    """
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "_kit_traps", REPO / "scripts" / "kit_traps.py"
+    )
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+
+    entries = mod.trap_entries((REPO / ".claude" / "CLAUDE.md").read_text())
+    assert len(entries) >= 20, f"only {len(entries)} trap entries"
+
+    # A missing template file must SKIP-shape (exit 2), never pass.
+    assert mod.main(["kit_traps.py", str(tmp_path / "nope.md")]) == 2
+
+
+def test_the_overlap_matcher_tolerates_an_adaptation():
+    """The item's note: a fork MERGES a trap into its own wording.
+
+    A strict matcher would report that adaptation as absence and train forks
+    to paste over their own text — the opposite of what item 14 asks for. So
+    this pins the looseness deliberately rather than leaving it incidental.
+    """
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "_kit_traps2", REPO / "scripts" / "kit_traps.py"
+    )
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+
+    template = "Always GET, never HEAD — the ASGI backends answer HEAD with 405."
+    adapted = ("Always GET, never HEAD on this host either; the ASGI backends "
+               "answer HEAD with 405, and muicharts is Flask so parity is free.")
+    assert mod._present(template, [adapted])
+    assert not mod._present(template, ["Something else entirely about robots."])

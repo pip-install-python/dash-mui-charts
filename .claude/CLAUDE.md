@@ -334,8 +334,11 @@ they win.
   commit` committed over a red suite because a pipeline's exit status is
   the LAST command's (this seat, one hour after writing the note above).
   Capture the exit code; count what you swept; say both.
-- And the same family one turn later, worth keeping because it nearly
-  shipped a wrong fact into a spec: extracting a package constant with
+- And the same family one turn later, MEASURED TWICE — this seat and
+  clerkhook hit it independently within the hour, so it is a property
+  of the technique and not one seat's slip — and worth keeping because
+  it nearly shipped a wrong fact into a spec: extracting a package
+  constant with
   `re.search(r"EVENT_FIELDS = \((.*?)\)", src, re.S)` truncated at a `)`
   inside a COMMENT in the middle of the tuple, printed eight of sixteen
   fields, and reported `'ua' present: False` — confidently, with a
@@ -391,4 +394,61 @@ they win.
   A fifth, from the same session and the same family: a whole-file
   regex that matched NOTHING and would have reported a clean sweep, if
   the non-empty-corpus assertion had not been there to catch it.
+- A SHELL'S CWD CAN SHADOW AN INSTALLED PACKAGE, and it produces the
+  most convincing wrong answer of the family: measuring `EVENT_FIELDS`
+  across two dimll versions, a seat ran the comparison with the cwd
+  inside an unpacked 2.9.4 wheel, so `import dash_improve_my_llms`
+  resolved from the CURRENT DIRECTORY rather than site-packages — and
+  two readings of ONE wheel were reported as two versions agreeing, in
+  a CHANGELOG and a shipped spec (2026-09-01, corrected the same day).
+  The load-bearing half was true and the supporting detail was
+  invented. When comparing versions, `print(mod.__file__)` and assert
+  it is the path you meant, or set PYTHONPATH explicitly and import in
+  a fresh process per version. Live here: this repo's
+  `dash_improve_my_llms` resolves to a DEV CHECKOUT at
+  `/Users/pip/PycharmProjects/dash-hook-my-ai/`, not site-packages and
+  not the requirements floor — which is exactly why item 10's rule
+  says print the path beside the version.
+- NAME THE CHECK THAT ACTUALLY RAN, not the one you meant to run
+  (1.6.44 item 7). The general form: a report says which invocation
+  produced the number, over how many files, and with what exit code,
+  because "lint passed" is a claim about a COMMAND and everyone reads
+  it as a claim about the CODE. The template's worked example does not
+  reproduce on this fork — see the note-88 entry above, where the
+  `docs/*/` exclusion claim is corrected — but the rule is the same,
+  and here CI runs `py_compile sweep of docs/` as its own named step
+  that FAILS on an empty corpus and prints the file count (100 today).
+- A CD LANE THAT CALLS ci.yml MUST NOT ALSO LET ci.yml RUN ITSELF on a
+  push to main (1.6.44 item 12). Both runs resolve to the concurrency
+  group `ci-${{ github.ref }}` with `cancel-in-progress: true`, so one
+  is killed at random; when the standalone run wins, CD's `test` job is
+  CANCELLED, `deploy` skips, `release` never moves — and `main` ahead
+  of `release` then reads as an ordinary pending push instead of as the
+  accident it is. Detect: `ci.yml` declares `push: branches: [main]`
+  AND `cd.yml` has `uses: ./.github/workflows/ci.yml`. THIS FORK HAS
+  THE CORRECT SHAPE ALREADY (pull_request + workflow_dispatch +
+  workflow_call) and the pin now lives in
+  `tests/test_cd_promotes_release.py`. Writing that pin has its own
+  trap: PyYAML parses an unquoted `on:` as the BOOLEAN True, so
+  `workflow["on"]` raises KeyError on every workflow file, and a test
+  that catches that and moves on asserts nothing at all.
+- A FORK'S TRAPS SECTION DRIFTS BEHIND THE TEMPLATE'S SILENTLY (1.6.44
+  item 14). The kit is contract-class, so a sync never copies it and
+  nothing prints the gap: emojimart carried 7 entries against the
+  template's 22, and its HEAD trap still held the diagnosis 1.6.32 had
+  corrected — a fork can be reading, and acting on, a fact the fleet
+  retired months ago. Detect, printed as a PAIR:
+  `python3 scripts/kit_traps.py <template>/.claude/CLAUDE.md` reports
+  `fork N / template M` and names what is missing. This fork's copy is
+  ORIENTED THE OTHER WAY from the template's — the fork under test is
+  this repo and the template is the argument, because on a fork the
+  useful question is "how far behind am I?". Matching is by token
+  overlap of the opening sentence, never exact text: a fork is EXPECTED
+  to merge a trap into its own wording, so a strict check would report
+  an adaptation as absence and train forks to paste over their
+  adaptations. MERGED, NEVER INSTALLED OVER. And read the output with
+  that looseness in mind — measured here 2026-09-05, `fork 24 /
+  template 28` listed nine missing of which TWO were false positives
+  this fork carries in its own words (the `release` build-proof trap
+  and the resolved-version rule).
 
