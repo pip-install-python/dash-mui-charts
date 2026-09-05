@@ -474,8 +474,25 @@ component = dmc.Container(
                                 ],
                                 gap="xs",
                             ),
-                            dmc.Title(id="lab-sw-readout", children="00:00:00",
-                                      order=1, ff="monospace"),
+                            # NOT a Title (sync 1.6.44 item 7's rider, which
+                            # found this). `order=1` was being used for its
+                            # SIZE, but it renders a real <h1> — so this page
+                            # announced "00:00:00" as its top-level heading,
+                            # below markdown.py's own order=2 page title, to
+                            # every screen reader and every crawler reading
+                            # the outline. A stopwatch readout is not a
+                            # section of the document.
+                            #
+                            # Same pixels, no heading semantics, and
+                            # aria-live so the value is actually announced as
+                            # it changes — which an <h1> never was.
+                            dmc.Text(
+                                id="lab-sw-readout", children="00:00:00",
+                                ff="monospace", fz="2.125rem", fw=700,
+                                lh=1.3,
+                                **{"aria-live": "polite",
+                                   "aria-label": "Elapsed time"},
+                            ),
                             dmc.Group(
                                 [
                                     dmc.Button(

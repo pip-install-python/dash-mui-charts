@@ -70,6 +70,55 @@ jobs:
         # for pages/*.py. Tighten there, not here.
         run: flake8 lib pages components docs tests scripts run.py usage.py _validate_init.py
 
+      - name: py_compile sweep of docs/
+        # Sync 1.6.44 item 7, ported with a CORRECTION measured on this repo.
+        #
+        # The item's premise is that `.flake8` excludes `docs/*/`, so
+        # `flake8 docs/` exits 0 with zero output on a file that does not
+        # parse. THAT IS NOT TRUE HERE: this repo's .flake8 has no docs
+        # exclusion, `docs` is already on the flake8 line above, and a file
+        # containing `def broken(:` is reported E902 and fails the step.
+        #
+        # The sweep is ported anyway, because the narrower claim survives and
+        # was measured: flake8 catches most syntax errors but NOT ALL. Two
+        # shapes are compile-time SyntaxErrors that flake8 reports nothing at
+        # all for —
+        #     print(a=1, a=2)          duplicate keyword argument
+        #     def f(): nonlocal q      no binding for nonlocal
+        # — both flake8 exit 0, both py_compile exit 1. A docs example
+        # carrying either would ship, and `.. exec::` would raise at render
+        # time on a page nobody re-opened.
+        #
+        # FAILS ON AN EMPTY CORPUS deliberately: a sweep that swept nothing
+        # and a sweep that found nothing print the same green, and only one
+        # of them is evidence. The count is printed beside the result.
+        run: |
+          python - <<'PY'
+          import py_compile, sys
+          from pathlib import Path
+
+          files = sorted(Path("docs").rglob("*.py"))
+          print(f"py_compile sweep: {len(files)} file(s) under docs/")
+          if not files:
+              print("::error::the docs/ sweep found no Python files — "
+                    "an empty corpus is not a pass")
+              sys.exit(1)
+
+          bad = []
+          for f in files:
+              try:
+                  py_compile.compile(str(f), doraise=True, cfile=str(f) + "c")
+              except py_compile.PyCompileError as exc:
+                  bad.append(f"{f}: {exc}")
+              finally:
+                  Path(str(f) + "c").unlink(missing_ok=True)
+
+          for line in bad:
+              print(f"::error::{line}")
+          print(f"{len(files) - len(bad)} compiled, {len(bad)} failed")
+          sys.exit(1 if bad else 0)
+          PY
+
       # The workflows lint themselves. Not belt-and-braces: an invalid
       # workflow file is the one defect CI structurally cannot report,
       # because the run dies before a job exists to fail. A double-quoted
