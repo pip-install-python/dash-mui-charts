@@ -314,10 +314,19 @@ they win.
 - Assert the corpus is NON-EMPTY before trusting any negative, and print
   the count beside the result (note 88). A sweep that found nothing and a
   sweep that swept nothing produce the same green, and only one of them
-  is evidence. Measured here 2026-09-01: this repo's `.flake8` excludes
-  `docs/*/`, so `flake8 docs/` exits 0 with a file in `docs/` containing
-  `def broken(:` — the linter is not passing that file, it is not reading
-  it; `py_compile` sees it at once. Same family, same day: a naive
+  is evidence. **CORRECTED 2026-09-05, re-measured on this tree**: the
+  example this note used to give is WRONG for this repo today. It said
+  `.flake8` excludes `docs/*/` so `flake8 docs/` exits 0 on a file
+  containing `def broken(:`. There is no docs exclusion in this repo's
+  `.flake8`, `docs` is on CI's flake8 line, and that file is reported
+  `E902 TokenError` and fails the step. The RULE stands; the example was
+  stale, and a trap carrying an unreproducible fact spends somebody's
+  afternoon. What is still true here, and is now what item 7's sweep
+  exists for, was measured the same day: flake8 catches most syntax
+  errors and NOT all — `print(a=1, a=2)` (duplicate keyword argument) and
+  `def f(): nonlocal q` (no binding) are compile-time SyntaxErrors that
+  flake8 reports NOTHING for, exit 0, while `py_compile` exits 1. Same
+  family, same day: a naive
   substring count read fenced documentation as defects (this seat), a
   file-scoped grep matched prose ABOUT the defect it was hunting
   (muicharts, clerkhook), a `git show … && diff` printed "(empty = same)"
@@ -334,3 +343,26 @@ they win.
   parse a language construct out of source with a regex, check the count
   against something independent (the file, `python -c "from … import X;
   print(len(X))"`, the CHANGELOG) before you believe a negative.
+- ACCEPTANCE IS QUOTED AT THE RESOLVED VERSION, not at the declared one
+  (1.6.44 item 10). Every acceptance line in a report prints the version
+  the run actually imported, and prints it by IMPORTING and reading
+  `__file__` — never by reading `requirements.txt`, which states a floor
+  and not a fact. On this fork the difference is routine rather than
+  theoretical: the line is `dash-improve-my-llms[flask]>=2.8.0` and the
+  local venv resolves **2.10.0 from a dev checkout at
+  `/Users/pip/PycharmProjects/dash-hook-my-ai/`**, so a report that
+  quoted the requirements line would name a version no test ran against.
+  Print both the version and the path.
+- AND NAME THE TOOLS WHOSE LOCAL INVOCATION IS NOT CI'S. A local run is
+  not the CI run, and the gap is silent in both directions. Measured on
+  this seat 2026-09-05: `actionlint` and `shellcheck` are NOT installed
+  here, so every workflow lint this session could claim was in fact not
+  run — CI's `lint` job downloads actionlint 1.7.7 and runs it, and that
+  is the only place it happens. The template's own note adds the subtler
+  half: `actionlint` WITHOUT shellcheck on PATH silently skips every
+  run-block's shell analysis, so "actionlint clean" from a machine
+  lacking shellcheck is a weaker claim than the same words from CI. This
+  repo's `.venv` likewise has no pytest and no flake8 — both are
+  borrowed from the sibling boilerplate venv by APPENDING to
+  `sys.path` — so say which interpreter and which site-packages produced
+  a count before quoting it.
