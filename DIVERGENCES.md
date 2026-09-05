@@ -219,6 +219,35 @@ visitor-tracking hook is Flask-specific). Consequences:
 A sync of anything in `lib/health.py` or the route-registration seam
 lands Flask-lane only.
 
+**`HeadAsGetMiddleware` is ABSENT here, and was never retired** (sync
+1.6.44 item 2, recorded per the ops seat's correction of 2026-09-05 —
+an absent shim must not be read as a retired one). The template shipped
+that middleware at 1.6.32 for its ASGI lane and 1.6.44 retires it now
+that dash-improve-my-llms 2.9.4 declares its own routes correctly. This
+fork never carried it because it never needed it: `werkzeug.routing`
+derives a HEAD rule from every GET rule, so HEAD parity is free on
+Flask. The defect the shim existed for is FastAPI's `APIRoute`, which
+takes `methods` literally — `starlette.routing.Route` is not the
+culprit and does add HEAD, and the kit's trap names that layer.
+
+Measured rather than assumed: `tests/test_head_get_parity.py` asserts
+**15/15 HEAD/GET status pairs** across `/healthz`, `/llms.txt`,
+`/robots.txt`, `/sitemap.xml` and `/` × browser/crawler/library UAs, the
+same table the template reports without the shim. It is measured
+IN-PROCESS on purpose: a HEAD probe answers a question about the
+router's method table and never about the document, so in-process is the
+honest lane for the claim — and it keeps three UA-lane probes out of
+production's read ledger, which a wire probe cannot. Two non-vacuity
+guards ride with it: no `HeadAsGet` symbol anywhere in `lib/`,
+`components/`, `pages/` or `run.py` (scoped to application code, because
+a whole-tree sweep matches the test's own prose about what it hunts —
+item 13's failure, hit on the first run), and every GET rule in
+Werkzeug's map carries a derived HEAD, which pins the actual mechanism
+rather than a router that answers all verbs alike.
+
+If this fork ever acquires an ASGI lane, those tests go red for the
+right reason and this entry is what must be revisited.
+
 ## 5. Excluded links hide through a different seam — RETIRED 2026-08-30
 
 **Both seams are gone, on both sides.** Sync item 16 deleted the
@@ -543,10 +572,13 @@ Recorded because a reader has reason to wonder:
   divergent one" until that day; it is kept, corrected, rather than
   deleted, because reports written before it describe the old posture as
   this host's position.
-- **`/healthz` payload**: template 1.6.10 verbatim apart from the
-  `[muicharts]` log prefix — `app`, `build`, `geo` and nothing extra. A
-  missing `geo` block here means the Docker cache trap fired, with no
-  local exemption to explain it away.
+- **`/healthz` payload**: template shape apart from the `[muicharts]`
+  log prefix — `app`, `build`, `geo`, plus `python` (item 5 of the
+  1.6.22–1.6.29 round) and `llms_version` (1.6.44 item 1). A missing
+  `geo` block here means the Docker cache trap fired, with no local
+  exemption to explain it away. This bullet read "and nothing extra"
+  until 1.6.44; it is corrected rather than deleted because reports
+  written before that date describe the smaller payload.
 - **The gate wave surface**: vendored dash-clerk-auth with the sha
   check, the security floors, `lib/gate_layouts` / `page_visibility` /
   `agent_key`, the control board, ship-dark via `PAGE_DEFAULT_TIER` —
