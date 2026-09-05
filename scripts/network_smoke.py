@@ -181,6 +181,65 @@ class SmokeFailure(Exception):
     pass
 
 
+class SmokeSkip(Exception):
+    """A precondition the host does not meet — NOT a pass.
+
+    Sync 1.6.44 item 5's first piece of machinery. Until now `check()` had
+    exactly two outcomes, so a check whose precondition was absent could only
+    return green: `SKIP` was a verdict the summary could COUNT but nothing
+    could ever RAISE. That is note 88's defect in its purest form — a sweep
+    that swept nothing and a sweep that found nothing print the same word.
+    """
+
+
+class Headers(dict):
+    """Lower-cased response headers that REMEMBER REPEATS.
+
+    `{k.lower(): v for k, v in r.headers.items()}` — which this module used —
+    keeps only the LAST value per name, and this host emits several `Link`
+    headers. Existing callers keep using `.get()`; `get_all()` is the new
+    half.
+
+    `get_all()` is NECESSARY BUT NOT SUFFICIENT, which is the part worth
+    writing down: over HTTP/2 an origin may fold repeated headers into ONE
+    comma-separated value, so a caller that counts headers gets 1 where it
+    expected 3 and concludes the relations are missing. `link_relations()`
+    below parses the relations out of the VALUES instead of counting headers,
+    which is correct under either encoding.
+    """
+
+    def __init__(self, raw_items):
+        super().__init__()
+        self._all: dict[str, list[str]] = {}
+        for k, v in raw_items:
+            k = k.lower()
+            self[k] = v  # last wins, matching the old behaviour
+            self._all.setdefault(k, []).append(v)
+
+    def get_all(self, name: str) -> list[str]:
+        return list(self._all.get(name.lower(), ()))
+
+
+def link_relations(headers) -> set[str]:
+    """Every `rel=` in every `Link` header, however the origin encoded them.
+
+    Handles both shapes: several `Link:` headers, and one header holding
+    several comma-separated link-values. Quoted and bare rel tokens both, and
+    a multi-token `rel="a b"` yields both.
+    """
+    values = (headers.get_all("link") if isinstance(headers, Headers)
+              else ([headers.get("link")] if headers.get("link") else []))
+    rels: set[str] = set()
+    for value in values:
+        # Split on commas that separate link-values, i.e. those followed by a
+        # `<uri>`; a comma inside a quoted rel list must not split.
+        for part in re.split(r",\s*(?=<)", value or ""):
+            for m in re.finditer(r'rel\s*=\s*(?:"([^"]*)"|([^;,\s]+))', part):
+                for token in (m.group(1) or m.group(2) or "").split():
+                    rels.add(token.strip().lower())
+    return rels
+
+
 def fetch(url: str, ua: str = UA, method: str = "GET",
           body: bytes | None = None, headers: dict | None = None,
           timeout: int = TIMEOUT, retries: int = 3):
@@ -202,10 +261,10 @@ def fetch(url: str, ua: str = UA, method: str = "GET",
         try:
             with urllib.request.urlopen(
                     req, timeout=timeout, context=SSL_CONTEXT) as r:
-                return (r.status, {k.lower(): v for k, v in r.headers.items()},
+                return (r.status, Headers(r.headers.items()),
                         r.read().decode("utf-8", "replace"))
         except urllib.error.HTTPError as e:
-            return (e.code, {k.lower(): v for k, v in e.headers.items()},
+            return (e.code, Headers(e.headers.items()),
                     e.read().decode("utf-8", "replace"))
         except Exception as exc:  # timeout, reset, truncated read, …
             last_exc = exc
@@ -223,6 +282,10 @@ def check(name: str, fn) -> None:
     try:
         fn()
         record(name, PASS)
+    except SmokeSkip as exc:
+        # A verdict, not a pass (item 5). An absent precondition must be
+        # visible in the summary, never counted as evidence.
+        record(name, SKIP, str(exc))
     except SmokeFailure as exc:
         record(name, FAIL, str(exc))
     except Exception as exc:  # network/parse error → still a failure
@@ -232,6 +295,12 @@ def check(name: str, fn) -> None:
 def expect(cond: bool, msg: str) -> None:
     if not cond:
         raise SmokeFailure(msg)
+
+
+def skip_unless(cond: bool, msg: str) -> None:
+    """Declare a precondition. Absent -> SKIP, which is not a pass."""
+    if not cond:
+        raise SmokeSkip(msg)
 
 
 # ------------------------------------------------------------- the battery --
@@ -419,6 +488,123 @@ def satellite_checks(base: str) -> None:
         expect(status == 204, f"/api/agent-key {status} for an anonymous caller")
         expect(not text.strip(), f"anonymous body was not empty: {text[:80]!r}")
 
+    # ---------------------------------------------- sync 1.6.44 item 5 --
+    # Four invariants that hold on every host in the fleet, registered by
+    # the names the item gives them so a failure reads the same everywhere.
+
+    def head_get_parity_three_uas():
+        """HEAD must not 405 where GET answers — five paths, three lanes.
+
+        A HEAD probe answers a question about the ROUTER'S METHOD TABLE and
+        never about the document, which is precisely what is asserted here.
+        The fleet's two ASGI hosts needed a middleware for this because
+        FastAPI's `APIRoute` takes `methods` literally; this host is Flask,
+        where Werkzeug derives HEAD from every GET, so the expectation is
+        15/15 with no shim present.
+        """
+        pairs, bad = 0, []
+        for path in ("/healthz", "/llms.txt", "/robots.txt", "/sitemap.xml", "/"):
+            for lane, ua in (("browser", BROWSER_UA), ("crawler", CRAWLER_UA),
+                             ("library", _probe_ua("curl/8.7.1", "network-smoke"))):
+                g, _, _ = get(path, ua=ua)
+                h, _, _ = get(path, ua=ua, method="HEAD")
+                pairs += 1
+                if h != g:
+                    bad.append(f"{path} as {lane}: HEAD {h} != GET {g}")
+        expect(pairs == 15, f"expected 15 pairs, measured {pairs}")
+        expect(not bad, "; ".join(bad))
+
+    def api_llms_rows_present():
+        """`/api/llms.txt` must carry PROPERTY ROWS, not just headings.
+
+        The defect this exists for: a props table that renders for a browser
+        and is absent from the machine lane. `/api` served 13 component
+        headings and zero property tables for a fortnight, and a check
+        written against the RENDERED page could not see it.
+
+        MUTATION-CHECKED, which is the acceptance the item names: the corpus
+        is this page's own `.. kwargs::` directives, and an EMPTY corpus
+        SKIPS rather than passes. A green from a page that declares no props
+        at all would be exactly note 88's defect.
+        """
+        declared = 0
+        try:
+            import pathlib
+
+            api_md = (pathlib.Path(__file__).resolve().parent.parent
+                      / "docs" / "api" / "api.md")
+            declared = len(re.findall(r"^\.\.\s*kwargs::", api_md.read_text(),
+                                      re.M))
+        except Exception:
+            declared = 0
+        skip_unless(
+            declared > 0,
+            "no `.. kwargs::` directives declared in docs/api/api.md — "
+            "nothing to prove present, so this is not evidence",
+        )
+
+        status, _, text = get("/api/llms.txt", ua=CRAWLER_UA)
+        expect(status == 200, f"/api/llms.txt {status}")
+        # A markdown table row: `| something | something | something |`.
+        rows = [ln for ln in text.splitlines()
+                if ln.count("|") >= 3 and not re.match(r"^\s*\|[\s|:-]+\|\s*$", ln)]
+        expect(
+            len(rows) > declared,
+            f"/api/llms.txt declares {declared} kwargs directives but the "
+            f"machine lane carries {len(rows)} table lines — the props "
+            f"tables are not reaching the crawler document",
+        )
+
+    def discovery_link_headers_per_lane():
+        """The llms.txt v2 discovery relations, on the lane each is served to.
+
+        Parsed out of the VALUES, never counted as headers: this host emits
+        several `Link:` headers, but over HTTP/2 an origin may fold them into
+        one comma-separated value. A check that counted headers would read 1
+        where it expected 3 and report the relations missing on a host
+        serving all of them.
+        """
+        seen = {}
+        for lane, ua in (("browser", BROWSER_UA), ("crawler", CRAWLER_UA)):
+            status, headers, _ = get("/", ua=ua)
+            expect(status == 200, f"/ {status} as {lane}")
+            seen[lane] = link_relations(headers)
+        skip_unless(
+            any(seen.values()),
+            "no Link relations on either lane — this host predates the "
+            "llms.txt v2 discovery relations (dimll < 2.7.1)",
+        )
+        for lane, rels in seen.items():
+            expect(
+                any("llms" in r or "alternate" in r for r in sorted(rels)),
+                f"{lane} lane carries Link relations {sorted(rels)} with no "
+                f"llms/alternate discovery relation among them",
+            )
+
+    def directory_counts_are_derived():
+        """Any peer count this host STATES must equal the peers it LISTS.
+
+        A hand-maintained number beside a generated list is the shape that
+        goes stale silently — the list grows, the sentence does not, and
+        nothing is red.
+        """
+        status, _, text = get("/llms.txt", ua=CRAWLER_UA)
+        expect(status == 200, f"/llms.txt {status}")
+        stated = re.findall(r"\b(\d+)\s+(?:other\s+)?(?:sites?|apps?|peers?)\b",
+                            text, re.I)
+        skip_unless(
+            stated,
+            "this host's corpus states no peer count — nothing to derive "
+            "against (the directory is rendered as a list only)",
+        )
+        listed = len(re.findall(r"https?://[a-z0-9.-]*2plot\.(?:dev|ai)", text))
+        for n in stated:
+            expect(
+                int(n) <= listed,
+                f"corpus claims {n} peers but only {listed} 2plot URLs are "
+                f"listed in the same document",
+            )
+
     for name, fn in (
         ("healthz_ok", healthz_ok),
         ("python_matches_declared", python_matches_declared),
@@ -434,6 +620,11 @@ def satellite_checks(base: str) -> None:
         ("crawler_gets_prose", crawler_gets_prose),
         ("agents_and_browsers_get_different_types",
          agents_and_browsers_get_different_types),
+        # --- sync 1.6.44 item 5, registered BY NAME ----------------------
+        ("head_get_parity_three_uas", head_get_parity_three_uas),
+        ("api_llms_rows_present", api_llms_rows_present),
+        ("discovery_link_headers_per_lane", discovery_link_headers_per_lane),
+        ("directory_counts_are_derived", directory_counts_are_derived),
     ):
         check(name, fn)
 
