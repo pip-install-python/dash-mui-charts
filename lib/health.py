@@ -67,6 +67,61 @@ def _llms_version() -> dict:
         return {}
 
 
+def _ledger_block() -> dict:
+    """``{"path", "persistent", "visits", "reads"}`` — the ledger, from outside.
+
+    Sync 1.6.44 item 20. Three facts that were previously invisible on the
+    wire, and one of them cannot be obtained any other way.
+
+    ``persistent`` is MEASURED, NEVER DECLARED. It is true iff the resolved
+    path lies OUTSIDE the repository root — i.e. on a mounted disk such as
+    ``/var/data/...``. A path under the app tree is the container filesystem
+    and reads false EVEN WHERE A BLUEPRINT DECLARES A DISK, which is the
+    whole point: leaflet ran for weeks with a declared disk and no disk, and
+    nothing on the wire could contradict the declaration. A boolean
+    reporting the deployment's INTENTION is worth nothing; this one reports
+    the filesystem.
+
+    ``visits`` and ``reads`` are the two tables' current row counts, read
+    from the same file the tracker writes. A missing file is ``0`` and
+    ``0`` — never an error, and ``/healthz`` stays 200: this is a
+    diagnostic, and a diagnostic that can take the health probe down with it
+    is a liability.
+
+    ROW CONTENTS NEVER APPEAR HERE. Counts, a boolean and a path — nothing
+    about any visitor, which matters more since item 16 made this host's
+    position on that explicit.
+    """
+    block = {"path": None, "persistent": False, "visits": 0, "reads": 0}
+    try:
+        import json
+        from pathlib import Path
+
+        from lib.analytics_tracker import analytics_path
+
+        path = Path(analytics_path()).resolve()
+        block["path"] = str(path)
+        repo_root = Path(__file__).resolve().parent.parent
+        try:
+            path.relative_to(repo_root)
+            block["persistent"] = False      # inside the tree: container fs
+        except ValueError:
+            block["persistent"] = True       # outside it: a mounted disk
+
+        if path.exists():
+            data = json.loads(path.read_text())
+            if isinstance(data, dict):
+                for table in ("visits", "reads"):
+                    rows = data.get(table)
+                    block[table] = len(rows) if isinstance(rows, list) else 0
+    except Exception:
+        # Never let a diagnostic break the health probe. An unreadable or
+        # half-written ledger reports zeros, and the `path` already in the
+        # block is what a reader needs in order to go and look.
+        pass
+    return block
+
+
 def health_payload(backend: str) -> dict:
     payload = {
         "ok": True,
@@ -84,6 +139,9 @@ def health_payload(backend: str) -> dict:
         # WHICH dash-improve-my-llms resolved into the running image (sync
         # 1.6.44 item 1). Additive and omitted on failure — see _llms_version.
         **_llms_version(),
+        # The visitor ledger, from outside (sync 1.6.44 item 20). `persistent`
+        # is measured against the filesystem, not read from a declaration.
+        "ledger": _ledger_block(),
     }
     # Which commit the RUNNING instance was built from. This is what lets CD
     # verify the artifact it shipped rather than whichever build happens to

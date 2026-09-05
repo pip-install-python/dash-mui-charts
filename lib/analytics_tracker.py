@@ -117,6 +117,40 @@ def analytics_path() -> Path:
                 or _REPO_ROOT / "visitor_analytics.json")
 
 
+def _boot_guard() -> None:
+    """Say once, at import, when the ledger is going to be EPHEMERAL.
+
+    Sync 1.6.44 item 22. With ``TRAFFIC_ANALYTICS_FILE`` unset the ledger
+    falls back to the repository root — inside the container filesystem —
+    so every visit and every read is lost on the next deploy or restart. The
+    deployment usually intends a mounted disk, and until now nothing said
+    when that intention had not been realised.
+
+    PRINTED AT IMPORT, mirroring the existing ``[visibility]`` and
+    ``[auth]`` boot lines, because an operator greps ONE deploy log. The
+    drop's suggestion of `caplog` cannot work here: a `print` at import time
+    is not a logging record and caplog never sees it — the test boots a
+    SUBPROCESS instead, which exercises the real boot path rather than a
+    re-import inside an already-warm interpreter.
+
+    Pairs with ``/healthz``'s ``ledger`` block (item 20): this says it ONCE
+    at boot, the block says it CONTINUOUSLY, and the two must agree.
+    """
+    if os.getenv("TRAFFIC_ANALYTICS_FILE"):
+        return
+    print(
+        f"[muicharts] WARNING: TRAFFIC_ANALYTICS_FILE is unset — the visitor "
+        f"ledger falls back to {_REPO_ROOT / 'visitor_analytics.json'}, "
+        f"inside the app tree. That is the CONTAINER filesystem: every visit "
+        f"and every read is lost on the next deploy or restart. Set it to a "
+        f"path on a mounted disk (e.g. /var/data/visitor_analytics.json). "
+        f"/healthz reports the resolved path and whether it is persistent."
+    )
+
+
+_boot_guard()
+
+
 def _lower_headers(headers) -> dict:
     """Normalise any header mapping (Flask, Starlette, dict) to lowercase."""
     if not headers:
@@ -519,7 +553,10 @@ class AnalyticsTracker:
 
             data["visits"] = _prune(visits)
             read_rows.extend(reads)
-            data["reads"] = _prune(read_rows, stamp=_read_stamp)
+            # cap=False — item 21. Reads are bounded by RETENTION, never by
+            # row count; the cap would drop the oldest billing-grade rows
+            # first, exactly the ones the hub may not have reconciled yet.
+            data["reads"] = _prune(read_rows, stamp=_read_stamp, cap=False)
 
             # Atomic replace: a crash mid-write can't leave a truncated ledger.
             tmp = path.with_suffix(path.suffix + ".tmp")
@@ -548,12 +585,34 @@ def _read_stamp(r):
         return ""
 
 
-def _prune(rows, stamp=_visit_stamp):
-    """Drop rows older than the retention window, then cap the total."""
+def _prune(rows, stamp=_visit_stamp, cap=True):
+    """Drop rows older than the retention window, and OPTIONALLY cap the total.
+
+    ``cap`` is the whole of sync 1.6.44 item 21, and the two tables answer
+    differently:
+
+    * ``visits`` KEEPS the count cap. It is a high-volume behavioural log
+      whose oldest rows are the least interesting, and an unbounded one on a
+      container filesystem is a disk-full waiting to happen.
+
+    * ``reads`` IS NEVER CAPPED BY COUNT. A read row is a billing-grade
+      record — which vendor fetched which document, verified or not, how
+      many bytes — and ``rows[-MAX_VISITS:]`` silently drops the OLDEST
+      reads first. On a host that crosses 20,000 reads inside the retention
+      window that deletes rows the hub has not yet reconciled, and deletes
+      them in the order that makes a vendor's earliest activity vanish
+      first. Retention still bounds the table; time is the right rule for
+      it, not count.
+
+    THE CHOICE OF RULE PER TABLE LIVES AT THE CALL SITE, which is why
+    ``tests/test_read_ledger.py`` SOURCE-PINS it by AST as well as testing
+    the behaviour: a behavioural test cannot see ``cap=True`` restored above
+    it.
+    """
     if RETENTION_DAYS > 0:
         cutoff = (datetime.now() - timedelta(days=RETENTION_DAYS)).isoformat()
         rows = [v for v in rows if stamp(v) >= cutoff]
-    if MAX_VISITS > 0 and len(rows) > MAX_VISITS:
+    if cap and MAX_VISITS > 0 and len(rows) > MAX_VISITS:
         rows = rows[-MAX_VISITS:]
     return rows
 
