@@ -467,3 +467,55 @@ def test_the_overlap_matcher_tolerates_an_adaptation():
                "answer HEAD with 405, and muicharts is Flask so parity is free.")
     assert mod._present(template, [adapted])
     assert not mod._present(template, ["Something else entirely about robots."])
+
+
+def test_the_session_name_is_this_forks_app_key():
+    """SYNC 1.6.44 item 23b.
+
+    The file's CONTENT is this fork's own app key, which is why the spec's
+    sync-verbatim block is EMPTY for it: a fan-out that byte-copied this
+    would start every session in the fleet under the template's address.
+    """
+    path = REPO / ".claude" / "session-name"
+    assert path.is_file(), ".claude/session-name is missing"
+    name = path.read_text()
+    assert name.strip() == "muicharts"
+    assert name.strip() == name.strip().split()[0], "not a single token"
+
+
+def test_the_session_name_matches_the_healthz_app_field():
+    """The detect: `cat .claude/session-name` equals your healthz `app`.
+
+    Read from lib/constants' default rather than the wire so this is
+    testable offline; SATELLITE_APP_KEY is what /healthz reports and the
+    default here is what it falls back to.
+    """
+    import os
+
+    name = (REPO / ".claude" / "session-name").read_text().strip()
+    default_host = "https://muicharts.2plot.dev"
+    from lib.constants import DEFAULT_BASE_URL
+
+    assert DEFAULT_BASE_URL == default_host
+    # The app key is the host's first label.
+    assert name == default_host.split("//")[1].split(".")[0]
+    assert os.environ.get("SATELLITE_APP_KEY", name) in (name, "")
+
+
+def test_the_session_name_survives_a_fresh_checkout():
+    """PROVEN FROM A CLONE, which is what item 23b asks for.
+
+    Without its own allow-list line the file is written, passes every test
+    run off the WORKING DIRECTORY, and is invisible in a fresh checkout —
+    so a test that only reads the working tree cannot tell the two apart.
+    """
+    import subprocess
+
+    r = subprocess.run(
+        ["git", "ls-files", "--error-unmatch", ".claude/session-name"],
+        cwd=REPO, capture_output=True, text=True,
+    )
+    assert r.returncode == 0, (
+        ".claude/session-name is not tracked — .gitignore's `.claude/*` "
+        "blanket needs a `!.claude/session-name` allow-list line"
+    )

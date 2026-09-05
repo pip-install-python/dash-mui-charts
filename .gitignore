@@ -100,6 +100,13 @@ KICKOFF-*.md
 !.claude/CLAUDE.md
 !.claude/settings.json
 !.claude/skills/
+# The fork's launch name (sync 1.6.44 item 23b). Its CONTENT is this fork's
+# own app key, so it is NOT byte-copyable from the template — a fan-out that
+# copied it would start every session in the fleet under the template's
+# address. It needs its own allow-list line for the same reason the three
+# above do: without it the file is written, passes every test run off the
+# WORKING DIRECTORY, and is invisible in a fresh checkout.
+!.claude/session-name
 
 # The visitor-key salt (sync 1.6.44 item 16). Generated on first use, never
 # committed: a committed salt makes every visitor_key in every fork of this
