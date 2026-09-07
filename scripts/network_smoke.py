@@ -271,11 +271,25 @@ def fetch(url: str, ua: str = UA, method: str = "GET",
     raise last_exc
 
 
+# Which GitHub annotation each verdict earns. THE POINT IS THAT A RED NAMES
+# ITSELF: CD run 34073327071 failed at the "Boot under a production server"
+# step, and the check-run annotations — the only part readable ANONYMOUSLY,
+# unlike the logs — carried nothing but "Process completed with exit code 1".
+# Two seats then reproduced the run independently to learn which row it was.
+# A FAIL row now prints its own name and detail as an annotation, so the next
+# one is legible from the API without a token and without a reproduction.
+_ANNOTATION = {FAIL: "error", WARN: "warning", SKIP: "notice"}
+
+
 def record(name: str, verdict: str, detail: str = "") -> None:
     _RESULTS.append((name, verdict, detail))
     print(f"[{verdict:>4}] {name}" + (f" — {detail}" if detail else ""), flush=True)
-    if verdict == WARN and os.getenv("GITHUB_ACTIONS"):
-        print(f"::warning title=network-smoke {name}::{detail}", flush=True)
+    level = _ANNOTATION.get(verdict)
+    if level and os.getenv("GITHUB_ACTIONS"):
+        # A skip is annotated too: "nothing was compared" is a result an
+        # operator should see in the summary, not only in the log body.
+        print(f"::{level} title=network-smoke {name}::{detail or verdict}",
+              flush=True)
 
 
 def check(name: str, fn) -> None:
