@@ -329,3 +329,87 @@ def test_a_matching_version_with_an_injection_FAILS():
     )
     assert out["verdict"] == mod.FAIL, out
     assert "never wrote" in out["detail"]
+
+
+# ----------------------------- the CI failure this row shipped with ---------
+
+def test_the_expectation_uses_the_APPS_base_not_the_probe_url():
+    """CD run 34073327071, `ci / Docs site · pytest (zero secrets)`, FAILED.
+
+    The row generated its expectation from the URL the battery was DIALLING
+    (`http://127.0.0.1:8550` in CI) instead of the app's own BASE_URL, so it
+    compared "the file the app would serve if it lived at 127.0.0.1" against
+    "the file the app actually serves":
+
+        missing : sitemap: http://127.0.0.1:8550/sitemap.xml
+        injected: sitemap: https://muicharts.2plot.dev/sitemap.xml
+
+    It passed against production, where the probe URL and BASE_URL coincide,
+    and failed the moment it ran against the CI container — which is exactly
+    the class of bug a production-only check cannot show you.
+
+    The base is the app's IDENTITY, not the prober's address.
+    """
+    from lib.constants import BASE_URL
+
+    at_app = directive_lines(expected_robots_txt())
+    at_probe = directive_lines(expected_robots_txt("http://127.0.0.1:8550"))
+    assert at_app != at_probe, "the fixture does not distinguish the two bases"
+    assert any(BASE_URL in line for line in at_app)
+    assert not any("127.0.0.1" in line for line in at_app)
+
+
+def test_a_container_probe_still_compares(monkeypatch):
+    """Probing the app at localhost must NOT skip — that is where CI runs."""
+    mod = _battery()
+    import dash_improve_my_llms as pkg
+
+    out = _run_posture_at(
+        mod, "http://127.0.0.1:8550",
+        health_body='{"ok": true, "llms_version": "%s"}' % pkg.__version__,
+        robots=expected_robots_txt(),
+    )
+    assert out["verdict"] == mod.PASS, out
+
+
+def test_a_cross_host_probe_declines_instead_of_answering_wrongly():
+    """A workflow_dispatch against another host is a different question.
+
+    This checkout's robots config describes THIS app, so it cannot say what
+    someone else's host ought to serve. Declining is the honest answer; the
+    alternative is a confident diff about a config we do not have.
+    """
+    mod = _battery()
+    import dash_improve_my_llms as pkg
+
+    out = _run_posture_at(
+        mod, "https://some-other-host.2plot.dev",
+        health_body='{"ok": true, "llms_version": "%s"}' % pkg.__version__,
+        robots=expected_robots_txt(),
+    )
+    assert out["verdict"] == mod.SKIP, out
+    assert "another host" in out["detail"]
+
+
+def _run_posture_at(mod, base, *, health_body, robots):
+    def fake_fetch(url, **kw):
+        body = health_body if url.endswith("/healthz") else robots
+        return (200, mod.Headers([]), body)
+
+    mod.fetch = fake_fetch
+    mod._RESULTS.clear()
+    captured = {}
+    real_check = mod.check
+
+    def capture(name, fn):
+        if name == "ai_bot_posture":
+            real_check(name, fn)
+            captured["verdict"] = mod._RESULTS[-1][1]
+            captured["detail"] = mod._RESULTS[-1][2]
+
+    mod.check = capture
+    try:
+        mod.satellite_checks(base)
+    finally:
+        mod.check = real_check
+    return captured

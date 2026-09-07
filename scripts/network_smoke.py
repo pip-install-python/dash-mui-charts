@@ -658,10 +658,36 @@ def satellite_checks(base: str) -> None:
                 f"version generated the file, not what the edge did"
             )
 
+        # GENERATE FROM THE APP'S OWN BASE_URL, never from the probe URL.
+        # The base is the app's IDENTITY — it is what goes into the Sitemap
+        # line — not the address the battery happened to dial. Passing
+        # `base` here compared "the file the app would serve if it lived at
+        # 127.0.0.1:8550" against "the file the app actually serves", and
+        # that is how this row failed CI run 34073327071 on its first real
+        # outing while passing against production, where the two coincide:
+        #     missing : sitemap: http://127.0.0.1:8550/sitemap.xml
+        #     injected: sitemap: https://muicharts.2plot.dev/sitemap.xml
+        #
+        # A cross-host dispatch is a different question and is declined
+        # rather than answered wrongly: this checkout's config describes
+        # THIS app, so it cannot say what another host ought to serve.
+        from urllib.parse import urlsplit
+
+        from lib.constants import BASE_URL
+
+        probe_host = urlsplit(base).hostname or ""
+        own_host = urlsplit(BASE_URL).hostname or ""
+        if probe_host not in (own_host, "localhost", "127.0.0.1", "::1"):
+            raise SmokeSkip(
+                f"probing {probe_host}, but this checkout is configured for "
+                f"{own_host} — its robots config cannot describe another "
+                f"host's file, so nothing was compared"
+            )
+
         status, _, served = get("/robots.txt", ua=CRAWLER_UA)
         expect(status == 200, f"/robots.txt {status}")
 
-        want = set(directive_lines(expected_robots_txt(base)))
+        want = set(directive_lines(expected_robots_txt()))
         got = set(directive_lines(served))
         expect(want, "the app generated an EMPTY robots.txt — nothing to compare")
 
